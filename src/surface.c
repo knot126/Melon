@@ -9,7 +9,7 @@
 
 #include "alloc.h"
 #include "maths.h"
-#include "bezsurfa.h"
+#include "surface_implementation.h"
 #include "log.h"
 
 #include "surface.h"

@@ -13,7 +13,7 @@
 #include "maths.h"
 #include "log.h"
 
-#include "bezsurfa.h"
+#include "surface_implementation.h"
 
 static float DgFacBetween(float n, float m) {
 	/**
