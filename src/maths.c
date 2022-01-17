@@ -1,8 +1,25 @@
-/*
+/**
  * Copyright (C) 2021 - 2022 Knot126 and Descentix Software
  * ========================================================
  * 
  * Math Utilites: Vectors and Matricies
+ * 
+ * @warning This maths library will probably be replaced in the future.
+ * 
+ * For now here are some notes:
+ * 
+ *   * Passing arguments basically always happens by value, not by reference,
+ *     except for when it does. This is fine for vec2 since it is the same size
+ *     as a pointer on 64-bit platforms, but for other situations it means
+ *     preformance issues.
+ *   * Any of the matrix maths is probably not going to be any good. I forget
+ *     how half of linear algebra works every month or so, which is of course
+ *     annoying.
+ *   * Rotations are in turns. 0 = no rotation and 1 = full rotation. This is
+ *     the only advantage to this library, and it's really objective. Nicely,
+ *     you can convert to rad/deg easily:
+ *         rad = 2pi * turns = tau * turns
+ *         deg = 360 * turns
  */
 
 #include <math.h>
@@ -11,10 +28,8 @@
 #include <stddef.h>
 #include <inttypes.h>
 
-// For C implementations that do not specify PI
-#if !defined(M_PI)
-	#define M_PI 3.14159265358979323846
-#endif
+// The use of tau over pi is debatable but for this tau works better
+#define DG_MATHS_TAU 6.283185307179586476925286766559
 
 #include "maths.h"
 
@@ -23,19 +38,31 @@
  */
 
 float DgCos(float angle) {
-	return (float) cos(angle * M_PI * 2.0f);
+	return (float) cos(angle * DG_MATHS_TAU);
 }
 
 float DgSin(float angle) {
-	return (float) sin(angle * M_PI * 2.0f);
+	return (float) sin(angle * DG_MATHS_TAU);
 }
 
 float DgTan(float angle) {
-	return (float) tan(angle * M_PI * 2.0f);
+	return (float) tan(angle * DG_MATHS_TAU);
 }
 
 float DgSqrt(float n) {
 	return (float) sqrt(n);
+}
+
+int DgSign(float n) {
+	if (n > 0.0f) {
+		return 1;
+	}
+	else if (n == 0.0f) {
+		return 0;
+	}
+	else {
+		return -1;
+	}
 }
 
 float xcos(float n) {
@@ -99,6 +126,15 @@ inline DgVec2 DgVec2Subtract(DgVec2 a, DgVec2 b) {
 	return c;
 }
 
+inline DgVec2 DgVec2Scale(float a, DgVec2 b) {
+	DgVec2 c;
+	
+	c.x = a * b.x;
+	c.y = a * b.y;
+	
+	return c;
+}
+
 inline DgVec2 DgVec2Multiply(DgVec2 a, DgVec2 b) {
 	DgVec2 c;
 	
@@ -116,6 +152,15 @@ inline float DgVec2Dot(DgVec2 a, DgVec2 b) {
 	return (a.x * b.x) + (a.y * b.y);
 }
 
+inline float DgVec2RotDot(DgVec2 a, DgVec2 b) {
+	/**
+	 * Dot product combined with a 0.25 turn rotation. This will tell what "side"
+	 * of vector a that b is on.
+	 */
+	
+	return (a.x * b.y) - (a.y * b.x);
+}
+
 inline DgVec2 DgVec2Normalise(DgVec2 a) {
 	DgVec2 c;
 	
@@ -128,6 +173,10 @@ inline DgVec2 DgVec2Normalise(DgVec2 a) {
 }
 
 inline DgVec2 DgVec2New(float x, float y) {
+	/**
+	 * @deprecated Use (DgVec2){x, y} or &(DgVec2){x, y} now.
+	 */
+	
 	DgVec2 c;
 	
 	c.x = x;
@@ -154,7 +203,7 @@ inline DgVec2 DgVec2FromString(const char * const s) {
 	return c;
 }
 
-/* 
+/**
  * DgVec3 
  */
 
@@ -281,7 +330,7 @@ inline DgVec3 DgVec3Rotate(DgVec3 base, DgVec3 rot) {
 	/**
 	 * Rotate the base vector by the given rotation vector.
 	 * 
-	 * WARNING: Do not use this as a substitute for matrix maths.
+	 * @warning Try not to use this, instead use matricies.
 	 */
 	
 	DgVec3 orig = base;
@@ -304,7 +353,15 @@ inline DgVec3 DgVec3Rotate(DgVec3 base, DgVec3 rot) {
 	return base;
 }
 
-/*
+inline DgVec3 DgVec3Lerp(float t, DgVec3 a, DgVec3 b) {
+	/**
+	 * Linearly interpolate two 3D vectors.
+	 */
+	
+	return DgVec3Add(DgVec3Scale((1.0f - t), a), DgVec3Scale(t, b));
+}
+
+/**
  * DgVec4
  */
 
@@ -425,14 +482,6 @@ inline DgMat4 DgMat4ByMat4Multiply(DgMat4 a, DgMat4 b) {
 	return c;
 }
 
-inline DgMat4 DgMat4Inverse(DgMat4 a) {
-	DgMat4 c;
-	
-	
-	
-	return c;
-}
-
 inline DgMat4 DgMat4Translate(DgMat4 a, DgVec3 b) {
 	DgMat4 c = DgMat4New(1.0f);
 	
@@ -458,9 +507,11 @@ inline DgMat4 DgMat4Scale(DgMat4 a, DgVec3 b) {
 }
 
 inline DgMat4 DgMat4Rotate(DgMat4 a, DgVec3 b, float angle) {
-	/* a = (the matrix that rotation will be applied to)
+	/**
+	 * a = (the matrix that rotation will be applied to)
 	 * b = (the axis that will be rotated upon)
 	 */
+	
 	DgMat4 c = DgMat4New(1.0f);
 	
 	c.ax = DgCos(angle) + (b.x * b.x * (1 - DgCos(angle)));
@@ -478,35 +529,6 @@ inline DgMat4 DgMat4Rotate(DgMat4 a, DgVec3 b, float angle) {
 	a = DgMat4ByMat4Multiply(a, c);
 	
 	return a;
-}
-
-inline DgMat4 DgMat4NewPerspective(float l, float r, float b, float t, float n, float f) {
-	DgMat4 C = DgMat4New(1.0f);
-	
-	C.ax = (2 * n) / (r - l);
-	C.az = (r + l) / (r - l);
-	
-	C.by = (2 * n) / (t - b);
-	C.bz = (t + b) / (t - b);
-	
-	C.cz = -(f + n) / (f - n);
-	C.cw = -(2 * f * n) / (f - n);
-	
-	C.dz = -1;
-	
-	return C;
-}
-
-inline DgMat4 DgMat4NewPerspective2(float fov, float rat, float f, float b) {
-	/* 
-	 * Gives a perspective projection given FOV and Screen Ratio.
-	 */
-	
-	float tangent = DgTan(fov / 2);
-	float h = f * tangent;
-	float w = h * rat;
-	
-	return DgMat4NewPerspective(-w, w, -h, h, f, b);
 }
 
 inline DgMat4 DgMat4New(float a) {
@@ -551,19 +573,13 @@ DgMat4 DgTransfromBasicCamera(DgVec3 trans, DgVec3 rot) {
  * Interpolation Schemes and Bèzier Curves
  */
 
-inline DgVec3 DgVec3Lerp(float t, DgVec3 a, DgVec3 b) {
-	/**
-	 * Linearly interpolate two 3D vectors.
-	 */
-	
-	return DgVec3Add(DgVec3Scale((1.0f - t), a), DgVec3Scale(t, b));
-}
-
 DgVec3 DgVec3Bez3(float t, DgVec3 p0, DgVec3 p1, DgVec3 p2) {
 	/**
 	 * Compute a 3D quadratic bezier cruve.
 	 * 
 	 * These are the simplest "real" curves.
+	 * 
+	 * @deprecated New functions in surface.c replace this
 	 */
 	
 	return DgVec3Lerp(t, DgVec3Lerp(t, p0, p1), DgVec3Lerp(t, p1, p2));
@@ -574,6 +590,8 @@ DgVec3 DgVec3Bez4(float t, DgVec3 p0, DgVec3 p1, DgVec3 p2, DgVec3 p3) {
 	 * Compute a 3D cubic bezier cruve.
 	 * 
 	 * These are the simplest curves that look the best.
+	 * 
+	 * @deprecated New functions in surface.c replace this
 	 */
 	
 	return DgVec3Lerp(t, DgVec3Lerp(t, DgVec3Lerp(t, p0, p1), DgVec3Lerp(t, p1, p2)), DgVec3Lerp(t, DgVec3Lerp(t, p1, p2), DgVec3Lerp(t, p2, p3)));
@@ -583,6 +601,8 @@ DgVec3 DgVec3BezN(float t, size_t length, DgVec3 * restrict points) {
 	/**
 	 * Compute the current point of an N-order 3D bezier curve. This will need to
 	 * modify the list of control points.
+	 * 
+	 * @deprecated New functions in surface.c replace this
 	 */
 	
 	while (length != 1) {

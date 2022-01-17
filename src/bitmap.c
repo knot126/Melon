@@ -22,7 +22,7 @@ enum {
 	DG_BITMAP_DEFAULT_CHANNELS_COUNT = 3, // For some random generation functions
 };
 
-bool DgBitmapNew(DgBitmap *bitmap, const uint16_t width, const uint16_t height, const uint16_t chan) {
+bool DgBitmapInit(DgBitmap *bitmap, const uint16_t width, const uint16_t height, const uint16_t chan) {
 	/**
 	 * Initialise a bitmap that has already been allocated. Returns 1 on success
 	 * or 0 on failure to allocate memory.
@@ -53,6 +53,10 @@ bool DgBitmapNew(DgBitmap *bitmap, const uint16_t width, const uint16_t height, 
 	uint8_t *src = bitmap->src;
 	
 	return false;
+}
+
+bool DgBitmapNew(DgBitmap *bitmap, const uint16_t width, const uint16_t height, const uint16_t chan) {
+	return DgBitmapInit(bitmap, width, height, chan);
 }
 
 void DgBitmapFree(DgBitmap *bitmap) {
@@ -157,7 +161,111 @@ void DgBitmapDrawPoint(DgBitmap * restrict this, float x, float y, float r, DgVe
 	}
 }
 
-void DgBitmapFill(DgBitmap *this, DgVec4 colour) {
+static bool DgBitmapIsInLineSame(DgVec2 *a, DgVec2 *b, DgVec2 *c, DgVec2 *d) {
+	/**
+	 * Returns true if point vector c and d are on the same side as the line
+	 * formed by points a and b.
+	 * 
+	 * @param a Start of the line
+	 * @param b End of the line
+	 * @param c Point 1
+	 * @param d Point 2
+	 */
+	
+	DgVec2 line = DgVec2Subtract(*b, *a);
+	
+	float result_a = DgVec2RotDot(line, DgVec2Subtract(*c, *a));
+	float result_b = DgVec2RotDot(line, DgVec2Subtract(*d, *a));
+	
+// 	DgLog(DG_LOG_VERBOSE, "IsInLineSame: ra = %d   rb = %d", result_a, result_b);
+	
+	return (DgSign(result_a) == DgSign(result_b));
+}
+
+void DgBitmapDrawConvexPolygon(DgBitmap * restrict this, size_t points_count, DgVec2 * restrict points, DgVec4 * restrict colour) {
+	/**
+	 * Draw a convex polygon given its verticies and colour.
+	 * 
+	 * @note This is a naïve implementation (at least I think?) and only a first
+	 * attempt. It was initially my solution just to draw triangles but since it
+	 * works for all shapes I have decided to implement that instead.
+	 * 
+	 * @param this Bitmap object to draw to
+	 * @param points_count Number of points in the shape
+	 * @param points Points of the convex polygon to draw
+	 * @param colour The colour that the points inside the shape should be set to
+	 */
+	
+	DgVec2 min, max;
+	
+	// Compute min and max coordinates
+	for (size_t i = 0; i < points_count; i++) {
+		if (points[i].x < min.x) {
+			min.x = points[i].x;
+		}
+		
+		if (points[i].y < min.y) {
+			min.y = points[i].y;
+		}
+		
+		if (points[i].x > max.x) {
+			max.x = points[i].x;
+		}
+		
+		if (points[i].y > max.y) {
+			max.y = points[i].y;
+		}
+	}
+	
+	// Calculate integer min/max
+	DgVec2I pmin, pmax;
+	
+	pmin.x = (uint32_t)(min.x * (float)(this->width));
+	pmin.y = (uint32_t)(min.y * (float)(this->height));
+	pmax.x = (uint32_t)(max.x * (float)(this->width));
+	pmax.y = (uint32_t)(max.y * (float)(this->height));
+	
+	// Get the "centre" of the shape; this should always work for convex shapes
+	DgVec2 centre;
+	
+	for (size_t i = 0; i < points_count; i++) {
+		centre = DgVec2Add(centre, points[i]);
+	}
+	
+	centre = DgVec2Scale(1.0f / (float)points_count, centre);
+	
+	// Fill in the pixels
+	for (size_t y = pmin.y; y <= pmax.y; y++) {
+		for (size_t x = pmin.x; x <= pmax.x; x++) {
+			bool draw = true;
+			
+			// For each point
+			for (size_t i = 0; i < points_count; i++) {
+				// Line coordinates
+				DgVec2 pa = points[i], pb = points[(i + 1) % points_count];
+				
+				// Point coordinates
+				DgVec2 pc = (DgVec2) {(float)x / (float)this->width, (float)y / (float)this->height};
+				
+				// Test point
+				bool result = DgBitmapIsInLineSame(&pa, &pb, &pc, &centre);
+				
+				// Check if on the right side of the line
+				if (!result) {
+					draw = false;
+					break;
+				}
+			}
+			
+			// Draw point if it can be drawn
+			if (draw) {
+				DgBitmapDrawPixel(this, x, y, *colour);
+			}
+		}
+	}
+}
+
+void DgBitmapFill(DgBitmap * restrict this, DgVec4 colour) {
 	/**
 	 * Fill a bitmap with a given colour.
 	 * 

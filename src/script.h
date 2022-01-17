@@ -7,6 +7,8 @@
 
 #pragma once
 
+#if !defined(DG_NO_LUA)
+
 #include <stdbool.h>
 #include <inttypes.h>
 
@@ -29,3 +31,5 @@ void DgScriptCall(DgScript *script, char *name);
 void DgScriptCallArgs(DgScript *script, char *name, int *types, int argc, ...);
 void DgScriptFree(DgScript *script);
 void DgScriptRegister(DgScript *script, const char * name, int (*function)(DgScript *));
+
+#endif

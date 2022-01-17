@@ -5,6 +5,8 @@
  * Scripting Support Utilities
  */
 
+#if !defined(DG_NO_LUA)
+
 #include <stdbool.h>
 #include <inttypes.h>
 #include <stdio.h>
@@ -121,3 +123,5 @@ void DgScriptRegister(DgScript *script, const char * name, int (*function)(DgScr
 	
 	lua_register(script->state, name, (int (*)(lua_State *)) function);
 }
+
+#endif //!defined(DG_NO_LUA)
