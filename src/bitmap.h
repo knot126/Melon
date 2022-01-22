@@ -12,18 +12,32 @@
 
 #include "maths.h"
 
+enum {
+	DG_BITMAP_DRAWING_ALPHA = (1 << 0),
+};
+
+typedef uint16_t DgBitmapFlags;
+
+/**
+ * Bitmap
+ * ======
+ * 
+ * An 8-bit image with up to four channels: r, g, b and alpha.
+ */
 typedef struct DgBitmap {
 	size_t alloc_sz;
 	uint8_t *src;
 	uint16_t width;
 	uint16_t height;
 	uint16_t chan;
-	uint16_t flags;
+	DgBitmapFlags flags;
 } DgBitmap;
 
 bool DgBitmapInit(DgBitmap *bitmap, const uint16_t width, const uint16_t height, const uint16_t chan);
 bool DgBitmapNew(DgBitmap *bitmap, const uint16_t width, const uint16_t height, const uint16_t chan);
 void DgBitmapFree(DgBitmap *bitmap);
+void DgBitmapSetFlags(DgBitmap *this, DgBitmapFlags flags);
+DgBitmapFlags DgBitmapGetFlags(DgBitmap *this);
 void DgBitmapDrawPixel(DgBitmap *this, uint16_t x, uint16_t y, DgVec4 colour);
 void DgBitmapGetPixel(DgBitmap * restrict this, uint16_t x, uint16_t y, DgVec4 * restrict colour);
 void DgBitmapDrawPoint(DgBitmap *this, float x, float y, float r, DgVec4 colour);

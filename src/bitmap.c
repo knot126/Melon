@@ -43,7 +43,6 @@ bool DgBitmapInit(DgBitmap *bitmap, const uint16_t width, const uint16_t height,
 	bitmap->chan = chan;
 	bitmap->alloc_sz = width * height * chan;
 	bitmap->src = DgAlloc(bitmap->alloc_sz * sizeof *bitmap->src);
-// 	DgLog(DG_LOG_VERBOSE, "DgBitmap debug: Allocate 0x%X bytes of memory for %dx%dx%d bitmap at <0x%X>.", bitmap->alloc_sz, width, height, chan, bitmap->src);
 	
 	if (!bitmap->src) {
 		DgLog(DG_LOG_ERROR, "Failed to allocate 0x%X bytes of memory for bitmap.", bitmap->alloc_sz);
@@ -71,6 +70,44 @@ void DgBitmapFree(DgBitmap *bitmap) {
 	}
 }
 
+static void DgBitmapSwapSimilar(DgBitmap *dest, DgBitmap *from) {
+	/**
+	 * Move an atrribute-identical bitmap to where another bitmap is.
+	 * 
+	 * @param dest Bitmap to copy into
+	 * @param src Bitmap to copy from
+	 */
+	
+	if (dest->src) {
+		DgFree(dest->src);
+	}
+	
+	dest->src = from->src;
+	from->src = NULL;
+}
+
+void DgBitmapSetFlags(DgBitmap *this, DgBitmapFlags flags) {
+	/**
+	 * Set the flags on a bitmap.
+	 * 
+	 * @param this Bitmap to set flags on
+	 * @param flags The flags that should be set
+	 */
+	
+	this->flags = flags;
+}
+
+DgBitmapFlags DgBitmapGetFlags(DgBitmap *this) {
+	/**
+	 * Get the flags on a bitmap.
+	 * 
+	 * @param this Bitmap to get flags from
+	 * @return The flags on the bitmap
+	 */
+	
+	return this->flags;
+}
+
 void DgBitmapDrawPixel(DgBitmap *this, uint16_t x, uint16_t y, DgVec4 colour) {
 	/**
 	 * Draw a single pixel to a bitmap.
@@ -85,22 +122,36 @@ void DgBitmapDrawPixel(DgBitmap *this, uint16_t x, uint16_t y, DgVec4 colour) {
 		return;
 	}
 	
+	// Old colour for alpha blending
+	DgVec4 old_colour;
+	
+	if ((this->flags & DG_BITMAP_DRAWING_ALPHA) == DG_BITMAP_DRAWING_ALPHA) {
+		DgBitmapGetPixel(this, x, y, &old_colour);
+	}
+	else {
+		old_colour = (DgVec4) {1.0f, 1.0f, 1.0f, 1.0f};
+	}
+	
 	// Invert for graph-like coordinates
 	y = (this->height - y) - 1;
+	
+	// Calculate pixel offset in memony block
 	size_t pixel_offset = ((y * this->width) + x) * this->chan;
 	
-	this->src[pixel_offset + 0] = (uint8_t) (colour.r * 255.0f);
+	#define DG_BITMAP_BLEND(CH) (uint8_t)(((colour.a * colour.CH) + ((1.0f - colour.a) * old_colour.CH)) * 255.0f)
+	
+	this->src[pixel_offset + 0] = DG_BITMAP_BLEND(r);
 	if (this->chan >= 2) {
-		this->src[pixel_offset + 1] = (uint8_t) (colour.g * 255.0f);
+		this->src[pixel_offset + 1] = DG_BITMAP_BLEND(g);
 		if (this->chan >= 3) {
-			this->src[pixel_offset + 2] = (uint8_t) (colour.b * 255.0f);
+			this->src[pixel_offset + 2] = DG_BITMAP_BLEND(b);
 			if (this->chan >= 4) {
 				this->src[pixel_offset + 3] = (uint8_t) (colour.a * 255.0f);
 			}
 		}
 	}
 	
-// 	DgLog(DG_LOG_VERBOSE, "draw at %d, %d", x, y);
+	#undef DG_BITMAP_BLEND
 }
 
 void DgBitmapGetPixel(DgBitmap * restrict this, uint16_t x, uint16_t y, DgVec4 * restrict colour) {
@@ -117,16 +168,18 @@ void DgBitmapGetPixel(DgBitmap * restrict this, uint16_t x, uint16_t y, DgVec4 *
 	y %= this->height;
 	
 	// Invert for graph-like coordinates
-	y = this->width - y;
+	y = (this->height - y) - 1;
+	
+	// Calculate pixel offset in memory block
 	size_t pixel_offset = ((y * this->width) + x) * this->chan;
 	
-	colour->r = (((float)this->src[pixel_offset + 0]) * 255.0f);
+	colour->r = (((float)this->src[pixel_offset + 0]) * (1.0f/255.0f));
 	if (this->chan >= 2) {
-		colour->g = (((float)this->src[pixel_offset + 1]) * 255.0f);
+		colour->g = (((float)this->src[pixel_offset + 1]) * (1.0f/255.0f));
 		if (this->chan >= 3) {
-			colour->b = (((float)this->src[pixel_offset + 2]) * 255.0f);
+			colour->b = (((float)this->src[pixel_offset + 2]) * (1.0f/255.0f));
 			if (this->chan >= 4) {
-				colour->a = (((float)this->src[pixel_offset + 3]) * 255.0f);
+				colour->a = (((float)this->src[pixel_offset + 3]) * (1.0f/255.0f));
 			}
 		}
 	}
@@ -161,7 +214,7 @@ void DgBitmapDrawPoint(DgBitmap * restrict this, float x, float y, float r, DgVe
 	}
 }
 
-static bool DgBitmapIsInLineSame(DgVec2 *a, DgVec2 *b, DgVec2 *c, DgVec2 *d) {
+static bool DgBitmapIsInLineSame(DgVec2 *a, DgVec2 *b, DgVec2 *c, DgVec2 *d, bool *zero) {
 	/**
 	 * Returns true if point vector c and d are on the same side as the line
 	 * formed by points a and b.
@@ -170,6 +223,7 @@ static bool DgBitmapIsInLineSame(DgVec2 *a, DgVec2 *b, DgVec2 *c, DgVec2 *d) {
 	 * @param b End of the line
 	 * @param c Point 1
 	 * @param d Point 2
+	 * @param zero Optional address to boolean to write to if both are zero
 	 */
 	
 	DgVec2 line = DgVec2Subtract(*b, *a);
@@ -177,9 +231,14 @@ static bool DgBitmapIsInLineSame(DgVec2 *a, DgVec2 *b, DgVec2 *c, DgVec2 *d) {
 	float result_a = DgVec2RotDot(line, DgVec2Subtract(*c, *a));
 	float result_b = DgVec2RotDot(line, DgVec2Subtract(*d, *a));
 	
-// 	DgLog(DG_LOG_VERBOSE, "IsInLineSame: ra = %d   rb = %d", result_a, result_b);
+	int32_t sa = DgSign(result_a);
+	int32_t sb = DgSign(result_b);
 	
-	return (DgSign(result_a) == DgSign(result_b));
+	if (zero != NULL) {
+		*zero = (sa == 0 && sb == 0);
+	}
+	
+	return (sa == sb);
 }
 
 void DgBitmapDrawConvexPolygon(DgBitmap * restrict this, size_t points_count, DgVec2 * restrict points, DgVec4 * restrict colour) {
@@ -237,7 +296,7 @@ void DgBitmapDrawConvexPolygon(DgBitmap * restrict this, size_t points_count, Dg
 	// Fill in the pixels
 	for (size_t y = pmin.y; y <= pmax.y; y++) {
 		for (size_t x = pmin.x; x <= pmax.x; x++) {
-			bool draw = true;
+			bool draw = true, zero = false;
 			
 			// For each point
 			for (size_t i = 0; i < points_count; i++) {
@@ -248,7 +307,7 @@ void DgBitmapDrawConvexPolygon(DgBitmap * restrict this, size_t points_count, Dg
 				DgVec2 pc = (DgVec2) {(float)x / (float)this->width, (float)y / (float)this->height};
 				
 				// Test point
-				bool result = DgBitmapIsInLineSame(&pa, &pb, &pc, &centre);
+				bool result = DgBitmapIsInLineSame(&pa, &pb, &pc, &centre, &zero);
 				
 				// Check if on the right side of the line
 				if (!result) {
@@ -287,6 +346,11 @@ void DgBitmapAntiAliasX(DgBitmap *this) {
 	 * @param this Bitmap to antialias
 	 */
 	
+	DgLog(DG_LOG_WARNING, "DgBitmapAntiAlias is not a complete antialiasing function");
+	
+	DgBitmap other;
+	DgBitmapInit(&other, this->width, this->height, this->chan);
+	
 	DgVec4 current, l, u, r, d;
 	
 	for (size_t y = 0; y < this->height; y++) {
@@ -299,9 +363,11 @@ void DgBitmapAntiAliasX(DgBitmap *this) {
 			
 			current = DgVec4Add(DgVec4Scale(0.125f, d), DgVec4Add(DgVec4Scale(0.125f, r), DgVec4Add(DgVec4Scale(0.125f, u), DgVec4Add(DgVec4Scale(0.125f, u), DgVec4Add(DgVec4Scale(0.125f, l), DgVec4Scale(0.5f, current))))));
 			
-			DgBitmapDrawPixel(this, x, y, current);
+			DgBitmapDrawPixel(&other, x, y, current);
 		}
 	}
+	
+	DgBitmapSwapSimilar(this, &other);
 }
 
 void DgBitmapWritePPM(DgBitmap *this, const char * const filepath) {
