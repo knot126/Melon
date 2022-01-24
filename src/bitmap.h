@@ -45,6 +45,3 @@ void DgBitmapDrawConvexPolygon(DgBitmap * restrict this, size_t points_count, Dg
 void DgBitmapFill(DgBitmap * restrict this, DgVec4 colour);
 void DgBitmapAntiAliasX(DgBitmap *this);
 void DgBitmapWritePPM(DgBitmap *this, const char * const filepath);
-
-DgBitmap *DgBitmapGenTiles(const uint16_t width, const uint16_t height, const uint16_t size);
-DgBitmap *DgBitmapRandom(const uint16_t width, const uint16_t height);

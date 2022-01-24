@@ -214,7 +214,7 @@ void DgBitmapDrawPoint(DgBitmap * restrict this, float x, float y, float r, DgVe
 	}
 }
 
-static bool DgBitmapIsInLineSame(DgVec2 *a, DgVec2 *b, DgVec2 *c, DgVec2 *d, bool *zero) {
+static bool DgBitmapIsInLineSame(DgVec2 *a, DgVec2 *b, DgVec2 *c, DgVec2 *d) {
 	/**
 	 * Returns true if point vector c and d are on the same side as the line
 	 * formed by points a and b.
@@ -223,7 +223,6 @@ static bool DgBitmapIsInLineSame(DgVec2 *a, DgVec2 *b, DgVec2 *c, DgVec2 *d, boo
 	 * @param b End of the line
 	 * @param c Point 1
 	 * @param d Point 2
-	 * @param zero Optional address to boolean to write to if both are zero
 	 */
 	
 	DgVec2 line = DgVec2Subtract(*b, *a);
@@ -233,10 +232,6 @@ static bool DgBitmapIsInLineSame(DgVec2 *a, DgVec2 *b, DgVec2 *c, DgVec2 *d, boo
 	
 	int32_t sa = DgSign(result_a);
 	int32_t sb = DgSign(result_b);
-	
-	if (zero != NULL) {
-		*zero = (sa == 0 && sb == 0);
-	}
 	
 	return (sa == sb);
 }
@@ -296,18 +291,18 @@ void DgBitmapDrawConvexPolygon(DgBitmap * restrict this, size_t points_count, Dg
 	// Fill in the pixels
 	for (size_t y = pmin.y; y <= pmax.y; y++) {
 		for (size_t x = pmin.x; x <= pmax.x; x++) {
-			bool draw = true, zero = false;
+			bool draw = true;
+			
+			// Point coordinates
+			DgVec2 pc = (DgVec2) {(float)x / (float)this->width, (float)y / (float)this->height};
 			
 			// For each point
 			for (size_t i = 0; i < points_count; i++) {
 				// Line coordinates
 				DgVec2 pa = points[i], pb = points[(i + 1) % points_count];
 				
-				// Point coordinates
-				DgVec2 pc = (DgVec2) {(float)x / (float)this->width, (float)y / (float)this->height};
-				
 				// Test point
-				bool result = DgBitmapIsInLineSame(&pa, &pb, &pc, &centre, &zero);
+				bool result = DgBitmapIsInLineSame(&pa, &pb, &pc, &centre);
 				
 				// Check if on the right side of the line
 				if (!result) {
@@ -404,99 +399,4 @@ void DgBitmapWritePPM(DgBitmap *this, const char * const filepath) {
 	}
 	
 	DgFileStreamClose(file);
-}
-
-// =============================================================================
-// =============================================================================
-// =============================================================================
-
-DgBitmap *DgBitmapGenTiles(const uint16_t width, const uint16_t height, const uint16_t size) {
-	/**
-	 * Allocates and generates a bitmap in a tile format. The image will have
-	 * three channels (RGB) and be 8-bit.
-	 * 
-	 * @param width The width of the generated bitmap
-	 * @param height The height of the generated bitmap
-	 * @param size The size of the tiles on the bitmap
-	 * @return Dyamically allocated bitmap
-	 */
-	
-	DgBitmap *bitmap = (DgBitmap *) DgAlloc(sizeof(DgBitmap));
-	
-	if (!bitmap) {
-		return NULL;
-	}
-	
-	bitmap->width = width;
-	bitmap->height = height;
-	bitmap->chan = DG_BITMAP_DEFAULT_CHANNELS_COUNT;
-	bitmap->src = (uint8_t *) DgAlloc(width * height * DG_BITMAP_DEFAULT_CHANNELS_COUNT * sizeof(uint8_t));
-	
-	if (!bitmap->src) {
-		DgFree(bitmap);
-		return NULL;
-	}
-	
-	uint8_t *src = bitmap->src;
-	
-	uint16_t size_tick_x = size;
-	uint16_t size_tick_y = size;
-	uint8_t current_x = 0;
-	uint8_t current_y = 0;
-	
-	for (uint16_t x = 0; x < width; x++, size_tick_x--) {
-		for (uint16_t y = 0; y < height; y++, size_tick_y--) {
-			src[(x * width * 3) + (y * 3) + 0] = current_y;
-			src[(x * width * 3) + (y * 3) + 1] = current_y;
-			src[(x * width * 3) + (y * 3) + 2] = current_y;
-			
-			if (size_tick_y <= 0) {
-				current_y = ~current_y;
-				size_tick_y = size;
-			}
-		}
-		
-		if (size_tick_x <= 0) {
-			current_x = ~current_x;
-			size_tick_x = size;
-		}
-		
-		current_y = current_x;
-	}
-	
-	return bitmap;
-}
-
-DgBitmap *DgBitmapRandom(const uint16_t width, const uint16_t height) {
-	/**
-	 * Generate a random bitmap.
-	 * 
-	 * @param width The width of the bitmap
-	 * @param height The height of the bitmap
-	 * @return Dynamically allocated bitmap
-	 */
-	
-	DgBitmap *bitmap = (DgBitmap *) DgAlloc(sizeof(DgBitmap));
-	
-	if (!bitmap) {
-		return NULL;
-	}
-	
-	bitmap->width = width;
-	bitmap->height = height;
-	bitmap->chan = DG_BITMAP_DEFAULT_CHANNELS_COUNT;
-	bitmap->src = (uint8_t *) DgAlloc(width * height * DG_BITMAP_DEFAULT_CHANNELS_COUNT * sizeof(uint8_t));
-	
-	if (!bitmap->src) {
-		DgFree(bitmap);
-		return NULL;
-	}
-	
-	uint8_t *src = bitmap->src;
-	
-	for (uint32_t i = 0; i < (bitmap->width * bitmap->height * bitmap->chan); i++) {
-		src[i] = (uint8_t) DgRandInt() % 256;
-	}
-	
-	return bitmap;
 }
