@@ -338,12 +338,12 @@ void DgBitmapDrawTriangles(DgBitmap * restrict this, size_t count, DgBitmapTrian
 		
 		if ((this->flags & DG_BITMAP_DRAWING_PERSPECTIVE) == DG_BITMAP_DRAWING_PERSPECTIVE) {
 			// Perspective enabled
-			p1.x = tri->p1.position.x / tri->p1.position.z;
-			p1.y = tri->p1.position.y / tri->p1.position.z;
-			p2.x = tri->p2.position.x / tri->p2.position.z;
-			p2.y = tri->p2.position.y / tri->p2.position.z;
-			p3.x = tri->p3.position.x / tri->p3.position.z;
-			p3.y = tri->p3.position.y / tri->p3.position.z;
+			p1.x = (((tri->p1.position.x) / tri->p1.position.z) * 0.5f) + 0.5f;
+			p1.y = (((tri->p1.position.y) / tri->p1.position.z) * 0.5f) + 0.5f;
+			p2.x = (((tri->p2.position.x) / tri->p2.position.z) * 0.5f) + 0.5f;
+			p2.y = (((tri->p2.position.y) / tri->p2.position.z) * 0.5f) + 0.5f;
+			p3.x = (((tri->p3.position.x) / tri->p3.position.z) * 0.5f) + 0.5f;
+			p3.y = (((tri->p3.position.y) / tri->p3.position.z) * 0.5f) + 0.5f;
 		}
 		else {
 			// Perspective disabled
