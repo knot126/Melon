@@ -34,6 +34,9 @@ typedef struct DgVec2 {
 		struct {
 			float x, y;
 		};
+		struct {
+			float u, v;
+		};
 		float data[2];
 	};
 } DgVec2;
@@ -47,9 +50,18 @@ typedef struct DgVec3 {
 		struct {
 			float x, y, z;
 		};
+		struct {
+			float r, g, b;
+		};
+		struct {
+			float u, v, w;
+		};
 		float data[3];
 	};
 } DgVec3;
+
+typedef DgVec3 DgColour3;
+typedef DgVec3 DgBary3;
 
 typedef struct DgVec4 {
 	union {
@@ -72,6 +84,7 @@ typedef struct DgVec4 {
 } DgVec4;
 
 typedef DgVec4 DgColour;
+typedef DgVec4 DgColour4;
 
 // DgVec2
 DgVec2 DgVec2Add(DgVec2 a, DgVec2 b);
@@ -83,7 +96,9 @@ float DgVec2Dot(DgVec2 a, DgVec2 b);
 float DgVec2RotDot(DgVec2 a, DgVec2 b);
 DgVec2 DgVec2Normalise(DgVec2 a);
 DgVec2 DgVec2New(float x, float y);
+
 DgVec2 DgVec2FromString(const char * const s);
+DgBary3 DgVec2Bary3(DgVec2 p1, DgVec2 p2, DgVec2 p3, DgVec2 point);
 
 // DgVec3
 DgVec3 DgVec3Add(DgVec3 a, DgVec3 b);
@@ -110,6 +125,8 @@ float DgVec4Magnitude(DgVec4 a);
 float DgVec4Dot(DgVec4 a, DgVec4 b);
 DgVec4 DgVec4Normalise(DgVec4 a);
 DgVec4 DgVec4New(float x, float y, float z, float w);
+
+DgVec4 DgVec4Bary3Evaluate(float u, DgVec4 *a, float v, DgVec4 *b, float w, DgVec4 *c);
 
 // DgMat**
 
@@ -159,3 +176,7 @@ void DgMat4Print(DgMat4 a);
 
 // Misc.
 DgMat4 DgTransfromBasicCamera(DgVec3 trans, DgVec3 rot);
+
+// Utility functions
+float DgFloatMin3(float a, float b, float c);
+float DgFloatMax3(float a, float b, float c);

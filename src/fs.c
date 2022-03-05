@@ -43,14 +43,9 @@ const char *dg_special_directory_paths[3] = {
 void DgInitPaths(uint32_t fail_mode) {
 	/**
 	 * This will initialise the paths in dg_special_directory_paths.
-	 * 
-	 * NOTE: This needs to be redone for not only ZIP files but also just to be
-	 * better written in general.
-	 * 
-	 * @param fail_mode If the application should exit upon encountering an error.
 	 */
 	
-	// Index 0: Assets path
+	// Assets path
 	for (int i = 0; i < sizeof(ASSETS_LOOK_PATH); i++) {
 		bool d = DgIsDir(ASSETS_LOOK_PATH[i]);
 		
@@ -61,17 +56,8 @@ void DgInitPaths(uint32_t fail_mode) {
 	}
 	
 	if (!dg_special_directory_paths[0]) {
-		if (fail_mode == DG_PATH_FAIL_ERROR) {
-			printf("Failed to initialise paths!!");
-		}
-		else {
-			printf("Couldn't initialise paths.\n");
-			exit(EXIT_FAILURE);
-		}
+		DgLog(DG_LOG_WARNING, "Failed to initialise legacy filesystem directory paths.");
 	}
-	
-	// Index 1: User config path ** NOT IMPLEMENTED **
-	
 }
 
 DgFileStream* DgFileStreamOpen(char* path, char* permissions) {

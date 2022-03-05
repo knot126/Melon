@@ -319,6 +319,86 @@ void DgBitmapDrawConvexPolygon(DgBitmap * restrict this, size_t points_count, Dg
 	}
 }
 
+void DgBitmapDrawTriangles(DgBitmap * restrict this, size_t count, DgBitmapTriangle * restrict triangles) {
+	/**
+	 * Draw a shaded triangle.
+	 * 
+	 * @param this Bitmap object to draw to
+	 * @param count Number of triangles to draw
+	 * @param triangles Array of triangles to draw
+	 */
+	
+	DgVec2 min, max;
+	
+	for (size_t t = 0; t < count; t++) {
+		DgBitmapTriangle *tri = &triangles[t];
+		
+		// Find 2D coordinates on screen
+		DgVec2 p1, p2, p3;
+		
+		if ((this->flags & DG_BITMAP_DRAWING_PERSPECTIVE) == DG_BITMAP_DRAWING_PERSPECTIVE) {
+			// Perspective enabled
+			p1.x = tri->p1.position.x / tri->p1.position.z;
+			p1.y = tri->p1.position.y / tri->p1.position.z;
+			p2.x = tri->p2.position.x / tri->p2.position.z;
+			p2.y = tri->p2.position.y / tri->p2.position.z;
+			p3.x = tri->p3.position.x / tri->p3.position.z;
+			p3.y = tri->p3.position.y / tri->p3.position.z;
+		}
+		else {
+			// Perspective disabled
+			p1.x = tri->p1.position.x;
+			p1.y = tri->p1.position.y;
+			p2.x = tri->p2.position.x;
+			p2.y = tri->p2.position.y;
+			p3.x = tri->p3.position.x;
+			p3.y = tri->p3.position.y;
+		}
+		
+		// Compute min and max coordinates
+		DgVec2 min, max;
+		
+		min.x = DgFloatMin3(p1.x, p2.x, p3.x);
+		min.y = DgFloatMin3(p1.y, p2.y, p3.y);
+		max.x = DgFloatMax3(p1.x, p2.x, p3.x);
+		max.y = DgFloatMax3(p1.y, p2.y, p3.y);
+		
+		// Calculate integer min/max
+		DgVec2I pmin, pmax;
+		
+		pmin.x = (uint32_t)(min.x * (float)(this->width));
+		pmin.y = (uint32_t)(min.y * (float)(this->height));
+		pmax.x = (uint32_t)(max.x * (float)(this->width));
+		pmax.y = (uint32_t)(max.y * (float)(this->height));
+		
+		// Fill in the pixels
+		for (size_t y = pmin.y; y <= pmax.y; y++) {
+			for (size_t x = pmin.x; x <= pmax.x; x++) {
+				// Convert point to float
+				DgVec2 point = (DgVec2) {(float)x / (float)this->width, (float)y / (float)this->height};
+				
+				//DgLog(DG_LOG_INFO, "Coords of point [ %.3f, %.3f ]", point.x, point.y);
+				
+				// Get barycentric coordinates
+				DgBary3 bary = DgVec2Bary3(p1, p2, p3, point);
+				
+				//DgLog(DG_LOG_INFO, "Bary ( %.3f : %.3f : %.3f ) = %.3f", bary.u, bary.v, bary.w, bary.u + bary.v + bary.w);
+				
+				//DgLog(DG_LOG_INFO, "Bary after: [ %.3f, %.3f ]", bary.u * p1.x + bary.v * p2.x + bary.w * p3.x, bary.u * p1.y + bary.v * p2.y + bary.w * p3.y);
+				
+				// Check for collision
+				if ((bary.u >= 0.0f) && (bary.v >= 0.0f) && (bary.w >= 0.0f)) {
+					// Evaluate pixel colour based on barycentric coordinates
+					DgColour c = DgVec4Bary3Evaluate(bary.u, &tri->p1.colour, bary.v, &tri->p2.colour, bary.w, &tri->p3.colour);
+					
+					// Draw the pixel
+					DgBitmapDrawPixel(this, x, y, c);
+				}
+			}
+		}
+	}
+}
+
 void DgBitmapFill(DgBitmap * restrict this, DgVec4 colour) {
 	/**
 	 * Fill a bitmap with a given colour.
@@ -332,37 +412,6 @@ void DgBitmapFill(DgBitmap * restrict this, DgVec4 colour) {
 			DgBitmapDrawPixel(this, x, y, colour);
 		}
 	}
-}
-
-void DgBitmapAntiAliasX(DgBitmap *this) {
-	/**
-	 * Preform basic anti-aliasing on the bitmap.
-	 * 
-	 * @param this Bitmap to antialias
-	 */
-	
-	DgLog(DG_LOG_WARNING, "DgBitmapAntiAlias is not a complete antialiasing function");
-	
-	DgBitmap other;
-	DgBitmapInit(&other, this->width, this->height, this->chan);
-	
-	DgVec4 current, l, u, r, d;
-	
-	for (size_t y = 0; y < this->height; y++) {
-		for (size_t x = 0; x < this->height; x++) {
-			DgBitmapGetPixel(this, x, y, &current);
-			DgBitmapGetPixel(this, x - 1, y, &l);
-			DgBitmapGetPixel(this, x, y + 1, &u);
-			DgBitmapGetPixel(this, x + 1, y, &r);
-			DgBitmapGetPixel(this, x, y - 1, &d);
-			
-			current = DgVec4Add(DgVec4Scale(0.125f, d), DgVec4Add(DgVec4Scale(0.125f, r), DgVec4Add(DgVec4Scale(0.125f, u), DgVec4Add(DgVec4Scale(0.125f, u), DgVec4Add(DgVec4Scale(0.125f, l), DgVec4Scale(0.5f, current))))));
-			
-			DgBitmapDrawPixel(&other, x, y, current);
-		}
-	}
-	
-	DgBitmapSwapSimilar(this, &other);
 }
 
 void DgBitmapWritePPM(DgBitmap *this, const char * const filepath) {

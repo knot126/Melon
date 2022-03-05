@@ -14,9 +14,38 @@
 
 enum {
 	DG_BITMAP_DRAWING_ALPHA = (1 << 0),
+	DG_BITMAP_DRAWING_DEPTH = (1 << 1),
+	DG_BITMAP_DRAWING_PERSPECTIVE = (1 << 2),
 };
 
 typedef uint16_t DgBitmapFlags;
+
+/**
+ * Vertex
+ * ======
+ * 
+ * A vertex used for specifying coloured and textured triangles and points.
+ */
+typedef struct DgBitmapVertex {
+	DgVec3 position;
+	DgVec2 texture;
+	DgColour colour;
+} DgBitmapVertex;
+
+/**
+ * Triangle
+ * ========
+ * 
+ * A single triangle.
+ */
+typedef struct DgBitmapTriangle {
+	union {
+		struct {
+			DgBitmapVertex p1, p2, p3;
+		};
+		DgBitmapVertex data[3];
+	};
+} DgBitmapTriangle;
 
 /**
  * Bitmap
@@ -42,6 +71,6 @@ void DgBitmapDrawPixel(DgBitmap *this, uint16_t x, uint16_t y, DgVec4 colour);
 void DgBitmapGetPixel(DgBitmap * restrict this, uint16_t x, uint16_t y, DgVec4 * restrict colour);
 void DgBitmapDrawPoint(DgBitmap *this, float x, float y, float r, DgVec4 colour);
 void DgBitmapDrawConvexPolygon(DgBitmap * restrict this, size_t points_count, DgVec2 * restrict points, DgVec4 * restrict colour);
+void DgBitmapDrawTriangles(DgBitmap * restrict this, size_t count, DgBitmapTriangle * restrict triangles);
 void DgBitmapFill(DgBitmap * restrict this, DgVec4 colour);
-void DgBitmapAntiAliasX(DgBitmap *this);
 void DgBitmapWritePPM(DgBitmap *this, const char * const filepath);

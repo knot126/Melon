@@ -203,6 +203,47 @@ inline DgVec2 DgVec2FromString(const char * const s) {
 	return c;
 }
 
+inline DgBary3 DgVec2Bary3(DgVec2 p1, DgVec2 p2, DgVec2 p3, DgVec2 point) {
+	/**
+	 * Compute the barycentric coordinates of a point, where:
+	 *     point = u * p1 + v * p2 + w * p3
+	 *     u + v + w = 1
+	 * 
+	 * This uses Cramer's rule to solve the system.
+	 * 
+	 * @see https://en.wikipedia.org/wiki/Barycentric_coordinate_system
+	 * @see https://en.wikipedia.org/wiki/Cramer%27s_rule
+	 * @see Real-time Collision Detection (Christer Ericson, 2005)
+	 * 
+	 * @param p1 First triangle point
+	 * @param p2 Second triangle point
+	 * @param p3 Third triangle point
+	 * @param point Point to find barycentric coordinates of
+	 * @return Barycentric coordinates of the point
+	 */
+	
+	DgBary3 bary;
+	
+	// Determinant of normal matrix
+	float det_a = p1.x * (p2.y - p3.y) - p2.x * (p1.y - p3.y) + p3.x * (p1.y - p2.y);
+	
+	// Determinant of matrix A_u
+	float det_u = point.x * (p2.y - p3.y) - p2.x * (point.y - p3.y) + p3.x * (point.y - p2.y);
+	
+	// Determinant of matrix A_v
+	float det_v = p1.x * (point.y - p3.y) - point.x * (p1.y - p3.y) + p3.x * (p1.y - point.y);
+	
+	// Find u and v
+	bary.u = det_u / det_a;
+	bary.v = det_v / det_a;
+	
+	// Find w based on u and v (does not need division or anything)
+	bary.w = 1.0f - bary.u - bary.v;
+	
+	// Done!
+	return bary;
+}
+
 /**
  * DgVec3 
  */
@@ -441,6 +482,30 @@ inline DgVec4 DgVec4New(float x, float y, float z, float w) {
 	return c;
 }
 
+inline DgVec4 DgVec4Bary3Evaluate(float u, DgVec4 *a, float v, DgVec4 *b, float w, DgVec4 *c) {
+	/**
+	 * Evaluate the point given the barycentric coordinates.
+	 * 
+	 * @param u u barycentric coordinate
+	 * @param a u point
+	 * @param v v barycentric coordinate
+	 * @param b v point
+	 * @param w w barycentric coordinate
+	 * @param c w point
+	 * @return Evaluated point
+	 */
+	
+	// Scale vectors
+	DgVec4 a1 = DgVec4Scale(u, *a);
+	DgVec4 b1 = DgVec4Scale(v, *b);
+	DgVec4 c1 = DgVec4Scale(w, *c);
+	
+	// Add vectors
+	DgVec4 d = DgVec4Add(DgVec4Add(a1, b1), c1);
+	
+	return d;
+}
+
 /* 
  * DgMat4
  */
@@ -613,4 +678,30 @@ DgVec3 DgVec3BezN(float t, size_t length, DgVec3 * restrict points) {
 	}
 	
 	return *points;
+}
+
+inline float DgFloatMin3(float a, float b, float c) {
+	/**
+	 * Get the minium value from three values.
+	 */
+	
+	float m;
+	
+	m = (a < b) ? a : b;
+	m = (c < m) ? c : m;
+	
+	return m;
+}
+
+inline float DgFloatMax3(float a, float b, float c) {
+	/**
+	 * Get the maximum value from three values.
+	 */
+	
+	float m;
+	
+	m = (a > b) ? a : b;
+	m = (c > m) ? c : m;
+	
+	return m;
 }
