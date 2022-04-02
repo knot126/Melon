@@ -51,11 +51,13 @@ typedef struct DgBitmapTriangle {
  * Bitmap
  * ======
  * 
- * An 8-bit image with up to four channels: r, g, b and alpha.
+ * An 8-bit image with up to four channels: r, g, b and alpha. Also contains an
+ * optional depth buffer.
  */
 typedef struct DgBitmap {
 	size_t alloc_sz;
 	uint8_t *src;
+	float *depth;
 	uint16_t width;
 	uint16_t height;
 	uint16_t chan;
@@ -67,8 +69,10 @@ bool DgBitmapNew(DgBitmap *bitmap, const uint16_t width, const uint16_t height, 
 void DgBitmapFree(DgBitmap *bitmap);
 void DgBitmapSetFlags(DgBitmap *this, DgBitmapFlags flags);
 DgBitmapFlags DgBitmapGetFlags(DgBitmap *this);
+void DgBitmapSetDepthBuffer(DgBitmap *this, bool enable);
 void DgBitmapDrawPixel(DgBitmap *this, uint16_t x, uint16_t y, DgVec4 colour);
 void DgBitmapGetPixel(DgBitmap * restrict this, uint16_t x, uint16_t y, DgVec4 * restrict colour);
+void DgBitmapDrawLine(DgBitmap * restrict this, DgVec2 pa, DgVec2 pb, DgColour *colour);
 void DgBitmapDrawPoint(DgBitmap *this, float x, float y, float r, DgVec4 colour);
 void DgBitmapDrawConvexPolygon(DgBitmap * restrict this, size_t points_count, DgVec2 * restrict points, DgVec4 * restrict colour);
 void DgBitmapDrawTriangles(DgBitmap * restrict this, size_t count, DgBitmapTriangle * restrict triangles);

@@ -9,6 +9,7 @@
 
 #include <inttypes.h>
 #include <string.h>
+#include <math.h>
 
 #include "rand.h"
 #include "alloc.h"
@@ -86,6 +87,26 @@ static void DgBitmapSwapSimilar(DgBitmap *dest, DgBitmap *from) {
 	from->src = NULL;
 }
 
+static DgVec2I DgBitmapToScreenSpace(DgBitmap *this, DgVec2 point) {
+	/**
+	 * Convert graph (resolution-independent) coordinates to screen space
+	 * coordinates.
+	 * 
+	 * @param this Bitmap object
+	 * @param point Graph coordinates
+	 * @return Coordinates in screen space
+	 */
+	
+	DgVec2I screen;
+	
+	screen.x = (uint32_t)((point.x * (float)(this->width)));
+	screen.y = (uint32_t)((point.y * (float)(this->height)));
+	
+	screen.y = this->height - screen.y - 1;
+	
+	return screen;
+}
+
 void DgBitmapSetFlags(DgBitmap *this, DgBitmapFlags flags) {
 	/**
 	 * Set the flags on a bitmap.
@@ -106,6 +127,31 @@ DgBitmapFlags DgBitmapGetFlags(DgBitmap *this) {
 	 */
 	
 	return this->flags;
+}
+
+void DgBitmapSetDepthBuffer(DgBitmap *this, bool enable) {
+	/**
+	 * Enable or disable the depth buffer.
+	 * 
+	 * @param this Bitmap object
+	 * @param enable Enable (true) or disable (false) the depth buffer
+	 */
+	
+	// If depth buffer is not present and we want to enable
+	if (enable && !this->depth) {
+		// Allocate memory for the depth buffer
+		this->depth = DgAlloc(sizeof *this->depth * this->width * this->height);
+		
+		// Fill the depth buffer with default values
+		for (size_t i = 0; i < this->width * this->height; i++) {
+			this->depth[i] = INFINITY;
+		}
+	}
+	// If depth buffer is present and we want to disable
+	else if (!enable && this->depth) {
+		DgFree(this->depth);
+	}
+	// Otherwise nothing is needed
 }
 
 void DgBitmapDrawPixel(DgBitmap *this, uint16_t x, uint16_t y, DgVec4 colour) {
@@ -146,12 +192,34 @@ void DgBitmapDrawPixel(DgBitmap *this, uint16_t x, uint16_t y, DgVec4 colour) {
 		if (this->chan >= 3) {
 			this->src[pixel_offset + 2] = DG_BITMAP_BLEND(b);
 			if (this->chan >= 4) {
-				this->src[pixel_offset + 3] = (uint8_t) (colour.a * 255.0f);
+				this->src[pixel_offset + 3] = (uint8_t) ((old_colour.a + colour.a) * 255.0f);
 			}
 		}
 	}
 	
 	#undef DG_BITMAP_BLEND
+}
+
+void DgBitmapDrawPixelZ(DgBitmap * restrict this, uint16_t x, uint16_t y, float z, DgVec4 * restrict colour) {
+	/**
+	 * Draw a single pixel to a bitmap.
+	 * 
+	 * @param this Bitmap to draw pixel on
+	 * @param x The x-location of the pixel
+	 * @param y The y-location of the pixel
+	 * @param z The z-location (depth) of the pixel
+	 * @param colour The colour of the pixel
+	 */
+	
+	size_t index = ((this->width * y) + x);
+	
+	if (this->depth && z <= this->depth[index]) {
+		DgBitmapDrawPixel(this, x, y, *colour);
+		this->depth[index] = z;
+	}
+	else if (this->depth == NULL) {
+		DgBitmapDrawPixel(this, x, y, *colour);
+	}
 }
 
 void DgBitmapGetPixel(DgBitmap * restrict this, uint16_t x, uint16_t y, DgVec4 * restrict colour) {
@@ -182,6 +250,77 @@ void DgBitmapGetPixel(DgBitmap * restrict this, uint16_t x, uint16_t y, DgVec4 *
 				colour->a = (((float)this->src[pixel_offset + 3]) * (1.0f/255.0f));
 			}
 		}
+	}
+}
+
+void DgBitmapDrawLine(DgBitmap * restrict this, DgVec2 pa, DgVec2 pb, DgColour *colour) {
+	/**
+	 * Draw a line from a point to another point.
+	 * 
+	 * @note This uses a variant of Bresenham's Line Algorithm. It is an
+	 * incremental error algorithm, which is actually a lot more helpful to know
+	 * compared to seeing an actual implementation. Basically, this means we
+	 * increment x constantly (every time) but only increment y when we have
+	 * collected enough "error" so that it would actually matter if we increment
+	 * y. Basically, this is:
+	 * 
+	 * -- line is in form y = rx + c (more commonly y = mx + b)
+	 * y_error = 0
+	 * 
+	 * foreach x between x_start to x_end do
+	 *     y_error += m -- add the change in y comapred to the change in x to the error
+	 *     
+	 *     if (y_error >= 1) then -- if the error of the change in y is noticable to the rasterised image (>= 1)
+	 *         y += 1
+	 *         y_error -= 1 -- note: we need to keep even the tiny bit of error still there, otherwise
+	 *                      -- we won't be able to draw all slopes. Try changing it to y_error=0 and drawing many
+	 *                      -- different slopes to see the issue that occurs!
+	 *     end
+	 *     
+	 *     draw(x, y)
+	 * end
+	 * 
+	 * This can be reformed to the implementation below for using only integer
+	 * arithmetic and to support vertical lines by swapping x and y for r > 1.
+	 * 
+	 * @warning The wikipedia example is pretty misleading, you don't even need
+	 * to use multiplication. Not sure why it has 1/2 as a constant either ? But
+	 * some other places use that too, maybe its a draw convention issue?
+	 * 
+	 * @param this Bitmap object
+	 * @param pa First point on the line
+	 * @param pb Second point on the line
+	 * @param colour Colour to fill the line with
+	 */
+	
+	DgVec2I a = DgBitmapToScreenSpace(this, pa);
+	DgVec2I b = DgBitmapToScreenSpace(this, pb);
+	
+	// Swap to make a.x the least x value
+	if (a.x > b.x) {
+		DgVec2I c = b;
+		b = a;
+		a = c;
+	}
+	
+	int32_t dx = b.x - a.x;
+	int32_t dy = b.y - a.y;
+	int32_t y = a.y;
+	int32_t error = 0;
+	
+	for (int32_t x = a.x; x <= b.x; x++) {
+		error += dy;
+		
+		if (error >= dx) {
+			y += 1;
+			error -= dx;
+		}
+		else if (error <= -dx) {
+			y -= 1;
+			error += dx;
+		}
+		
+		DgBitmapDrawPixel(this, x, y, *colour);
 	}
 }
 
@@ -377,14 +516,8 @@ void DgBitmapDrawTriangles(DgBitmap * restrict this, size_t count, DgBitmapTrian
 				// Convert point to float
 				DgVec2 point = (DgVec2) {(float)x / (float)this->width, (float)y / (float)this->height};
 				
-				//DgLog(DG_LOG_INFO, "Coords of point [ %.3f, %.3f ]", point.x, point.y);
-				
 				// Get barycentric coordinates
 				DgBary3 bary = DgVec2Bary3(p1, p2, p3, point);
-				
-				//DgLog(DG_LOG_INFO, "Bary ( %.3f : %.3f : %.3f ) = %.3f", bary.u, bary.v, bary.w, bary.u + bary.v + bary.w);
-				
-				//DgLog(DG_LOG_INFO, "Bary after: [ %.3f, %.3f ]", bary.u * p1.x + bary.v * p2.x + bary.w * p3.x, bary.u * p1.y + bary.v * p2.y + bary.w * p3.y);
 				
 				// Check for collision
 				if ((bary.u >= 0.0f) && (bary.v >= 0.0f) && (bary.w >= 0.0f)) {
@@ -392,7 +525,8 @@ void DgBitmapDrawTriangles(DgBitmap * restrict this, size_t count, DgBitmapTrian
 					DgColour c = DgVec4Bary3Evaluate(bary.u, &tri->p1.colour, bary.v, &tri->p2.colour, bary.w, &tri->p3.colour);
 					
 					// Draw the pixel
-					DgBitmapDrawPixel(this, x, y, c);
+					// Interplation should be replaced with perspective correct variant
+					DgBitmapDrawPixelZ(this, x, y, bary.u * tri->p1.position.z + bary.v * tri->p2.position.z + bary.w * tri->p3.position.z, &c);
 				}
 			}
 		}
@@ -410,6 +544,12 @@ void DgBitmapFill(DgBitmap * restrict this, DgVec4 colour) {
 	for (size_t x = 0; x < this->width; x++) {
 		for (size_t y = 0; y < this->height; y++) {
 			DgBitmapDrawPixel(this, x, y, colour);
+		}
+	}
+	
+	if (this->depth != NULL) {
+		for (size_t i = 0; i < this->width * this->height; i++) {
+			this->depth[i] = INFINITY;
 		}
 	}
 }
