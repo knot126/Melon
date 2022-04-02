@@ -296,7 +296,6 @@ void DgBitmapDrawLine(DgBitmap * restrict this, DgVec2 pa, DgVec2 pb, DgColour *
 	DgVec2I a = DgBitmapToScreenSpace(this, pa);
 	DgVec2I b = DgBitmapToScreenSpace(this, pb);
 	
-	// Swap to make a.x the least x value
 	if (a.x > b.x) {
 		DgVec2I c = b;
 		b = a;
@@ -305,22 +304,61 @@ void DgBitmapDrawLine(DgBitmap * restrict this, DgVec2 pa, DgVec2 pb, DgColour *
 	
 	int32_t dx = b.x - a.x;
 	int32_t dy = b.y - a.y;
-	int32_t y = a.y;
 	int32_t error = 0;
 	
-	for (int32_t x = a.x; x <= b.x; x++) {
-		error += dy;
+	// For lines with y'(x) in the range [-1, 1] use x increment
+	if ((dx >= 0) ? ((-dx <= dy) && (dy < dx)) : ((-dx >= dy) && (dy >= dx))) {
+		// Starting y value
+		int32_t y = a.y;
 		
-		if (error >= dx) {
-			y += 1;
-			error -= dx;
+		// Loop over each x value
+		for (int32_t x = a.x; x <= b.x; x++) {
+			// Add the error for this increment in y
+			error += dy;
+			
+			// Increment y if error is significant
+			if (error >= dx) {
+				y += 1;
+				error -= dx;
+			}
+			else if (error <= -dx) {
+				y -= 1;
+				error += dx;
+			}
+			
+			// Plot pixel for this x value
+			DgBitmapDrawPixel(this, x, y, *colour);
 		}
-		else if (error <= -dx) {
-			y -= 1;
+	}
+	// For lines outside of that range, use y increment
+	else {
+		// Recalculate min and max
+		if (a.y > b.y) {
+			DgVec2I c = b;
+			b = a;
+			a = c;
+		}
+		
+		// Recalculate deltas
+		dx = b.x - a.x;
+		dy = b.y - a.y;
+		
+		int32_t x = a.x;
+		
+		for (int32_t y = a.y; y <= b.y; y++) {
 			error += dx;
+			
+			if (error >= dy) {
+				x += 1;
+				error -= dy;
+			}
+			else if (error <= -dy) {
+				x -= 1;
+				error += dy;
+			}
+			
+			DgBitmapDrawPixel(this, x, y, *colour);
 		}
-		
-		DgBitmapDrawPixel(this, x, y, *colour);
 	}
 }
 
