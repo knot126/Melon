@@ -579,8 +579,8 @@ void DgBitmapFill(DgBitmap * restrict this, DgVec4 colour) {
 	 * @param colour The colour to fill the image with
 	 */
 	
-	for (size_t x = 0; x < this->width; x++) {
-		for (size_t y = 0; y < this->height; y++) {
+	for (size_t y = 0; y < this->height; y++) {
+		for (size_t x = 0; x < this->width; x++) {
 			DgBitmapDrawPixel(this, x, y, colour);
 		}
 	}
