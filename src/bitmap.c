@@ -154,7 +154,7 @@ void DgBitmapSetDepthBuffer(DgBitmap *this, bool enable) {
 	// Otherwise nothing is needed
 }
 
-void DgBitmapDrawPixel(DgBitmap *this, uint16_t x, uint16_t y, DgVec4 colour) {
+void DgBitmapDrawPixel(DgBitmap *this, uint16_t x, uint16_t y, DgColour colour) {
 	/**
 	 * Draw a single pixel to a bitmap.
 	 * 
@@ -169,13 +169,13 @@ void DgBitmapDrawPixel(DgBitmap *this, uint16_t x, uint16_t y, DgVec4 colour) {
 	}
 	
 	// Old colour for alpha blending
-	DgVec4 old_colour;
+	DgColour old_colour;
 	
 	if ((this->flags & DG_BITMAP_DRAWING_ALPHA) == DG_BITMAP_DRAWING_ALPHA) {
 		DgBitmapGetPixel(this, x, y, &old_colour);
 	}
 	else {
-		old_colour = (DgVec4) {1.0f, 1.0f, 1.0f, 1.0f};
+		old_colour = (DgColour) {1.0f, 1.0f, 1.0f, 1.0f};
 	}
 	
 	// Invert for graph-like coordinates
@@ -200,7 +200,7 @@ void DgBitmapDrawPixel(DgBitmap *this, uint16_t x, uint16_t y, DgVec4 colour) {
 	#undef DG_BITMAP_BLEND
 }
 
-void DgBitmapDrawPixelZ(DgBitmap * restrict this, uint16_t x, uint16_t y, float z, DgVec4 * restrict colour) {
+void DgBitmapDrawPixelZ(DgBitmap * restrict this, uint16_t x, uint16_t y, float z, DgColour * restrict colour) {
 	/**
 	 * Draw a single pixel to a bitmap.
 	 * 
@@ -222,7 +222,7 @@ void DgBitmapDrawPixelZ(DgBitmap * restrict this, uint16_t x, uint16_t y, float 
 	}
 }
 
-void DgBitmapGetPixel(DgBitmap * restrict this, uint16_t x, uint16_t y, DgVec4 * restrict colour) {
+void DgBitmapGetPixel(DgBitmap * restrict this, uint16_t x, uint16_t y, DgColour * restrict colour) {
 	/**
 	 * Get a pixel from a bitmap.
 	 * 
@@ -362,7 +362,7 @@ void DgBitmapDrawLine(DgBitmap * restrict this, DgVec2 pa, DgVec2 pb, DgColour *
 	}
 }
 
-void DgBitmapDrawPoint(DgBitmap * restrict this, float x, float y, float r, DgVec4 colour) {
+void DgBitmapDrawPoint(DgBitmap * restrict this, float x, float y, float r, DgColour colour) {
 	/**
 	 * Draw a dot to the bitmap at the given coordinates with r radius.
 	 * 
@@ -413,7 +413,7 @@ static bool DgBitmapIsInLineSame(DgVec2 *a, DgVec2 *b, DgVec2 *c, DgVec2 *d) {
 	return (sa == sb);
 }
 
-void DgBitmapDrawConvexPolygon(DgBitmap * restrict this, size_t points_count, DgVec2 * restrict points, DgVec4 * restrict colour) {
+void DgBitmapDrawConvexPolygon(DgBitmap * restrict this, size_t points_count, DgVec2 * restrict points, DgColour * restrict colour) {
 	/**
 	 * Draw a convex polygon given its verticies and colour.
 	 * 
@@ -571,7 +571,7 @@ void DgBitmapDrawTriangles(DgBitmap * restrict this, size_t count, DgBitmapTrian
 	}
 }
 
-void DgBitmapFill(DgBitmap * restrict this, DgVec4 colour) {
+void DgBitmapFill(DgBitmap * restrict this, DgColour colour) {
 	/**
 	 * Fill a bitmap with a given colour.
 	 * 
