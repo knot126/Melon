@@ -16,6 +16,8 @@ enum {
 	DG_BITMAP_DRAWING_ALPHA = (1 << 0),
 	DG_BITMAP_DRAWING_DEPTH = (1 << 1),
 	DG_BITMAP_DRAWING_PERSPECTIVE = (1 << 2),
+	DG_BITMAP_DRAWING_NEGATE_Z = (1 << 3),
+	DG_BITMAP_NO_CORRECT_COORDINATES = (1 << 4),
 };
 
 typedef uint16_t DgBitmapFlags;
@@ -31,6 +33,22 @@ typedef struct DgBitmapVertex {
 	DgVec2 texture;
 	DgColour colour;
 } DgBitmapVertex;
+
+/**
+ * Index
+ * =====
+ * 
+ * An index used for pointing to offsets of verticies so that geometry can be
+ * stored using less space.
+ */
+typedef struct DgBitmapIndex {
+	union {
+		struct {
+			uint32_t a, b, c;
+		};
+		uint32_t data[3];
+	};
+} DgBitmapIndex;
 
 /**
  * Triangle
@@ -76,5 +94,6 @@ void DgBitmapDrawLine(DgBitmap * restrict this, DgVec2 pa, DgVec2 pb, DgColour *
 void DgBitmapDrawPoint(DgBitmap *this, float x, float y, float r, DgColour colour);
 void DgBitmapDrawConvexPolygon(DgBitmap * restrict this, size_t points_count, DgVec2 * restrict points, DgColour * restrict colour);
 void DgBitmapDrawTriangles(DgBitmap * restrict this, size_t count, DgBitmapTriangle * restrict triangles);
+void DgBitmapDrawTrianglesIndexed(DgBitmap * restrict this, size_t count, DgBitmapIndex * restrict indexes, DgBitmapVertex * restrict vertexes);
 void DgBitmapFill(DgBitmap * restrict this, DgColour colour);
 void DgBitmapWritePPM(DgBitmap *this, const char * const filepath);

@@ -116,4 +116,6 @@ uint32_t DgOBJFree(DgOBJMesh *mesh) {
 	
 	DgFree(mesh->vertex);
 	DgFree(mesh->face);
+	
+	return 0;
 }

@@ -213,7 +213,7 @@ void DgBitmapDrawPixelZ(DgBitmap * restrict this, uint16_t x, uint16_t y, float 
 	
 	size_t index = ((this->width * y) + x);
 	
-	if (this->depth && z <= this->depth[index]) {
+	if (this->depth && index < (this->width * this->height) && z <= this->depth[index] && z >= 0.0f) {
 		DgBitmapDrawPixel(this, x, y, *colour);
 		this->depth[index] = z;
 	}
@@ -313,83 +313,6 @@ void DgBitmapDrawLine(DgBitmap * restrict this, DgVec2 pa, DgVec2 pb, DgColour *
 		
 		// Loop over each x value
 		for (int32_t x = a.x; x <= b.x; x++) {
-			// Add the error for this increment in y
-			error += dy;
-			
-			// Increment y if error is significant
-			if (error >= dx) {
-				y += 1;
-				error -= dx;
-			}
-			else if (error <= -dx) {
-				y -= 1;
-				error += dx;
-			}
-			
-			// Plot pixel for this x value
-			DgBitmapDrawPixel(this, x, y, *colour);
-		}
-	}
-	// For lines outside of that range, use y increment
-	else {
-		// Recalculate min and max
-		if (a.y > b.y) {
-			DgVec2I c = b;
-			b = a;
-			a = c;
-		}
-		
-		// Recalculate deltas
-		dx = b.x - a.x;
-		dy = b.y - a.y;
-		
-		int32_t x = a.x;
-		
-		for (int32_t y = a.y; y <= b.y; y++) {
-			error += dx;
-			
-			if (error >= dy) {
-				x += 1;
-				error -= dy;
-			}
-			else if (error <= -dy) {
-				x -= 1;
-				error += dy;
-			}
-			
-			DgBitmapDrawPixel(this, x, y, *colour);
-		}
-	}
-}
-
-void DgBitmapDrawCurve1(DgBitmap * restrict this, DgVec2 pa, DgVec2 pb, DgVec2 pc, DgColour *colour) {
-	/**
-	 * DgBitmapDrawCurve1
-	 */
-	
-	DgVec2I a = DgBitmapToScreenSpace(this, pa);
-	DgVec2I b = DgBitmapToScreenSpace(this, pb);
-	
-	if (a.x > b.x) {
-		DgVec2I c = b;
-		b = a;
-		a = c;
-	}
-	
-	int32_t dx = b.x - a.x;
-	int32_t dy = b.y - a.y;
-	int32_t error = 0;
-	
-	// For lines with y'(x) in the range [-1, 1] use x increment
-	if ((dx >= 0) ? ((-dx <= dy) && (dy < dx)) : ((-dx >= dy) && (dy >= dx))) {
-		// Starting y value
-		int32_t y = a.y;
-		
-		// Loop over each x value
-		for (int32_t x = a.x; x <= b.x; x++) {
-			// CURVE
-			dy += 1;
-			
 			// Add the error for this increment in y
 			error += dy;
 			
@@ -573,92 +496,136 @@ void DgBitmapDrawConvexPolygon(DgBitmap * restrict this, size_t points_count, Dg
 	}
 }
 
+inline static void DgBitmapDrawTriangle(DgBitmap * const this, DgBitmapTriangle *triangle) {
+	/**
+	 * Draw a single shaded triangle.
+	 * 
+	 * @param this Bitmap object
+	 * @param triangle Triangle to draw
+	 */
+	
+	// Negate Z coordinate if needed
+	if ((this->flags & DG_BITMAP_DRAWING_NEGATE_Z) == DG_BITMAP_DRAWING_NEGATE_Z) {
+		triangle->p1.position.z = -triangle->p1.position.z;
+		triangle->p2.position.z = -triangle->p2.position.z;
+		triangle->p3.position.z = -triangle->p3.position.z;
+	}
+	
+	// Find 2D coordinates on screen
+	DgVec2 p1, p2, p3;
+	
+	if ((this->flags & DG_BITMAP_DRAWING_PERSPECTIVE) == DG_BITMAP_DRAWING_PERSPECTIVE) {
+		// Perspective enabled
+		if ((this->flags & DG_BITMAP_NO_CORRECT_COORDINATES) == DG_BITMAP_NO_CORRECT_COORDINATES) {
+			p1.x = ((triangle->p1.position.x) / triangle->p1.position.z);
+			p1.y = ((triangle->p1.position.y) / triangle->p1.position.z);
+			p2.x = ((triangle->p2.position.x) / triangle->p2.position.z);
+			p2.y = ((triangle->p2.position.y) / triangle->p2.position.z);
+			p3.x = ((triangle->p3.position.x) / triangle->p3.position.z);
+			p3.y = ((triangle->p3.position.y) / triangle->p3.position.z);
+		}
+		else {
+			p1.x = (((triangle->p1.position.x) / triangle->p1.position.z) * 0.5f) + 0.5f;
+			p1.y = (((triangle->p1.position.y) / triangle->p1.position.z) * 0.5f) + 0.5f;
+			p2.x = (((triangle->p2.position.x) / triangle->p2.position.z) * 0.5f) + 0.5f;
+			p2.y = (((triangle->p2.position.y) / triangle->p2.position.z) * 0.5f) + 0.5f;
+			p3.x = (((triangle->p3.position.x) / triangle->p3.position.z) * 0.5f) + 0.5f;
+			p3.y = (((triangle->p3.position.y) / triangle->p3.position.z) * 0.5f) + 0.5f;
+		}
+	}
+	else {
+		// Perspective disabled
+		p1.x = triangle->p1.position.x;
+		p1.y = triangle->p1.position.y;
+		p2.x = triangle->p2.position.x;
+		p2.y = triangle->p2.position.y;
+		p3.x = triangle->p3.position.x;
+		p3.y = triangle->p3.position.y;
+	}
+	
+	// Compute min and max coordinates
+	DgVec2 min, max;
+	
+	min.x = DgFloatMin3(p1.x, p2.x, p3.x);
+	min.y = DgFloatMin3(p1.y, p2.y, p3.y);
+	max.x = DgFloatMax3(p1.x, p2.x, p3.x);
+	max.y = DgFloatMax3(p1.y, p2.y, p3.y);
+	
+	// Calculate integer min/max
+	DgVec2I pmin, pmax;
+	
+	pmin.x = (uint32_t)(min.x * (float)(this->width));
+	pmin.y = (uint32_t)(min.y * (float)(this->height));
+	pmax.x = (uint32_t)(max.x * (float)(this->width));
+	pmax.y = (uint32_t)(max.y * (float)(this->height));
+	
+	// Precompute inverse z
+	float p1z_inv = 1.0f / triangle->p1.position.z;
+	float p2z_inv = 1.0f / triangle->p2.position.z;
+	float p3z_inv = 1.0f / triangle->p3.position.z;
+	
+	// Fill in the pixels
+	for (size_t y = pmin.y; y <= pmax.y; y++) {
+		for (size_t x = pmin.x; x <= pmax.x; x++) {
+			// Convert point to float
+			DgVec2 point = (DgVec2) {(float)x / (float)this->width, (float)y / (float)this->height};
+			
+			// Get barycentric coordinates
+			DgBary3 bary = DgVec2Bary3(p1, p2, p3, point);
+			
+			// Check for collision
+			if ((bary.u >= 0.0f) && (bary.v >= 0.0f) && (bary.w >= 0.0f)) {
+				// Calculate z at this spot
+				float inv_z = bary.u * p1z_inv + bary.v * p2z_inv + bary.w * p3z_inv;
+				float z = 1.0f / inv_z;
+				
+				// Multiply by 1/z for perspective correct interpolation
+				DgVec4 pa = DgVec4Scale(inv_z, triangle->p1.colour);
+				DgVec4 pb = DgVec4Scale(inv_z, triangle->p2.colour);
+				DgVec4 pc = DgVec4Scale(inv_z, triangle->p3.colour);
+				
+				// Evaluate pixel colour based on barycentric coordinates
+				DgColour c = DgVec4Scale(z, DgVec4Bary3Evaluate(bary.u, &pa, bary.v, &pb, bary.w, &pc));
+				
+				// Draw the pixel
+				// Interplation should be replaced with perspective correct variant
+				DgBitmapDrawPixelZ(this, x, y, z, &c);
+			}
+		}
+	}
+}
+
 void DgBitmapDrawTriangles(DgBitmap * restrict this, size_t count, DgBitmapTriangle * restrict triangles) {
 	/**
-	 * Draw a shaded triangle.
+	 * Draw multipule shaded triangles.
 	 * 
 	 * @param this Bitmap object to draw to
 	 * @param count Number of triangles to draw
 	 * @param triangles Array of triangles to draw
 	 */
 	
-	DgVec2 min, max;
-	
 	for (size_t t = 0; t < count; t++) {
-		DgBitmapTriangle *tri = &triangles[t];
-		
-		// Find 2D coordinates on screen
-		DgVec2 p1, p2, p3;
-		
-		if ((this->flags & DG_BITMAP_DRAWING_PERSPECTIVE) == DG_BITMAP_DRAWING_PERSPECTIVE) {
-			// Perspective enabled
-			p1.x = (((tri->p1.position.x) / tri->p1.position.z) * 0.5f) + 0.5f;
-			p1.y = (((tri->p1.position.y) / tri->p1.position.z) * 0.5f) + 0.5f;
-			p2.x = (((tri->p2.position.x) / tri->p2.position.z) * 0.5f) + 0.5f;
-			p2.y = (((tri->p2.position.y) / tri->p2.position.z) * 0.5f) + 0.5f;
-			p3.x = (((tri->p3.position.x) / tri->p3.position.z) * 0.5f) + 0.5f;
-			p3.y = (((tri->p3.position.y) / tri->p3.position.z) * 0.5f) + 0.5f;
-		}
-		else {
-			// Perspective disabled
-			p1.x = tri->p1.position.x;
-			p1.y = tri->p1.position.y;
-			p2.x = tri->p2.position.x;
-			p2.y = tri->p2.position.y;
-			p3.x = tri->p3.position.x;
-			p3.y = tri->p3.position.y;
-		}
-		
-		// Compute min and max coordinates
-		DgVec2 min, max;
-		
-		min.x = DgFloatMin3(p1.x, p2.x, p3.x);
-		min.y = DgFloatMin3(p1.y, p2.y, p3.y);
-		max.x = DgFloatMax3(p1.x, p2.x, p3.x);
-		max.y = DgFloatMax3(p1.y, p2.y, p3.y);
-		
-		// Calculate integer min/max
-		DgVec2I pmin, pmax;
-		
-		pmin.x = (uint32_t)(min.x * (float)(this->width));
-		pmin.y = (uint32_t)(min.y * (float)(this->height));
-		pmax.x = (uint32_t)(max.x * (float)(this->width));
-		pmax.y = (uint32_t)(max.y * (float)(this->height));
-		
-		// Precompute inverse z
-		float p1z_inv = 1.0f / tri->p1.position.z;
-		float p2z_inv = 1.0f / tri->p2.position.z;
-		float p3z_inv = 1.0f / tri->p3.position.z;
-		
-		// Fill in the pixels
-		for (size_t y = pmin.y; y <= pmax.y; y++) {
-			for (size_t x = pmin.x; x <= pmax.x; x++) {
-				// Convert point to float
-				DgVec2 point = (DgVec2) {(float)x / (float)this->width, (float)y / (float)this->height};
-				
-				// Get barycentric coordinates
-				DgBary3 bary = DgVec2Bary3(p1, p2, p3, point);
-				
-				// Check for collision
-				if ((bary.u >= 0.0f) && (bary.v >= 0.0f) && (bary.w >= 0.0f)) {
-					// Calculate z at this spot
-					float inv_z = bary.u * p1z_inv + bary.v * p2z_inv + bary.w * p3z_inv;
-					float z = 1.0f / inv_z;
-					
-					// Multiply by 1/z for perspective correct interpolation
-					DgVec4 pa = DgVec4Scale(inv_z, tri->p1.colour);
-					DgVec4 pb = DgVec4Scale(inv_z, tri->p2.colour);
-					DgVec4 pc = DgVec4Scale(inv_z, tri->p3.colour);
-					
-					// Evaluate pixel colour based on barycentric coordinates
-					DgColour c = DgVec4Scale(z, DgVec4Bary3Evaluate(bary.u, &pa, bary.v, &pb, bary.w, &pc));
-					
-					// Draw the pixel
-					// Interplation should be replaced with perspective correct variant
-					DgBitmapDrawPixelZ(this, x, y, z, &c);
-				}
-			}
-		}
+		DgBitmapDrawTriangle(this, &triangles[t]);
+	}
+}
+
+void DgBitmapDrawTrianglesIndexed(DgBitmap * restrict this, size_t count, DgBitmapIndex * restrict indexes, DgBitmapVertex * restrict vertexes) {
+	/**
+	 * Draw multipule shaded triangles using indexes.
+	 * 
+	 * @param this Bitmap object
+	 * @param count Number of indexes to draw
+	 * @param indexes Indexes of triangle vertexes
+	 * @param vertexes Points on the triangles
+	 */
+	
+	DgBitmapTriangle triangle;
+	
+	for (size_t i = 0; i < count; i++) {
+		triangle.data[0] = vertexes[indexes[i].data[0]];
+		triangle.data[1] = vertexes[indexes[i].data[1]];
+		triangle.data[2] = vertexes[indexes[i].data[2]];
+		DgBitmapDrawTriangle(this, &triangle);
 	}
 }
 

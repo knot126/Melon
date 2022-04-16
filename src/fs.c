@@ -124,11 +124,11 @@ DgFile DgFileOpen2(const char * const filepath, DgFileStreamFlags flags) {
 }
 
 DgFileStream* DgFileStreamReopen(DgFileStream* stream, char* path, char* permissions) {
-	
+	return NULL;
 }
 
 DgFileStream* DgChangeStreamPermissions(DgFileStream* stream, char* permissions) {
-	
+	return NULL;
 }
 
 void DgFileStreamClose(DgFileStream* stream) {
