@@ -266,6 +266,8 @@ unsigned char *DgFileStreamLoad(DgFile stream) {
 	 * @return Data loaded from file
 	 */
 	
+	DgLog(DG_LOG_WARNING, "Using DgFileStreamLoad which does not have any protections against bad data. Please use uint8_t *DgFileLoad(path, content_size) instead !!");
+	
 	size_t size = DgFileStreamLength(stream);
 	
 	unsigned char *data = (unsigned char *) DgAlloc(size);
@@ -275,6 +277,51 @@ unsigned char *DgFileStreamLoad(DgFile stream) {
 	}
 	
 	DgFileStreamRead(stream, size, data);
+	
+	return data;
+}
+
+uint8_t *DgFileLoad(const char * restrict path, size_t *content_size) {
+	/**
+	 * Load a file into memory and return the buffer that was created.
+	 * 
+	 * @note If you are processing a **trusted** text file, then it is safe to
+	 * provide NULL to content_size and a NUL char will be appended to the end.
+	 * 
+	 * @param stream File stream handle
+	 * @return Data loaded from file on success, or NULL on failure
+	 */
+	
+	// Open stream
+	DgFile stream = DgFileOpen2(path, DG_FILE_STREAM_READ);
+	
+	if (!stream) {
+		return stream;
+	}
+	
+	// Read stream size
+	size_t size = DgFileStreamLength(stream);
+	
+	if (content_size != NULL) {
+		*content_size = size;
+	}
+	
+	// Allocate room for data plus NUL char
+	unsigned char *data = (unsigned char *) DgAlloc(size + 1);
+	
+	if (!data) {
+		DgFileStreamClose(stream);
+		return NULL;
+	}
+	
+	// Read data in
+	DgFileStreamRead(stream, size, data);
+	
+	// Write NUL char to end
+	data[size] = '\0';
+	
+	// Close stream
+	DgFileStreamClose(stream);
 	
 	return data;
 }
@@ -346,6 +393,7 @@ void DgMkdir(char* path) {
 	 * 
 	 * @param path Path to the directory to create
 	 */
+	
 #if defined(__linux__)
 	mkdir(path, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 #else

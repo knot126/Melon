@@ -13,12 +13,16 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-#include <SDL2/SDL.h>
+#if !defined(DG_NO_SDL)
+	#include <SDL2/SDL.h>
+#endif
 
 #include "maths.h"
 #include "bitmap.h"
 
 #include "window.h"
+
+#if !defined(DG_NO_SDL)
 
 uint32_t gWindowCount_ = 0;
 
@@ -93,3 +97,19 @@ int32_t DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
 	
 	return SDL_UpdateWindowSurface(this->window) ? 1 : 0;
 }
+
+#else
+
+uint32_t DgWindowInit(DgWindow *this, const char *title, DgVec2I size) {
+	return 0;
+}
+
+void DgWindowFree(DgWindow *this) {
+	return;
+}
+
+int32_t DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
+	return 1;
+}
+
+#endif

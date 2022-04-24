@@ -10,7 +10,9 @@
 #include <inttypes.h>
 #include <stddef.h>
 
-#include <SDL2/SDL.h>
+#if !defined(DG_NO_SDL)
+	#include <SDL2/SDL.h>
+#endif
 
 #include "maths.h"
 
@@ -21,8 +23,10 @@
  * A window contains information needed to maintain a window.
  */
 typedef struct DgWindow {
+#if !defined(DG_NO_SDL)
 	SDL_Window *window;
 	SDL_Surface *surface;
+#endif
 	DgVec2I size;
 } DgWindow;
 
