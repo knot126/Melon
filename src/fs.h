@@ -31,6 +31,7 @@ typedef struct DgFileStream {
 typedef DgFileStream * DgFile;
 
 void DgInitPaths(uint32_t fail_mode);
+void DgInitPaths2(const char * restrict assets);
 char* DgEvalPath(char* path);
 DgFileStream* DgFileStreamOpen(char* path, char* permissions);
 DgFile DgFileOpen2(const char * const filepath, DgFileStreamFlags flags);

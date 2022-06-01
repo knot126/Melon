@@ -16,10 +16,7 @@
 
 #include "args.h"
 
-DgArgs DG_CMD_ARGS_;
-DgArgs *DG_CMD_ARGS;
-
-void DgArgParse(const int argc, char ** const restrict argv) {
+void DgArgParse(DgArgs * restrict this, const int argc, char ** const restrict argv) {
 	/**
 	 * Parse the given argumets into the global arguments structure. This could
 	 * be changed to use a non-global object, but I think a protected strcture
@@ -28,15 +25,6 @@ void DgArgParse(const int argc, char ** const restrict argv) {
 	 * @param argc Number of arguments to parse
 	 * @param argv Array of arguments
 	 */
-	
-	if (!DG_CMD_ARGS) {
-		DG_CMD_ARGS = &DG_CMD_ARGS_;
-		// memset(DG_CMD_ARGS, 0, sizeof(DgArgs)); not needed when statically alloced
-	}
-	else {
-		DgLog(DG_LOG_WARNING, "Tried to parse arguments when they are already loaded.");
-		return; // already parsed
-	}
 	
 	// NOTE: We start at the first real argument, not the name of the exec...
 	for (size_t i = 1; i < argc; i++) {
@@ -56,10 +44,10 @@ void DgArgParse(const int argc, char ** const restrict argv) {
 			i--;
 		}
 		
-		DG_CMD_ARGS->pairs_count++;
-		DG_CMD_ARGS->pairs = DgRealloc(DG_CMD_ARGS->pairs, sizeof(DgArgPair) * DG_CMD_ARGS->pairs_count);
+		this->pairs_count++;
+		this->pairs = DgRealloc(this->pairs, sizeof(DgArgPair) * this->pairs_count);
 		
-		if (!DG_CMD_ARGS->pairs) {
+		if (!this->pairs) {
 			DgLog(DG_LOG_ERROR, "Memory allocation error whilst parsing command line arguments.");
 			return;
 		}
@@ -67,37 +55,33 @@ void DgArgParse(const int argc, char ** const restrict argv) {
 		// skip the initial dashes for an argument
 		next += DgStrspn(next, "-");
 		
-		DG_CMD_ARGS->pairs[DG_CMD_ARGS->pairs_count - 1].key = DgStrdup(next);
+		this->pairs[this->pairs_count - 1].key = DgStrdup(next);
 		// strdup(NULL) is undefined behaviour, so we need to do a test.
-		DG_CMD_ARGS->pairs[DG_CMD_ARGS->pairs_count - 1].value = (value) ? DgStrdup(value) : NULL;
+		this->pairs[this->pairs_count - 1].value = (value) ? DgStrdup(value) : NULL;
 	}
 }
 
-void DgArgFree(void) {
+void DgArgFree(DgArgs * restrict this) {
 	/**
 	 * Free the command line arguments list.
 	 */
 	
-	if (!DG_CMD_ARGS) {
-		return;
-	}
-	
-	if (DG_CMD_ARGS->pairs) {
-		for (size_t i = 0; i < DG_CMD_ARGS->pairs_count; i++) {
-			if (DG_CMD_ARGS->pairs[i].key) {
-				DgFree(DG_CMD_ARGS->pairs[i].key);
+	if (this->pairs) {
+		for (size_t i = 0; i < this->pairs_count; i++) {
+			if (this->pairs[i].key) {
+				DgFree(this->pairs[i].key);
 			}
 			
-			if (DG_CMD_ARGS->pairs[i].value) {
-				DgFree(DG_CMD_ARGS->pairs[i].value);
+			if (this->pairs[i].value) {
+				DgFree(this->pairs[i].value);
 			}
 		}
 		
-		DgFree(DG_CMD_ARGS->pairs);
+		DgFree(this->pairs);
 	}
 }
 
-bool DgArgGetFlag(const char * const restrict flag) {
+bool DgArgGetFlag(DgArgs * restrict this, const char * const restrict flag) {
 	/**
 	 * Return true if a flag exsists, false otherwise.
 	 * 
@@ -105,8 +89,8 @@ bool DgArgGetFlag(const char * const restrict flag) {
 	 * @return If the flags exists or not
 	 */
 	
-	for (size_t i = 0; i < DG_CMD_ARGS->pairs_count; i++) {
-		if (!strcmp(DG_CMD_ARGS->pairs[i].key, flag)) {
+	for (size_t i = 0; i < this->pairs_count; i++) {
+		if (!strcmp(this->pairs[i].key, flag)) {
 			return true;
 		}
 	}
@@ -114,7 +98,7 @@ bool DgArgGetFlag(const char * const restrict flag) {
 	return false;
 }
 
-const char *DgArgGetValue(const char * const restrict flag) {
+const char *DgArgGetValue(DgArgs * restrict this, const char * const restrict flag) {
 	/**
 	 * Return pointer to a string value if the flag exsits and has a value, 
 	 * otherwise returns NULL.
@@ -123,16 +107,16 @@ const char *DgArgGetValue(const char * const restrict flag) {
 	 * @return String of the argument content
 	 */
 	
-	for (size_t i = 0; i < DG_CMD_ARGS->pairs_count; i++) {
-		if (!strcmp(DG_CMD_ARGS->pairs[i].key, flag)) {
-			return DG_CMD_ARGS->pairs[i].value;
+	for (size_t i = 0; i < this->pairs_count; i++) {
+		if (!strcmp(this->pairs[i].key, flag)) {
+			return this->pairs[i].value;
 		}
 	}
 	
 	return NULL;
 }
 
-const char *DgArgGetValue2(const char * const restrict flag, const char * const restrict fallback) {
+const char *DgArgGetValue2(DgArgs * restrict this, const char * const restrict flag, const char * const restrict fallback) {
 	/**
 	 * The the value of flag, otherwise return a fallback, even if the argument
 	 * exsits.
@@ -146,9 +130,9 @@ const char *DgArgGetValue2(const char * const restrict flag, const char * const 
 	
 	char *ptr = NULL;
 	
-	for (size_t i = 0; i < DG_CMD_ARGS->pairs_count; i++) {
-		if (!strcmp(DG_CMD_ARGS->pairs[i].key, flag)) {
-			ptr = DG_CMD_ARGS->pairs[i].value;
+	for (size_t i = 0; i < this->pairs_count; i++) {
+		if (!strcmp(this->pairs[i].key, flag)) {
+			ptr = this->pairs[i].value;
 			break;
 		}
 	}
@@ -161,14 +145,14 @@ const char *DgArgGetValue2(const char * const restrict flag, const char * const 
 	}
 }
 
-void DgArgPrint(void) {
+void DgArgPrint(DgArgs * restrict this) {
 	/**
 	 * Print loaded arguments
 	 * 
 	 * @warning Only use after arguments have been initialised
 	 */
 	
-	for (size_t i = 0; i < DG_CMD_ARGS->pairs_count; i++) {
-		DgLog(DG_LOG_VERBOSE, "arg %d = %s -> %s", i, DG_CMD_ARGS->pairs[i].key, DG_CMD_ARGS->pairs[i].value);
+	for (size_t i = 0; i < this->pairs_count; i++) {
+		DgLog(DG_LOG_VERBOSE, "arg %d = %s -> %s", i, this->pairs[i].key, this->pairs[i].value);
 	}
 }

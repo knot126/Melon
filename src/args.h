@@ -17,10 +17,10 @@ typedef struct DgArgs {
 	size_t     pairs_count;
 } DgArgs;
 
-void DgArgParse(const int argc, char ** const restrict argv);
-void DgArgFree(void);
+void DgArgParse(DgArgs * restrict this, const int argc, char ** const restrict argv);
+void DgArgFree(DgArgs * restrict this);
 
-bool DgArgGetFlag(const char * const restrict flag);
-const char *DgArgGetValue(const char * const restrict flag);
-const char *DgArgGetValue2(const char * const restrict flag, const char * const restrict fallback);
-void DgArgPrint(void);
+bool DgArgGetFlag(DgArgs * restrict this, const char * const restrict flag);
+const char *DgArgGetValue(DgArgs * restrict this, const char * const restrict flag);
+const char *DgArgGetValue2(DgArgs * restrict this, const char * const restrict flag, const char * const restrict fallback);
+void DgArgPrint(DgArgs * restrict this);

@@ -42,7 +42,12 @@ const char *dg_special_directory_paths[3] = {
 
 void DgInitPaths(uint32_t fail_mode) {
 	/**
-	 * This will initialise the paths in dg_special_directory_paths.
+	 * This will initialise the paths in dg_special_directory_paths using
+	 * automatic pathfinding.
+	 * 
+	 * @deprecated Use file systems instead
+	 * 
+	 * @param fail_mode
 	 */
 	
 	// Assets path
@@ -58,6 +63,15 @@ void DgInitPaths(uint32_t fail_mode) {
 	if (!dg_special_directory_paths[0]) {
 		DgLog(DG_LOG_WARNING, "Failed to initialise legacy filesystem directory paths.");
 	}
+}
+
+void DgInitPaths2(const char * restrict assets) {
+	/**
+	 * This will initialise the paths in dg_special_directory_paths using
+	 * specified paths.
+	 */
+	
+	dg_special_directory_paths[0] = assets;
 }
 
 DgFileStream* DgFileStreamOpen(char* path, char* permissions) {
