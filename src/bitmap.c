@@ -406,28 +406,48 @@ void DgBitmapDrawQuadraticBezier(DgBitmap * restrict this, DgVec2 p0, DgVec2 p1,
 	// Precompute a and b values
 	float a = p0.x - 2.0f * p1.x + p2.x;
 	float b = 2.0f * (p1.x - p0.x);
+	DgVec2 prev_t = DgBitmapDrawQuadraticBezier_Roots(a, b, p0.x - min_x - 1);
+	DgVec2 t = DgBitmapDrawQuadraticBezier_Roots(a, b, p0.x - min_x);
+	DgVec2 next_t;
 	
 	// Loop over each pixel with the curve
 	for (size_t x = min_x; x <= max_x; x++) {
 		// Find t-value(s) for the next x so we know where to stop drawing
-		float c = p0.x - x;
-		DgVec2 roots = DgBitmapDrawQuadraticBezier_Roots(a, b, c);
-		float t0 = roots.x;
-		float t1 = roots.y;
+		next_t = DgBitmapDrawQuadraticBezier_Roots(a, b, p0.x - x + 1.0f);
 		
+		/// @todo Don't Repeat Yourself
 		// Evaluate y value(s) at this point
 		// Don't need to worry about NaN for square roots
-		if (0.0f <= t0 && t0 <= 1.0f) {
-			// Find y
-			int16_t y = DgBitmapDrawQuadraticBezier_Eval(t0, p0.y, p1.y, p2.y);
-			DgBitmapDrawPixel(this, x, y, *colour);
+		if (0.0f <= t.data[0] && t.data[0] <= 1.0f) {
+			// Find y and the direction to increment in
+			int16_t prev_y = DgBitmapDrawQuadraticBezier_Eval(prev_t.data[0], p0.y, p1.y, p2.y);
+			int16_t y = DgBitmapDrawQuadraticBezier_Eval(t.data[0], p0.y, p1.y, p2.y);
+			int16_t next_y = DgBitmapDrawQuadraticBezier_Eval(next_t.data[0], p0.y, p1.y, p2.y);
+			int16_t direction = (next_y >= y) ? (1) : (-1);
+			
+			// Draw pixels until next y is reached
+			do {
+				DgBitmapDrawPixel(this, x, y, *colour);
+				y += direction;
+			} while ((direction >= 0) ? ((y < next_y) && (y >= prev_y)) : ((y > next_y) && (y <= prev_y)));
 		}
 		
-		if (0.0f <= t1 && t1 <= 1.0f) {
-			// Find y
-			int16_t y = DgBitmapDrawQuadraticBezier_Eval(t1, p0.y, p1.y, p2.y);
-			DgBitmapDrawPixel(this, x, y, *colour);
+		if (0.0f <= t.data[1] && t.data[1] <= 1.0f) {
+			// Find y and the direction to increment in
+			int16_t prev_y = DgBitmapDrawQuadraticBezier_Eval(prev_t.data[1], p0.y, p1.y, p2.y);
+			int16_t y = DgBitmapDrawQuadraticBezier_Eval(t.data[1], p0.y, p1.y, p2.y);
+			int16_t next_y = DgBitmapDrawQuadraticBezier_Eval(next_t.data[1], p0.y, p1.y, p2.y);
+			int16_t direction = (next_y >= y) ? (1) : (-1);
+			
+			// Draw pixels until next y is reached
+			do {
+				DgBitmapDrawPixel(this, x, y, *colour);
+				y += direction;
+			} while ((direction >= 0) ? ((y < next_y) && (y >= prev_y)) : ((y > next_y) && (y <= prev_y)));
 		}
+		
+		// Move to the next t values
+		t = next_t;
 	}
 }
 
