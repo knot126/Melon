@@ -73,7 +73,6 @@ typedef struct DgBitmapTriangle {
  * optional depth buffer.
  */
 typedef struct DgBitmap {
-	size_t alloc_sz;
 	uint8_t *src;
 	float *depth;
 	uint16_t width;
@@ -91,6 +90,7 @@ void DgBitmapSetDepthBuffer(DgBitmap *this, bool enable);
 void DgBitmapDrawPixel(DgBitmap *this, uint16_t x, uint16_t y, DgColour colour);
 void DgBitmapGetPixel(DgBitmap * restrict this, uint16_t x, uint16_t y, DgColour * restrict colour);
 void DgBitmapDrawLine(DgBitmap * restrict this, DgVec2 pa, DgVec2 pb, DgColour * restrict colour);
+void DgBitmapDrawQuadraticBezier(DgBitmap * restrict this, DgVec2 p0, DgVec2 p1, DgVec2 p2, DgColour * restrict colour);
 void DgBitmapDrawPoint(DgBitmap *this, float x, float y, float r, DgColour colour);
 void DgBitmapDrawConvexPolygon(DgBitmap * restrict this, size_t points_count, DgVec2 * restrict points, DgColour * restrict colour);
 void DgBitmapDrawTriangles(DgBitmap * restrict this, size_t count, DgBitmapTriangle * restrict triangles);

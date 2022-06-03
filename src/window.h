@@ -33,3 +33,6 @@ typedef struct DgWindow {
 uint32_t DgWindowInit(DgWindow *this, const char *title, DgVec2I size);
 void DgWindowFree(DgWindow *this);
 int32_t DgWindowUpdate(DgWindow *this, DgBitmap *bitmap);
+DgVec2 DgWindowGetMouseLocation(DgWindow * restrict this);
+DgVec2I DgWindowGetMouseLocation2(DgWindow * restrict this);
+bool DgWindowGetMouseDown(DgWindow * restrict this);

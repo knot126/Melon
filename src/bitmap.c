@@ -42,15 +42,15 @@ bool DgBitmapInit(DgBitmap *bitmap, const uint16_t width, const uint16_t height,
 	bitmap->width = width;
 	bitmap->height = height;
 	bitmap->chan = chan;
-	bitmap->alloc_sz = width * height * chan;
-	bitmap->src = DgAlloc(bitmap->alloc_sz * sizeof *bitmap->src);
+	
+	size_t alloc_sz = width * height * chan;
+	
+	bitmap->src = DgAlloc(alloc_sz * sizeof *bitmap->src);
 	
 	if (!bitmap->src) {
-		DgLog(DG_LOG_ERROR, "Failed to allocate 0x%X bytes of memory for bitmap.", bitmap->alloc_sz);
+		DgLog(DG_LOG_ERROR, "Failed to allocate 0x%X bytes of memory for bitmap.", alloc_sz);
 		return true;
 	}
-	
-	uint8_t *src = bitmap->src;
 	
 	return false;
 }
@@ -362,6 +362,75 @@ void DgBitmapDrawLine(DgBitmap * restrict this, DgVec2 pa, DgVec2 pb, DgColour *
 	}
 }
 
+static inline uint16_t DgBitmapDrawQuadraticBezier_Eval(float t, float p0, float p1, float p2) {
+	return (uint16_t)(((1.0f - t) * (1.0f - t) * p0) + (2.0f * (1.0f - t) * t * p1) + (t * t * p2));
+}
+
+static inline DgVec2 DgBitmapDrawQuadraticBezier_Roots(float a, float b, float c) {
+	DgVec2 roots;
+	
+	float det = sqrtf((b * b) - (4.0f * a * c));
+	
+	roots.x = (-b - det) / (2.0f * a);
+	roots.y = (-b + det) / (2.0f * a);
+	
+	return roots;
+}
+
+void DgBitmapDrawQuadraticBezier(DgBitmap * restrict this, DgVec2 p0, DgVec2 p1, DgVec2 p2, DgColour * restrict colour) {
+	/**
+	 * Draw a quadratic bezier curve using a naïve algorithm, so it should
+	 * always work without a need for special cases.
+	 * 
+	 * Essentially, we use the fact that we can find a t-value from any given
+	 * x-value of a curve in order to draw the curve. If you are concerned about
+	 * the root finding not being a function, I would encourage you to look up
+	 * what a multivalue function is.
+	 * 
+	 * @param this Bitmap to draw on
+	 * @param p0 First control point
+	 * @param p1 Second control point
+	 * @param p2 Third control point
+	 * @param colour Colour of the curve
+	 */
+	
+	// Convert coordinates to the proper range
+	const float base_y = (float)(this->height);
+	p0 = (DgVec2) {p0.x * this->width, base_y - p0.y * base_y};
+	p1 = (DgVec2) {p1.x * this->width, base_y - p1.y * base_y};
+	p2 = (DgVec2) {p2.x * this->width, base_y - p2.y * base_y};
+	
+	// Find min and max x-values for point
+	const uint16_t min_x = DgFloatMin3(p0.x, p1.x, p2.x), max_x = DgFloatMax3(p0.x, p1.x, p2.x);
+	
+	// Precompute a and b values
+	float a = p0.x - 2.0f * p1.x + p2.x;
+	float b = 2.0f * (p1.x - p0.x);
+	
+	// Loop over each pixel with the curve
+	for (size_t x = min_x; x <= max_x; x++) {
+		// Find t-value(s) for the next x so we know where to stop drawing
+		float c = p0.x - x;
+		DgVec2 roots = DgBitmapDrawQuadraticBezier_Roots(a, b, c);
+		float t0 = roots.x;
+		float t1 = roots.y;
+		
+		// Evaluate y value(s) at this point
+		// Don't need to worry about NaN for square roots
+		if (0.0f <= t0 && t0 <= 1.0f) {
+			// Find y
+			int16_t y = DgBitmapDrawQuadraticBezier_Eval(t0, p0.y, p1.y, p2.y);
+			DgBitmapDrawPixel(this, x, y, *colour);
+		}
+		
+		if (0.0f <= t1 && t1 <= 1.0f) {
+			// Find y
+			int16_t y = DgBitmapDrawQuadraticBezier_Eval(t1, p0.y, p1.y, p2.y);
+			DgBitmapDrawPixel(this, x, y, *colour);
+		}
+	}
+}
+
 void DgBitmapDrawPoint(DgBitmap * restrict this, float x, float y, float r, DgColour colour) {
 	/**
 	 * Draw a dot to the bitmap at the given coordinates with r radius.
@@ -372,6 +441,8 @@ void DgBitmapDrawPoint(DgBitmap * restrict this, float x, float y, float r, DgCo
 	 * @param r The radius of the dot
 	 * @param colour The colour to paint the pixel
 	 */
+	
+	y = 1.0f - y;
 	
 	r *= (this->width < this->height) ? this->width : this->height;
 	uint16_t rad = (uint16_t) r;

@@ -98,6 +98,50 @@ int32_t DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
 	return SDL_UpdateWindowSurface(this->window) ? 1 : 0;
 }
 
+DgVec2 DgWindowGetMouseLocation(DgWindow * restrict this) {
+	/**
+	 * Return the current mouse position.
+	 * 
+	 * @param this Window object
+	 * @return Cursor position relative to window
+	 */
+	
+	int x, y;
+	
+	SDL_PumpEvents();
+	SDL_GetMouseState(&x, &y);
+	
+	return (DgVec2) {(float)(x) / (float)(this->size.x), ((float)(y) / (float)(this->size.y))};
+}
+
+DgVec2I DgWindowGetMouseLocation2(DgWindow * restrict this) {
+	/**
+	 * Return the current mouse position in window coordinates.
+	 * 
+	 * @param this Window object (not needed using SDL backend)
+	 * @return Cursor position relative to window in window coordinates
+	 */
+	
+	int x, y;
+	
+	SDL_PumpEvents();
+	SDL_GetMouseState(&x, &y);
+	
+	return (DgVec2I) {x, y};
+}
+
+bool DgWindowGetMouseDown(DgWindow * restrict this) {
+	/**
+	 * Get if the left mouse button is down or not.
+	 * 
+	 * @param this Window object (not needed using SDL backend)
+	 * @return Cursor position relative to window
+	 */
+	
+	SDL_PumpEvents();
+	return !!(SDL_GetMouseState(NULL, NULL) & SDL_BUTTON_LMASK);
+}
+
 #else
 
 uint32_t DgWindowInit(DgWindow *this, const char *title, DgVec2I size) {
@@ -110,6 +154,18 @@ void DgWindowFree(DgWindow *this) {
 
 int32_t DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
 	return 1;
+}
+
+DgVec2 DgWindowGetMouseLocation(DgWindow *this) {
+	return (DgVec2) {0.0f, 0.0f};
+}
+
+DgVec2I DgWindowGetMouseLocation2(DgWindow *this) {
+	return (DgVec2I) {0, 0};
+}
+
+bool DgWindowGetMouseDown(DgWindow *this) {
+	return false;
 }
 
 #endif

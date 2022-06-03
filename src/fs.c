@@ -310,7 +310,7 @@ uint8_t *DgFileLoad(const char * restrict path, size_t *content_size) {
 	DgFile stream = DgFileOpen2(path, DG_FILE_STREAM_READ);
 	
 	if (!stream) {
-		return stream;
+		return NULL;
 	}
 	
 	// Read stream size
@@ -597,5 +597,5 @@ inline void DgFileStreamWriteIntegerString(DgFileStream *stream, size_t data) {
 	 * Write a string as an integer.
 	 */
 	
-	fprintf(stream->_c_file_stream, "%d", data);
+	fprintf(stream->_c_file_stream, "%ld", data);
 }
