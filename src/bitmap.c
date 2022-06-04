@@ -415,38 +415,42 @@ void DgBitmapDrawQuadraticBezier(DgBitmap * restrict this, DgVec2 p0, DgVec2 p1,
 		// Find t-value(s) for the next x so we know where to stop drawing
 		next_t = DgBitmapDrawQuadraticBezier_Roots(a, b, p0.x - x + 1.0f);
 		
+		int16_t next_y0 = DgBitmapDrawQuadraticBezier_Eval(next_t.data[0], p0.y, p1.y, p2.y);
+		int16_t next_y1 = DgBitmapDrawQuadraticBezier_Eval(next_t.data[1], p0.y, p1.y, p2.y);
+		
+		int16_t y0 = DgBitmapDrawQuadraticBezier_Eval(t.data[0], p0.y, p1.y, p2.y);
+		int16_t y1 = DgBitmapDrawQuadraticBezier_Eval(t.data[1], p0.y, p1.y, p2.y);
+		
 		/// @todo Don't Repeat Yourself
 		// Evaluate y value(s) at this point
 		// Don't need to worry about NaN for square roots
 		if (0.0f <= t.data[0] && t.data[0] <= 1.0f) {
 			// Find y and the direction to increment in
-			int16_t prev_y = DgBitmapDrawQuadraticBezier_Eval(prev_t.data[0], p0.y, p1.y, p2.y);
-			int16_t y = DgBitmapDrawQuadraticBezier_Eval(t.data[0], p0.y, p1.y, p2.y);
-			int16_t next_y = DgBitmapDrawQuadraticBezier_Eval(next_t.data[0], p0.y, p1.y, p2.y);
-			int16_t direction = (next_y >= y) ? (1) : (-1);
+			int16_t direction = (next_y0 >= y0) ? (1) : (-1);
 			
 			// Draw pixels until next y is reached
+			int16_t cy = y0;
 			do {
-				DgBitmapDrawPixel(this, x, y, *colour);
-				y += direction;
-			} while ((direction >= 0) ? ((y < next_y) && (y >= prev_y)) : ((y > next_y) && (y <= prev_y)));
+				DgBitmapDrawPixel(this, x, cy, *colour);
+				cy += direction;
+			} while ((direction >= 0) ? ((cy < next_y0)) : ((cy > next_y0)));
 		}
 		
 		if (0.0f <= t.data[1] && t.data[1] <= 1.0f) {
 			// Find y and the direction to increment in
-			int16_t prev_y = DgBitmapDrawQuadraticBezier_Eval(prev_t.data[1], p0.y, p1.y, p2.y);
 			int16_t y = DgBitmapDrawQuadraticBezier_Eval(t.data[1], p0.y, p1.y, p2.y);
-			int16_t next_y = DgBitmapDrawQuadraticBezier_Eval(next_t.data[1], p0.y, p1.y, p2.y);
-			int16_t direction = (next_y >= y) ? (1) : (-1);
+			int16_t direction = (next_y1 >= y) ? (1) : (-1);
 			
 			// Draw pixels until next y is reached
+			int16_t cy = y1;
 			do {
-				DgBitmapDrawPixel(this, x, y, *colour);
-				y += direction;
-			} while ((direction >= 0) ? ((y < next_y) && (y >= prev_y)) : ((y > next_y) && (y <= prev_y)));
+				DgBitmapDrawPixel(this, x, cy, *colour);
+				cy += direction;
+			} while ((direction >= 0) ? ((cy < next_y1)) : ((cy > next_y1)));
 		}
 		
 		// Move to the next t values
+		prev_t = t;
 		t = next_t;
 	}
 }
