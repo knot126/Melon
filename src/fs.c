@@ -4,6 +4,8 @@
  * 
  * File System Utilites
  * 
+ * @deprecated See todo
+ * @warning See todo
  * @todo This library is in need of a major rewrite to support the new File
  * Systems concept as well as to update the crufty parts.
  */
@@ -46,6 +48,8 @@ void DgInitPaths2(const char * restrict assets) {
 	 * specified paths.
 	 */
 	
+	DgLog(DG_LOG_DEPRECATION, "DgInitPaths2('%s')", assets);
+	
 	dg_special_directory_paths[0] = assets;
 }
 
@@ -57,6 +61,8 @@ DgFileStream* DgFileStreamOpen(char* path, char* permissions) {
 	 * @param permissions Mode to open the file in
 	 * @return File stream handle or NULL on failure
 	 */
+	
+	DgLog(DG_LOG_DEPRECATION, "DgFileStreamOpen('%s', '%s')", path, permissions);
 	
 	FILE *f;
 	
@@ -81,6 +87,8 @@ DgFile DgFileOpen2(const char * const filepath, DgFileStreamFlags flags) {
 	 * @param flags Flags to use when opening the file
 	 * @return File stream handle, or NULL on failure
 	 */
+	
+	DgLog(DG_LOG_DEPRECATION, "DgFileOpen2('%s', %x)", filepath, flags);
 	
 	DgFileStream *stream = NULL;
 	char *realpath = DgEvalPath((char *) filepath);
@@ -127,6 +135,8 @@ void DgFileStreamClose(DgFileStream* stream) {
 	 * @param stream Stream to close
 	 */
 	
+	DgLog(DG_LOG_DEPRECATION, "DgFileStreamClose(<0x%X>)", stream);
+	
 	fclose(stream->_c_file_stream);
 	DgFree(stream);
 }
@@ -140,6 +150,8 @@ void DgFileStreamRead(DgFileStream* stream, size_t size, void* data) {
 	 * @param data Pointer to where to put the data
 	 */
 	
+	DgLog(DG_LOG_DEPRECATION, "DgFileStreamRead(<0x%X>, %x, <0x%X>)", stream, size, data);
+	
 	fread(data, sizeof(byte), size, stream->_c_file_stream);
 }
 
@@ -152,6 +164,8 @@ void DgFileStreamWrite(DgFileStream* stream, size_t size, const void* data) {
 	 * @param data The data to write to the stream
 	 */
 	
+	DgLog(DG_LOG_DEPRECATION, "DgFileStreamWrite(<0x%X>, %x, <0x%X>)", stream, size, data);
+	
 	fwrite(data, sizeof(byte), size, stream->_c_file_stream);
 }
 
@@ -161,6 +175,8 @@ size_t DgFileStreamLength(DgFileStream* stream) {
 	 * 
 	 * @param stream File stream handle
 	 */
+	
+	DgLog(DG_LOG_DEPRECATION, "DgFileStreamLength(<0x%X>)", stream);
 	
 	size_t size;
 	
@@ -180,6 +196,8 @@ bool DgFileStreamEndOfFile(DgFileStream *stream) {
 	 * @param stream File stream handle
 	 */
 	
+	DgLog(DG_LOG_DEPRECATION, "DgFileStreamEndOfFile(<0x%X>)", stream);
+	
 	return !!feof(stream->_c_file_stream);
 }
 
@@ -197,6 +215,8 @@ char *DgFileStreamGetString(DgFileStream* stream, size_t *length) {
 	 * @param length Pointer to a size_t to write the stream to, or NULL
 	 * @return String read from file
 	 */
+	
+	DgLog(DG_LOG_DEPRECATION, "DgFileStreamGetString(<0x%X>, <0x%X>)", stream, length);
 	
 	int c;
 	size_t size = 0;
@@ -242,32 +262,6 @@ char *DgFileStreamGetString(DgFileStream* stream, size_t *length) {
 	}
 	
 	return str;
-}
-
-unsigned char *DgFileStreamLoad(DgFile stream) {
-	/**
-	 * Load a file into memory and return the buffer that was created.
-	 * 
-	 * @warning The data is not gaurentted to be NULL terminated and there
-	 * appears to be no way to free the data, though it can still be freed.
-	 * 
-	 * @param stream File stream handle
-	 * @return Data loaded from file
-	 */
-	
-	DgLog(DG_LOG_WARNING, "Using DgFileStreamLoad which does not have any protections against bad data. Please use uint8_t *DgFileLoad(path, content_size) instead !!");
-	
-	size_t size = DgFileStreamLength(stream);
-	
-	unsigned char *data = (unsigned char *) DgAlloc(size);
-	
-	if (!data) {
-		return NULL;
-	}
-	
-	DgFileStreamRead(stream, size, data);
-	
-	return data;
 }
 
 uint8_t *DgFileLoad(const char * restrict path, size_t *content_size) {
@@ -342,6 +336,8 @@ char* DgEvalPath(char* path) {
 	 * @param path Path to evaluate into a filesytem path
 	 * @return String representing the real file system path
 	 */
+	
+	DgLog(DG_LOG_DEPRECATION, "DgEvalPath('%s')", path);
 	
 	// Check for a path that does not need evaluation
 	if (!strstr(path, "://")) {

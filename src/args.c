@@ -148,8 +148,6 @@ const char *DgArgGetValue2(DgArgs * restrict this, const char * const restrict f
 void DgArgPrint(DgArgs * restrict this) {
 	/**
 	 * Print loaded arguments
-	 * 
-	 * @warning Only use after arguments have been initialised
 	 */
 	
 	for (size_t i = 0; i < this->pairs_count; i++) {
