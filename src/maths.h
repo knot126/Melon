@@ -95,7 +95,6 @@ float DgVec2Magnitude(DgVec2 a);
 float DgVec2Dot(DgVec2 a, DgVec2 b);
 float DgVec2RotDot(DgVec2 a, DgVec2 b);
 DgVec2 DgVec2Normalise(DgVec2 a);
-DgVec2 DgVec2New(float x, float y);
 
 DgVec2 DgVec2FromString(const char * const s);
 DgBary3 DgVec2Bary3(DgVec2 p1, DgVec2 p2, DgVec2 p3, DgVec2 point);
@@ -109,12 +108,10 @@ float DgVec3Magnitude(DgVec3 a);
 float DgVec3Dot(DgVec3 a, DgVec3 b);
 DgVec3 DgVec3Cross(DgVec3 a, DgVec3 b);
 DgVec3 DgVec3Normalise(DgVec3 a);
-DgVec3 DgVec3New(float x, float y, float z);
 DgVec3 DgVec3Negate(DgVec3 a);
 
 DgVec3 DgVec3FromString(const char * const s);
 DgVec3 DgVec3Rotate(DgVec3 base, DgVec3 rot);
-DgVec3 DgVec3Lerp(float t, DgVec3 a, DgVec3 b);
 
 // DgVec4
 DgVec4 DgVec4Add(DgVec4 a, DgVec4 b);
@@ -124,7 +121,6 @@ DgVec4 DgVec4Scale(float a, DgVec4 b);
 float DgVec4Magnitude(DgVec4 a);
 float DgVec4Dot(DgVec4 a, DgVec4 b);
 DgVec4 DgVec4Normalise(DgVec4 a);
-DgVec4 DgVec4New(float x, float y, float z, float w);
 
 DgVec4 DgVec4Bary3Evaluate(float u, DgVec4 *a, float v, DgVec4 *b, float w, DgVec4 *c);
 
@@ -169,8 +165,6 @@ DgMat4 DgMat4ByMat4Multiply(DgMat4 a, DgMat4 b);
 DgMat4 DgMat4Translate(DgMat4 a, DgVec3 b);
 DgMat4 DgMat4Scale(DgMat4 a, DgVec3 b);
 DgMat4 DgMat4Rotate(DgMat4 a, DgVec3 b, float angle);
-DgMat4 DgMat4NewPerspective(float l, float r, float b, float t, float n, float f);
-DgMat4 DgMat4NewPerspective2(float fov, float rat, float f, float b);
 DgMat4 DgMat4New(float a);
 void DgMat4Print(DgMat4 a);
 

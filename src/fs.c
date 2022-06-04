@@ -40,31 +40,6 @@ const char *dg_special_directory_paths[3] = {
 	".",
 };
 
-void DgInitPaths(uint32_t fail_mode) {
-	/**
-	 * This will initialise the paths in dg_special_directory_paths using
-	 * automatic pathfinding.
-	 * 
-	 * @deprecated Use file systems instead
-	 * 
-	 * @param fail_mode
-	 */
-	
-	// Assets path
-	for (int i = 0; i < sizeof(ASSETS_LOOK_PATH); i++) {
-		bool d = DgIsDir(ASSETS_LOOK_PATH[i]);
-		
-		if (d) {
-			dg_special_directory_paths[0] = ASSETS_LOOK_PATH[i];
-			break;
-		}
-	}
-	
-	if (!dg_special_directory_paths[0]) {
-		DgLog(DG_LOG_WARNING, "Failed to initialise legacy filesystem directory paths.");
-	}
-}
-
 void DgInitPaths2(const char * restrict assets) {
 	/**
 	 * This will initialise the paths in dg_special_directory_paths using
@@ -450,13 +425,12 @@ char *DgGetUserDir(void) {
 	return NULL;
 }
 
-void DgDeleteFile(char* path) {
+int32_t DgDeleteFile(char* path) {
 	/** 
 	 * Delete a file
 	 * 
-	 * @deprecated Does not return error code
-	 * 
 	 * @param path Path to the file to remove
+	 * @return 0 on success and non-zero on failure
 	 */
 	
 	int status = remove(path);
@@ -464,16 +438,17 @@ void DgDeleteFile(char* path) {
 	if (status) {
 		DgLog(DG_LOG_ERROR, "Failed to remove file %s.", path);
 	}
+	
+	return status;
 }
 
-void DgMoveFile(char* src, char* dest) {
+int32_t DgMoveFile(char* src, char* dest) {
 	/** 
 	 * Move a file
 	 * 
-	 * @deprecated Does not return error code
-	 * 
 	 * @param src Source file name
 	 * @param dest Destination file name
+	 * @return 0 on success and non-zero on failure
 	 */
 	
 	int status = rename(src, dest);
@@ -481,10 +456,14 @@ void DgMoveFile(char* src, char* dest) {
 	if (status) {
 		DgLog(DG_LOG_ERROR, "Failed to rename file %s.", src);
 	}
+	
+	return status;
 }
 
-void DgCopyFile(char* src, char* dest) {
+int32_t DgCopyFile(char* src, char* dest) {
 	DgLog(DG_LOG_WARNING, "Function DgCopyFile() is not implemented.");
+	
+	return 1;
 }
 
 /* =============================================================================

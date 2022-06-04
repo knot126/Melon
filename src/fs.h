@@ -30,7 +30,6 @@ typedef struct DgFileStream {
 
 typedef DgFileStream * DgFile;
 
-void DgInitPaths(uint32_t fail_mode);
 void DgInitPaths2(const char * restrict assets);
 char* DgEvalPath(char* path);
 DgFileStream* DgFileStreamOpen(char* path, char* permissions);
@@ -48,9 +47,9 @@ uint8_t *DgFileLoad(const char * restrict path, size_t *content_size);
 void DgMkdir(char* path);
 bool DgIsDir(const char* dir);
 char *DgGetUserDir();
-void DgDeleteFile(char* path);
-void DgMoveFile(char* src, char* dest);
-void DgCopyFile(char* src, char* dest);
+int32_t DgDeleteFile(char* path);
+int32_t DgMoveFile(char* src, char* dest);
+int32_t DgCopyFile(char* src, char* dest);
 
 void DgFileStreamReadInt8(DgFileStream* stream, int8_t* data);
 void DgFileStreamReadUInt8(DgFileStream* stream, uint8_t* data);

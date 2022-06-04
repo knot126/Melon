@@ -172,21 +172,8 @@ inline DgVec2 DgVec2Normalise(DgVec2 a) {
 	return c;
 }
 
-inline DgVec2 DgVec2New(float x, float y) {
-	/**
-	 * @deprecated Use (DgVec2){x, y} or &(DgVec2){x, y} now.
-	 */
-	
-	DgVec2 c;
-	
-	c.x = x;
-	c.y = y;
-	
-	return c;
-}
-
 inline DgVec2 DgVec2FromString(const char * const s) {
-	DgVec2 c = DgVec2New(0.0f, 0.0f);
+	DgVec2 c = (DgVec2) {0.0f, 0.0f};
 	
 	// Return zero vector on null string
 	if (!s) {
@@ -326,16 +313,6 @@ inline DgVec3 DgVec3Normalise(DgVec3 a) {
 	return c;
 }
 
-inline DgVec3 DgVec3New(float x, float y, float z) {
-	DgVec3 c;
-	
-	c.x = x;
-	c.y = y;
-	c.z = z;
-	
-	return c;
-}
-
 inline DgVec3 DgVec3Negate(DgVec3 a) {
 	DgVec3 c;
 	
@@ -347,7 +324,7 @@ inline DgVec3 DgVec3Negate(DgVec3 a) {
 }
 
 inline DgVec3 DgVec3FromString(const char * const s) {
-	DgVec3 c = DgVec3New(0.0f, 0.0f, 0.0f);
+	DgVec3 c = (DgVec3) {0.0f, 0.0f, 0.0f};
 	
 	// Return zero vector on null string
 	if (!s) {
@@ -467,17 +444,6 @@ inline DgVec4 DgVec4Normalise(DgVec4 a) {
 	c.y = a.y / m;
 	c.z = a.z / m;
 	c.w = a.w / m;
-	
-	return c;
-}
-
-inline DgVec4 DgVec4New(float x, float y, float z, float w) {
-	DgVec4 c;
-	
-	c.x = x;
-	c.y = y;
-	c.z = z;
-	c.w = w;
 	
 	return c;
 }
@@ -608,10 +574,10 @@ inline DgMat4 DgMat4New(float a) {
 }
 
 void DgMat4Print(DgMat4 a) {
-	printf("⎡%f %f %f %f⎤\n", a.ax, a.ay, a.az, a.aw);
-	printf("⎢%f %f %f %f⎥\n", a.bx, a.by, a.bz, a.bw);
-	printf("⎢%f %f %f %f⎥\n", a.cx, a.cy, a.cz, a.cw);
-	printf("⎣%f %f %f %f⎦\n", a.dx, a.dy, a.dz, a.dw);
+	printf("⎡%.3f %.3f %.3f %.3f⎤\n", a.ax, a.ay, a.az, a.aw);
+	printf("⎢%.3f %.3f %.3f %.3f⎥\n", a.bx, a.by, a.bz, a.bw);
+	printf("⎢%.3f %.3f %.3f %.3f⎥\n", a.cx, a.cy, a.cz, a.cw);
+	printf("⎣%.3f %.3f %.3f %.3f⎦\n", a.dx, a.dy, a.dz, a.dw);
 }
 
 /* 
@@ -620,64 +586,20 @@ void DgMat4Print(DgMat4 a) {
 
 DgMat4 DgTransfromBasicCamera(DgVec3 trans, DgVec3 rot) {
 	/**
-	 * <summary>Brute-force camera transfrom in that (... I left the descript at that I guess)</summary>
-	 * <input type="DgVec3" name="trans">The translation that will be applied to the camera.</input>
-	 * <input type="DgVec3" name="rot">The rotation that will be applied to the camera.</input>
+	 * Brute-force camera transfrom
+	 * 
+	 * @param trans The translation that will be applied to the camera
+	 * @param rot The rotation that will be applied to the camera
+	 * @return Basic camera matrix
 	 */
 	
-	DgMat4 pos = DgMat4Translate(DgMat4New(1.0f), DgVec3New(-trans.x, -trans.y, -trans.z));
+	DgMat4 pos = DgMat4Translate(DgMat4New(1.0f), (DgVec3) {-trans.x, -trans.y, -trans.z});
 	
-	DgMat4 rot_x = DgMat4Rotate(DgMat4New(1.0f), DgVec3New(1.0f, 0.0f, 0.0f), rot.x);
-	DgMat4 rot_y = DgMat4Rotate(DgMat4New(1.0f), DgVec3New(0.0f, 1.0f, 0.0f), rot.y);
-	DgMat4 rot_z = DgMat4Rotate(DgMat4New(1.0f), DgVec3New(0.0f, 0.0f, 1.0f), rot.z);
+	DgMat4 rot_x = DgMat4Rotate(DgMat4New(1.0f), (DgVec3) {1.0f, 0.0f, 0.0f}, rot.x);
+	DgMat4 rot_y = DgMat4Rotate(DgMat4New(1.0f), (DgVec3) {0.0f, 1.0f, 0.0f}, rot.y);
+	DgMat4 rot_z = DgMat4Rotate(DgMat4New(1.0f), (DgVec3) {0.0f, 0.0f, 1.0f}, rot.z);
 	
 	return DgMat4ByMat4Multiply(DgMat4ByMat4Multiply(rot_x, DgMat4ByMat4Multiply(rot_y, rot_z)), pos);
-}
-
-/*
- * Interpolation Schemes and Bèzier Curves
- */
-
-DgVec3 DgVec3Bez3(float t, DgVec3 p0, DgVec3 p1, DgVec3 p2) {
-	/**
-	 * Compute a 3D quadratic bezier cruve.
-	 * 
-	 * These are the simplest "real" curves.
-	 * 
-	 * @deprecated New functions in surface.c replace this
-	 */
-	
-	return DgVec3Lerp(t, DgVec3Lerp(t, p0, p1), DgVec3Lerp(t, p1, p2));
-}
-
-DgVec3 DgVec3Bez4(float t, DgVec3 p0, DgVec3 p1, DgVec3 p2, DgVec3 p3) {
-	/**
-	 * Compute a 3D cubic bezier cruve.
-	 * 
-	 * These are the simplest curves that look the best.
-	 * 
-	 * @deprecated New functions in surface.c replace this
-	 */
-	
-	return DgVec3Lerp(t, DgVec3Lerp(t, DgVec3Lerp(t, p0, p1), DgVec3Lerp(t, p1, p2)), DgVec3Lerp(t, DgVec3Lerp(t, p1, p2), DgVec3Lerp(t, p2, p3)));
-}
-
-DgVec3 DgVec3BezN(float t, size_t length, DgVec3 * restrict points) {
-	/**
-	 * Compute the current point of an N-order 3D bezier curve. This will need to
-	 * modify the list of control points.
-	 * 
-	 * @deprecated New functions in surface.c replace this
-	 */
-	
-	while (length != 1) {
-		for (size_t i = 0; i < length - 1; i++) {
-			points[i] = DgVec3Lerp(t, points[i], points[i + 1]);
-		}
-		length--;
-	}
-	
-	return *points;
 }
 
 inline float DgFloatMin3(float a, float b, float c) {
