@@ -1,8 +1,10 @@
-/*
+/**
  * Copyright (C) 2021 - 2022 Knot126 and Descentix Software
  * ========================================================
  * 
  * Dictionary - Hopefully the last implementation!
+ * 
+ * @deprecated Never used or tested
  */
 
 #include <string.h>

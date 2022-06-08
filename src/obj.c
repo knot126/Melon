@@ -1,8 +1,10 @@
-/*
+/**
  * Copyright (C) 2021 - 2022 Knot126 and Descentix Software
  * ========================================================
  * 
  * OBJ Model Loader
+ * 
+ * @deprecated Not within the scope of the melon library and mostly unmaintained
  */
 
 #include <string.h>
