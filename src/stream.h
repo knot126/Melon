@@ -9,6 +9,7 @@
 
 #include <stdbool.h>
 #include <inttypes.h>
+#include <stdlib.h>
 
 typedef enum DgStreamEnum {
 	/* errors */

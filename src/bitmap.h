@@ -1,9 +1,9 @@
-/*
+/**
  * Copyright (C) 2021 - 2022 Knot126 and Descentix Software
  * ========================================================
  * 
  * Bitmaps and Other Images
- */  
+ */
 
 #pragma once
 

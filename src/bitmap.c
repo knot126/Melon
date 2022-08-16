@@ -402,56 +402,55 @@ void DgBitmapDrawQuadraticBezier(DgBitmap * restrict this, DgVec2 p0, DgVec2 p1,
 	
 	// Find min and max x-values for point
 	const uint16_t min_x = DgFloatMin3(p0.x, p1.x, p2.x), max_x = DgFloatMax3(p0.x, p1.x, p2.x);
+	const uint16_t min_y = DgFloatMin3(p0.y, p1.y, p2.y), max_y = DgFloatMax3(p0.y, p1.y, p2.y);
 	
-	// Precompute a and b values
-	float a = p0.x - 2.0f * p1.x + p2.x;
-	float b = 2.0f * (p1.x - p0.x);
-	DgVec2 prev_t = DgBitmapDrawQuadraticBezier_Roots(a, b, p0.x - min_x - 1);
-	DgVec2 t = DgBitmapDrawQuadraticBezier_Roots(a, b, p0.x - min_x);
-	DgVec2 next_t;
+	{
+		// Precompute a and b values for x
+		float a = p0.x - 2.0f * p1.x + p2.x;
+		float b = 2.0f * (p1.x - p0.x);
+		DgVec2 t;
+		
+		// Loop over each pixel with the curve
+		for (size_t x = min_x; x <= max_x; x++) {
+			// Find t-value(s) for the next x so we know where to stop drawing
+			DgVec2 t = DgBitmapDrawQuadraticBezier_Roots(a, b, p0.x - x);
+			
+			// Evaluate y value(s) at this point
+			// Don't need to worry about NaN for square roots
+			if (0.0f <= t.data[0] && t.data[0] <= 1.0f) {
+				int16_t y = DgBitmapDrawQuadraticBezier_Eval(t.data[0], p0.y, p1.y, p2.y);
+				DgBitmapDrawPixel(this, x, y, *colour);
+			}
+			
+			if (0.0f <= t.data[1] && t.data[1] <= 1.0f) {
+				int16_t y = DgBitmapDrawQuadraticBezier_Eval(t.data[1], p0.y, p1.y, p2.y);
+				DgBitmapDrawPixel(this, x, y, *colour);
+			}
+		}
+	}
 	
-	// Loop over each pixel with the curve
-	for (size_t x = min_x; x <= max_x; x++) {
-		// Find t-value(s) for the next x so we know where to stop drawing
-		next_t = DgBitmapDrawQuadraticBezier_Roots(a, b, p0.x - x + 1.0f);
+	{
+		// Precompute a and b values for y
+		float a = p0.y - 2.0f * p1.y + p2.y;
+		float b = 2.0f * (p1.y - p0.y);
+		DgVec2 t;
 		
-		int16_t next_y0 = DgBitmapDrawQuadraticBezier_Eval(next_t.data[0], p0.y, p1.y, p2.y);
-		int16_t next_y1 = DgBitmapDrawQuadraticBezier_Eval(next_t.data[1], p0.y, p1.y, p2.y);
-		
-		int16_t y0 = DgBitmapDrawQuadraticBezier_Eval(t.data[0], p0.y, p1.y, p2.y);
-		int16_t y1 = DgBitmapDrawQuadraticBezier_Eval(t.data[1], p0.y, p1.y, p2.y);
-		
-		/// @todo Don't Repeat Yourself
-		// Evaluate y value(s) at this point
-		// Don't need to worry about NaN for square roots
-		if (0.0f <= t.data[0] && t.data[0] <= 1.0f) {
-			// Find y and the direction to increment in
-			int16_t direction = (next_y0 >= y0) ? (1) : (-1);
+		for (size_t y = min_y; y <= max_y; y++) {
+			// Find t-value(s) for the next x so we know where to stop drawing
+			DgVec2 t = DgBitmapDrawQuadraticBezier_Roots(a, b, p0.y - y);
 			
-			// Draw pixels until next y is reached
-			int16_t cy = y0;
-			do {
-				DgBitmapDrawPixel(this, x, cy, *colour);
-				cy += direction;
-			} while ((direction >= 0) ? ((cy < next_y0)) : ((cy > next_y0)));
-		}
-		
-		if (0.0f <= t.data[1] && t.data[1] <= 1.0f) {
-			// Find y and the direction to increment in
-			int16_t y = DgBitmapDrawQuadraticBezier_Eval(t.data[1], p0.y, p1.y, p2.y);
-			int16_t direction = (next_y1 >= y) ? (1) : (-1);
+			// Evaluate x value(s) at this point
+			// Don't need to worry about NaN for square roots
+			if (0.0f <= t.data[0] && t.data[0] <= 1.0f) {
+				int16_t x = DgBitmapDrawQuadraticBezier_Eval(t.data[0], p0.y, p1.y, p2.y);
+				DgBitmapDrawPixel(this, x, y, *colour);
+			}
 			
-			// Draw pixels until next y is reached
-			int16_t cy = y1;
-			do {
-				DgBitmapDrawPixel(this, x, cy, *colour);
-				cy += direction;
-			} while ((direction >= 0) ? ((cy < next_y1)) : ((cy > next_y1)));
+			if (0.0f <= t.data[1] && t.data[1] <= 1.0f) {
+				int16_t x = DgBitmapDrawQuadraticBezier_Eval(t.data[1], p0.y, p1.y, p2.y);
+				DgBitmapDrawPixel(this, x, y, *colour);
+			}
 		}
-		
-		// Move to the next t values
-		prev_t = t;
-		t = next_t;
 	}
 }
 

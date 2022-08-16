@@ -18,12 +18,17 @@
 
 void DgArgParse(DgArgs * restrict this, const int argc, char ** const restrict argv) {
 	/**
-	 * Parse the given argumets into the global arguments structure. This could
-	 * be changed to use a non-global object, but I think a protected strcture
-	 * is enough for arguments - which are basically global state anyways.
+	 * Parse the given argumets into the given arguments structure.
+	 * 
+	 * This supports:
+	 *     -k ('-' {single letter})
+	 *     --key ('--' {key name})
+	 *     --key value ('--' {key name} ' ' {key value})
 	 * 
 	 * @param argc Number of arguments to parse
 	 * @param argv Array of arguments
+	 * 
+	 * @todo Support for '--key=value' (note: '--key' 'value' works)
 	 */
 	
 	// NOTE: We start at the first real argument, not the name of the exec...
@@ -137,12 +142,7 @@ const char *DgArgGetValue2(DgArgs * restrict this, const char * const restrict f
 		}
 	}
 	
-	if (ptr) {
-		return ptr;
-	}
-	else {
-		return fallback;
-	}
+	return (ptr) ? (ptr) : (fallback);
 }
 
 void DgArgPrint(DgArgs * restrict this) {
