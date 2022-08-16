@@ -1,12 +1,14 @@
 # Melon Software Library
 
-**Melon** is currently the main core library for some game(-like) projects by Knot126. It is mainly focused on making it simple to create a game engine or other type of simulation which supports procedureal content generation, advanced physics and "demosceney" things.
+**Melon** is a core library for projects by Knot126. It is mostly focused on simplifying the creation of simulations and their engines which use procedureal (content) generation, advanced physics and "demosceney" or exprimental things.
 
 ## Support
 
-This library is **not currently supported** very well, and there is a lot of messy code. It probably shouldn't be used in seroius projects until it evolves more.
+This library is **not well supported for thirdparty projects**, though it is MIT licenced. There is a lot of messy code.
 
 There is some documentation in the [docs](docs) folder. Most documentation is inline at the start of the implementation of each function.
+
+It would probably be more fun for you to build your own tech, anyways.
 
 ## Including in Projects
 
@@ -14,16 +16,24 @@ To include in projects, add the `.c` files in the `src` folder to the projects f
 
 For example:
 
-```bash
-cp -r ./melon/src ./hello/util
-gcc -o hello ./hello/hello.c $(ls ./hello/util/*.c) -I./hello
-```
+<details>
+  <summary><code>build.sh</code></summary>
+  
+  ```bash
+  cp -r ./melon/src ./hello/util
+  gcc -o hello ./hello/hello.c $(ls ./hello/util/*.c) -I./hello
+  ```
+</details>
 
-```c
-#include "util/log.h"
-
-int main(const int argc, char *argv[]) {
-	DgLog(DG_LOG_INFO, "Hello, world!");
-	return 0;
-}
-```
+<details>
+  <summary><code>hello/hello.c</code></summary>
+  
+  ```c
+  #include "util/log.h"
+  
+  int main(const int argc, char *argv[]) {
+  	DgLog(DG_LOG_INFO, "Hello, world!");
+  	return 0;
+  }
+  ```
+</details>
