@@ -42,3 +42,6 @@ The following modules are internal modules and shouldn't be included directly.
  * `file` for file access
  * `geometry` for expanded 3D model support
  * `storage` for filesystem access
+ * `graph` for scene graphs
+ * `resman` for resource manegement
+ * `main` for a main loop manager
