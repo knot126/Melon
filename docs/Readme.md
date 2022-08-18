@@ -15,7 +15,7 @@ Currently, the following modules are supported:
  * `rand` for random numbers (XORShift)
  * `script` for lua scripting interface
  * `stream` for generic memory stream
- * `string` (or `str`) for string utilities
+ * `string` (alias `str`) for string utilities
  * `surface` for 3D bezier surfaces
  * `thread` for multi-threading
  * `time` for time utilities
@@ -45,3 +45,9 @@ The following modules are internal modules and shouldn't be included directly.
  * `graph` for scene graphs
  * `resman` for resource manegement
  * `main` for a main loop manager
+ * `cryptography` for cryptographic functions
+ * `error` for error handling
+ * `network` for networking support
+ * `http` for http support
+ * `image` for vector and basic raster graphics support
+ * `compress` for compression support
