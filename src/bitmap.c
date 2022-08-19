@@ -184,6 +184,24 @@ void DgBitmapDrawPixel(DgBitmap *this, uint16_t x, uint16_t y, DgColour colour) 
 	// Calculate pixel offset in memony block
 	size_t pixel_offset = ((y * this->width) + x) * this->chan;
 	
+	// Special blending or writing modes (when alpha is negative)
+	// Currently this is only invert colour
+	if (colour.a < 0.0f) {
+		this->src[pixel_offset + 0] = ~this->src[pixel_offset + 0];
+		if (this->chan >= 2) {
+			this->src[pixel_offset + 1] = ~this->src[pixel_offset + 1];
+			if (this->chan >= 3) {
+				this->src[pixel_offset + 2] = ~this->src[pixel_offset + 2];
+				if (this->chan >= 4) {
+					this->src[pixel_offset + 3] = 0xff;
+				}
+			}
+		}
+		
+		return;
+	}
+	
+	// Blend colours
 	#define DG_BITMAP_BLEND(CH) (uint8_t)(((colour.a * colour.CH) + ((1.0f - colour.a) * old_colour.CH)) * 255.0f)
 	
 	this->src[pixel_offset + 0] = DG_BITMAP_BLEND(r);
@@ -192,7 +210,7 @@ void DgBitmapDrawPixel(DgBitmap *this, uint16_t x, uint16_t y, DgColour colour) 
 		if (this->chan >= 3) {
 			this->src[pixel_offset + 2] = DG_BITMAP_BLEND(b);
 			if (this->chan >= 4) {
-				this->src[pixel_offset + 3] = (uint8_t) ((old_colour.a + colour.a) * 255.0f);
+				this->src[pixel_offset + 3] = 0xff;
 			}
 		}
 	}

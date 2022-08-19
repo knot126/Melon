@@ -15,7 +15,7 @@
  *   * Any of the matrix maths is probably not going to be any good. I forget
  *     how half of linear algebra works every month or so, which is of course
  *     annoying.
- *   * Rotations are in turns. 0 = no rotation and 1 = full rotation. This is
+ *   * Angles are in turns. 0 = no rotation and 1 = full rotation. This is
  *     the only advantage to this library, and it's really objective. Nicely,
  *     you can convert to rad/deg easily:
  *         rad = 2pi * turns = tau * turns

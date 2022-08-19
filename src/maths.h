@@ -80,6 +80,7 @@ typedef struct DgVec4 {
 			};
 		};
 		float data[4];
+		uint32_t raw[4];
 	};
 } DgVec4;
 
