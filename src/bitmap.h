@@ -82,7 +82,7 @@ typedef struct DgBitmap {
 } DgBitmap;
 
 bool DgBitmapInit(DgBitmap *bitmap, const uint16_t width, const uint16_t height, const uint16_t chan);
-bool DgBitmapNew(DgBitmap *bitmap, const uint16_t width, const uint16_t height, const uint16_t chan);
+// bool DgBitmapNew(DgBitmap *bitmap, const uint16_t width, const uint16_t height, const uint16_t chan);
 void DgBitmapFree(DgBitmap *bitmap);
 void DgBitmapSetFlags(DgBitmap *this, DgBitmapFlags flags);
 DgBitmapFlags DgBitmapGetFlags(DgBitmap *this);

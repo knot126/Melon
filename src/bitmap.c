@@ -48,16 +48,15 @@ bool DgBitmapInit(DgBitmap *bitmap, const uint16_t width, const uint16_t height,
 	bitmap->src = DgAlloc(alloc_sz * sizeof *bitmap->src);
 	
 	if (!bitmap->src) {
-		DgLog(DG_LOG_ERROR, "Failed to allocate 0x%X bytes of memory for bitmap.", alloc_sz);
 		return true;
 	}
 	
 	return false;
 }
 
-bool DgBitmapNew(DgBitmap *bitmap, const uint16_t width, const uint16_t height, const uint16_t chan) {
-	return DgBitmapInit(bitmap, width, height, chan);
-}
+// bool DgBitmapNew(DgBitmap *bitmap, const uint16_t width, const uint16_t height, const uint16_t chan) {
+// 	return DgBitmapInit(bitmap, width, height, chan);
+// }
 
 void DgBitmapFree(DgBitmap *bitmap) {
 	/**
@@ -275,12 +274,11 @@ void DgBitmapDrawLine(DgBitmap * restrict this, DgVec2 pa, DgVec2 pb, DgColour *
 	/**
 	 * Draw a line from a point to another point.
 	 * 
-	 * @note This uses a variant of Bresenham's Line Algorithm. It is an
-	 * incremental error algorithm, which is actually a lot more helpful to know
-	 * compared to seeing an actual implementation. Basically, this means we
-	 * increment x constantly (every time) but only increment y when we have
-	 * collected enough "error" so that it would actually matter if we increment
-	 * y. Basically, this is:
+	 * @note This uses something like Bresenham's Line Algorithm. It is an
+	 * incremental error algorithm. Basically, this means we increment x
+	 * constantly (every time) but only increment y when we have collected
+	 * enough "error" so that it would actually matter if we increment y.
+	 * Basically, this is:
 	 * 
 	 * -- line is in form y = rx + c (more commonly y = mx + b)
 	 * y_error = 0
@@ -300,10 +298,6 @@ void DgBitmapDrawLine(DgBitmap * restrict this, DgVec2 pa, DgVec2 pb, DgColour *
 	 * 
 	 * This can be reformed to the implementation below for using only integer
 	 * arithmetic and to support vertical lines by swapping x and y for r > 1.
-	 * 
-	 * @warning The wikipedia example is pretty misleading, you don't even need
-	 * to use multiplication. Not sure why it has 1/2 as a constant either ? But
-	 * some other places use that too, maybe its a draw convention issue?
 	 * 
 	 * @param this Bitmap object
 	 * @param pa First point on the line
