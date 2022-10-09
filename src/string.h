@@ -10,6 +10,13 @@
 #include <stdlib.h>
 #include <inttypes.h>
 
+char *DgStringConcatinate(const char * const string1, const char * const string2);
+char *DgStringConcatinateAndFree(const char * const string1, const char * const string2);
+char *DgStringDuplicate(const char * const string);
+bool DgStringEqual(const char * const string1, const char * const string2);
+size_t DgStringLength(const char * const string);
+size_t DgStringFind(const char * const string, const char * const what, const size_t which);
+
 char *DgStrcad(const char * const src1, const char * const src2);
 char *DgStrcadf(char *src1, const char * const src2);
 char *DgStrdup(const char * const source);
