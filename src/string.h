@@ -9,6 +9,7 @@
 
 #include <stdlib.h>
 #include <inttypes.h>
+#include <stdbool.h>
 
 char *DgStringConcatinate(const char * const string1, const char * const string2);
 char *DgStringConcatinateAndFree(const char * const string1, const char * const string2);

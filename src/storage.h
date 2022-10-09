@@ -23,31 +23,47 @@ typedef enum DgStorageObjectType {
 	DG_STORAGE_TYPE_LINK = (1 << 2),     // File is a link to a file or folder
 	DG_STORAGE_TYPE_REMOTE = (1 << 30),  // Will not specify type because it is remote
 	DG_STORAGE_TYPE_OTHER = (1 << 31),   // It is a different type (e.g. device on UNIX-like system)
-};
+} DgStorageObjectType;
+
+// Storage seek base
+typedef enum DgStorageSeekBase {
+	DG_STORAGE_SEEK_RELATIVE = 0,
+	DG_STORAGE_SEEK_START = 1,
+	DG_STORAGE_SEEK_END = 2,
+} DgStorageSeekBase;
+
+// File open flags
+typedef enum DgStorageFlags {
+	DG_STREAM_READ = (1 << 0),
+	DG_STREAM_WRITE = (1 << 1),
+	DG_STREAM_APPEND = (1 << 2),
+} DgStorageFlags;
 
 /** Function pointers for various storage and stream operations */
 /** @note Please update the wiki if any of these things change! */
+typedef struct DgStorage DgStorage;
+typedef struct DgStoragePool DgStoragePool;
 
 // Streams (only primitive operations on which others can be built)
-typedef DgError (DgStorageOpenFunction)(DgStorage *storage, DgStoragePool *pool, DgStorageStreamContext *context, DgStoragePath path, DgStorageFlags flags); // Path has protocol removed
-typedef DgError (DgStorageCloseFunction)(DgStorage *storage, DgStoragePool *pool, DgStorageStreamContext context);
+typedef DgError (*DgStorageOpenFunction)(DgStorage *storage, DgStoragePool *pool, DgStorageStreamContext *context, DgStoragePath path, DgStorageFlags flags); // Path has protocol removed
+typedef DgError (*DgStorageCloseFunction)(DgStorage *storage, DgStoragePool *pool, DgStorageStreamContext context);
 
-typedef DgError (DgStorageReadFunction)(DgStorage *storage, DgStoragePool *pool, DgStorageStreamContext context, size_t size, void *buffer);
-typedef DgError (DgStorageWriteFunction)(DgStorage *storage, DgStoragePool *pool, DgStorageStreamContext context, size_t size, void *buffer);
+typedef DgError (*DgStorageReadFunction)(DgStorage *storage, DgStoragePool *pool, DgStorageStreamContext context, size_t size, void *buffer);
+typedef DgError (*DgStorageWriteFunction)(DgStorage *storage, DgStoragePool *pool, DgStorageStreamContext context, size_t size, void *buffer);
 
-typedef DgError (DgStorageGetPositionFunction)(DgStorage *storage, DgStoragePool *pool, DgStorageStreamContext context, size_t *position);
-typedef DgError (DgStorageSetPositionFunction)(DgStorage *storage, DgStoragePool *pool, DgStorageStreamContext context, size_t position);
-typedef DgError (DgStorageSeekFunction)(DgStorage *storage, DgStoragePool *pool, DgStorageStreamContext context, DgStorageSeekBase base, size_t offset);
+typedef DgError (*DgStorageGetPositionFunction)(DgStorage *storage, DgStoragePool *pool, DgStorageStreamContext context, size_t *position);
+typedef DgError (*DgStorageSetPositionFunction)(DgStorage *storage, DgStoragePool *pool, DgStorageStreamContext context, size_t position);
+typedef DgError (*DgStorageSeekFunction)(DgStorage *storage, DgStoragePool *pool, DgStorageStreamContext context, DgStorageSeekBase base, size_t offset);
 
 // Filesystems
-typedef DgError (DgStorageDeleteFunction)(DgStorage *storage, DgStoragePool *pool, DgStoragePath path);
-typedef DgError (DgStorageRenameFunction)(DgStorage *storage, DgStoragePool *pool, DgStoragePath old_path, DgStoragePath new_path);
-typedef DgError (DgStorageCreateFileFunction)(DgStorage *storage, DgStoragePool *pool, DgStoragePath path);
-typedef DgError (DgStorageCreateFolderFunction)(DgStorage *storage, DgStoragePool *pool, DgStoragePath path);
-typedef DgError (DgStorageTypeFunction)(DgStorage *storage, DgStoragePool *pool, DgStoragePath path, DgStorageObjectType *type);
+typedef DgError (*DgStorageDeleteFunction)(DgStorage *storage, DgStoragePool *pool, DgStoragePath path);
+typedef DgError (*DgStorageRenameFunction)(DgStorage *storage, DgStoragePool *pool, DgStoragePath old_path, DgStoragePath new_path);
+typedef DgError (*DgStorageCreateFileFunction)(DgStorage *storage, DgStoragePool *pool, DgStoragePath path);
+typedef DgError (*DgStorageCreateFolderFunction)(DgStorage *storage, DgStoragePool *pool, DgStoragePath path);
+typedef DgError (*DgStorageTypeFunction)(DgStorage *storage, DgStoragePool *pool, DgStoragePath path, DgStorageObjectType *type);
 
 // Specific config destruction
-typedef DgError (DgStorageFreeSpecificConfig)(DgStorage *storage, DgStoragePool *pool);
+typedef DgError (*DgStorageFreeSpecificConfig)(DgStorage *storage, DgStoragePool *pool);
 
 /**
  * The storage function array/pointer.
@@ -118,7 +134,7 @@ DgStorageObjectType DgStorageType(DgStorage *this, DgStoragePath path);
 #if 0
 typedef struct DgStream {
     DgStoragePool *pool;
-    void *context;
+    DgStorageStreamContext context;
 } DgStream;
 #endif
 

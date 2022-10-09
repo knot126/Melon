@@ -5,7 +5,10 @@
  * Error handling
  */
 
+#pragma once
+
 #include <inttypes.h>
+#include <stdbool.h>
 
 typedef uint32_t DgError;
 
@@ -21,7 +24,7 @@ enum {
 };
 
 typedef struct DgErrorCallback {
-	
+	int _lel;
 } DgErrorCallback;
 
 bool DgErrorFatal(DgError error);
