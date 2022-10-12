@@ -15,17 +15,6 @@
 #include "surface.h"
 
 /**
- * @enum DgDrawBackendType The type of graphics backend to use, like Vulkan or Software Rendering.
- */
-enum {
-	DG_DRAW_SOFTWARE = 1,
-	DG_DRAW_VULKAN = 2,
-	DG_DRAW_OPENGL = 3,
-};
-
-typedef uint32_t DgDrawBackendType;
-
-/**
  * 2D Vertex
  * =========
  * 
@@ -33,7 +22,7 @@ typedef uint32_t DgDrawBackendType;
  */
 typedef struct DgVertex2D {
 	DgVec2 position;
-	DgVec4 colour;
+	DgColour colour;
 } DgVertex2D;
 
 /**
@@ -44,7 +33,7 @@ typedef struct DgVertex2D {
  */
 typedef struct DgVertex3D {
 	DgVec3 position;
-	DgVec3 colour;
+	DgColour colour;
 } DgVertex3D;
 
 /**
@@ -57,7 +46,6 @@ typedef struct DgVertex3D {
  * to.
  */
 typedef struct DgDrawContext {
-	DgDrawBackendType backend;
 	uint64_t flags;
 	float surface_quality;
 	bool surface_perpixel;
