@@ -18,6 +18,7 @@ enum {
 	DG_BITMAP_DRAWING_PERSPECTIVE = (1 << 2),
 	DG_BITMAP_DRAWING_NEGATE_Z = (1 << 3),
 	DG_BITMAP_NO_CORRECT_COORDINATES = (1 << 4),
+	DG_BITMAP_EXTERNAL_SOURCE = (1 << 15),
 };
 
 typedef uint16_t DgBitmapFlags;
@@ -82,8 +83,8 @@ typedef struct DgBitmap {
 } DgBitmap;
 
 bool DgBitmapInit(DgBitmap *bitmap, const uint16_t width, const uint16_t height, const uint16_t chan);
-// bool DgBitmapNew(DgBitmap *bitmap, const uint16_t width, const uint16_t height, const uint16_t chan);
 void DgBitmapFree(DgBitmap *bitmap);
+void DgBitmapSetSource(DgBitmap * restrict this, uint8_t * restrict source, DgVec2I size, uint16_t channels);
 void DgBitmapSetFlags(DgBitmap *this, DgBitmapFlags flags);
 DgBitmapFlags DgBitmapGetFlags(DgBitmap *this);
 void DgBitmapSetDepthBuffer(DgBitmap *this, bool enable);

@@ -54,10 +54,6 @@ bool DgBitmapInit(DgBitmap *bitmap, const uint16_t width, const uint16_t height,
 	return false;
 }
 
-// bool DgBitmapNew(DgBitmap *bitmap, const uint16_t width, const uint16_t height, const uint16_t chan) {
-// 	return DgBitmapInit(bitmap, width, height, chan);
-// }
-
 void DgBitmapFree(DgBitmap *bitmap) {
 	/**
 	 * Free a bitmap and all of its data.
@@ -65,9 +61,36 @@ void DgBitmapFree(DgBitmap *bitmap) {
 	 * @param bitmap Bitmap to free
 	 */
 	
-	if (bitmap->src) {
+	if (bitmap->src && !(bitmap->flags & DG_BITMAP_EXTERNAL_SOURCE)) {
 		DgFree(bitmap->src);
 	}
+	
+	if (bitmap->depth) {
+		DgFree(bitmap->depth);
+	}
+}
+
+void DgBitmapSetSource(DgBitmap * restrict this, uint8_t * restrict source, DgVec2I size, uint16_t channels) {
+	/**
+	 * Set the source to be external memory which isn't managed by DgBitmap.
+	 * 
+	 * @param this Bitmap object to use
+	 * @param source Source block of memory to use
+	 * @param size Size of the bitmap
+	 * @param channels Number of channels in the bitmap
+	 */
+	
+	if (this->src && !(this->flags & DG_BITMAP_EXTERNAL_SOURCE)) {
+		DgFree(this->src);
+	}
+	
+	this->src = source;
+	
+	this->width = size.x;
+	this->height = size.y;
+	this->chan = channels;
+	
+	DgBitmapSetFlags(this, DgBitmapGetFlags(this) | DG_BITMAP_EXTERNAL_SOURCE);
 }
 
 static void DgBitmapSwapSimilar(DgBitmap *dest, DgBitmap *from) {

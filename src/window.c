@@ -19,6 +19,7 @@
 
 #include "maths.h"
 #include "bitmap.h"
+#include "error.h"
 
 #include "window.h"
 
@@ -65,6 +66,9 @@ int32_t DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
 	/**
 	 * Display new changes to a window.
 	 * 
+	 * @note bitmap can be NULL if you have an assocaited bitmap (or you just
+	 * like to draw unknown memory...)
+	 * 
 	 * @warning The currently active bitmap must not have less pixels than the
 	 * window surface or there will be a buffer overrun.
 	 * 
@@ -87,15 +91,31 @@ int32_t DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
 	}
 	
 	// Draw the window
-	uint32_t *wd = (uint32_t *) this->surface->pixels;
-	uint32_t pixel_count = this->size.x * this->size.y;
-	uint8_t *data = bitmap->src;
-	
-	for (size_t i = 0; i < pixel_count; i++) {
-		wd[i] = SDL_MapRGBA(this->surface->format, data[(i * 3)], data[(i * 3) + 1], data[(i * 3) + 2], 0xff);
+	if (bitmap) {
+		uint32_t *wd = (uint32_t *) this->surface->pixels;
+		uint32_t pixel_count = this->size.x * this->size.y;
+		uint8_t *data = bitmap->src;
+		
+		for (size_t i = 0; i < pixel_count; i++) {
+			wd[i] = SDL_MapRGBA(this->surface->format, data[(i * 3)], data[(i * 3) + 1], data[(i * 3) + 2], 0xff);
+		}
 	}
 	
 	return SDL_UpdateWindowSurface(this->window) ? 1 : 0;
+}
+
+DgError DgWindowAssocaiteBitmap(DgWindow * restrict this, DgBitmap * restrict bitmap) {
+	/**
+	 * Assocaite a bitmap object with a window for faster rendering.
+	 * 
+	 * @note To use the bitmap, you must call DgWindowUpdate with a bitmap of
+	 * NULL otherwise it just copies normally.
+	 * 
+	 * @param this Window object
+	 * @param bitmap Bitmap object
+	 */
+	
+	DgBitmapSetSource(bitmap, this->surface->pixels, this->size, 4);
 }
 
 DgVec2 DgWindowGetMouseLocation(DgWindow * restrict this) {
@@ -154,6 +174,10 @@ void DgWindowFree(DgWindow *this) {
 
 int32_t DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
 	return 1;
+}
+
+DgError DgWindowAssocaiteBitmap(DgWindow * restrict this, DgBitmap * restrict bitmap) {
+	return DG_ERROR_NOT_IMPLEMENTED;
 }
 
 DgVec2 DgWindowGetMouseLocation(DgWindow *this) {
