@@ -322,6 +322,11 @@ void DgBitmapDrawLine(DgBitmap * restrict this, DgVec2 pa, DgVec2 pb, DgColour *
 	 * This can be reformed to the implementation below for using only integer
 	 * arithmetic and to support vertical lines by swapping x and y for r > 1.
 	 * 
+	 * @note Updated (2022-11-08) so that the line is now anti-aliased. This only
+	 * works if DG_BITMAP_DRAWING_ALPHA is set.
+	 * 
+	 * @todo Make line colours with alpha work when AA is enabled.
+	 * 
 	 * @param this Bitmap object
 	 * @param pa First point on the line
 	 * @param pb Second point on the line
@@ -340,6 +345,10 @@ void DgBitmapDrawLine(DgBitmap * restrict this, DgVec2 pa, DgVec2 pb, DgColour *
 	int32_t dx = b.x - a.x;
 	int32_t dy = b.y - a.y;
 	int32_t error = 0;
+	const int32_t aa = ((this->flags & DG_BITMAP_DRAWING_ALPHA) == DG_BITMAP_DRAWING_ALPHA);
+	
+	// As part of anti-aliasing the line, we need a local copy of the colour
+	DgColour current = *colour;
 	
 	// For lines with y'(x) in the range [-1, 1] use x increment
 	if ((dx >= 0) ? ((-dx <= dy) && (dy < dx)) : ((-dx >= dy) && (dy >= dx))) {
@@ -361,8 +370,30 @@ void DgBitmapDrawLine(DgBitmap * restrict this, DgVec2 pa, DgVec2 pb, DgColour *
 				error += dx;
 			}
 			
-			// Plot pixel for this x value
-			DgBitmapDrawPixel(this, x, y, *colour);
+			if (aa) {
+				// Find how far off the point is from this pixel as the alpha
+				float offset = (float)(error) / (float)(dx);
+				
+				// Alpha for the main pixel
+				current.a = 1.0f - fabs(offset);
+				
+				// Plot main pixel for this x value
+				DgBitmapDrawPixel(this, x, y, current);
+				
+				// Depending if the offset is less or more, draw the rest of the line
+				// up or down.
+				if (offset >= 0.0f) {
+					current.a = fabs(offset);
+					DgBitmapDrawPixel(this, x, y + 1, current);
+				}
+				else {
+					current.a = fabs(offset);
+					DgBitmapDrawPixel(this, x, y - 1, current);
+				}
+			}
+			else {
+				DgBitmapDrawPixel(this, x, y, *colour);
+			}
 		}
 	}
 	// For lines outside of that range, use y increment
@@ -392,7 +423,30 @@ void DgBitmapDrawLine(DgBitmap * restrict this, DgVec2 pa, DgVec2 pb, DgColour *
 				error += dy;
 			}
 			
-			DgBitmapDrawPixel(this, x, y, *colour);
+			if (aa) {
+				// Find how far off the point is from this pixel as the alpha
+				float offset = (float)(error) / (float)(dy);
+				
+				// Alpha for the main pixel
+				current.a = 1.0f - fabs(offset);
+				
+				// Plot main pixel for this y value
+				DgBitmapDrawPixel(this, x, y, current);
+				
+				// Depending if the offset is less or more, draw the rest of the line
+				// up or down.
+				if (offset >= 0.0f) {
+					current.a = fabs(offset);
+					DgBitmapDrawPixel(this, x + 1, y, current);
+				}
+				else {
+					current.a = fabs(offset);
+					DgBitmapDrawPixel(this, x - 1, y, current);
+				}
+			}
+			else {
+				DgBitmapDrawPixel(this, x, y, *colour);
+			}
 		}
 	}
 }
