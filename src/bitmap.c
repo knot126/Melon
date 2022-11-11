@@ -19,10 +19,6 @@
 
 #include "bitmap.h"
 
-enum {
-	DG_BITMAP_DEFAULT_CHANNELS_COUNT = 3, // For some random generation functions
-};
-
 bool DgBitmapInit(DgBitmap *bitmap, const uint16_t width, const uint16_t height, const uint16_t chan) {
 	/**
 	 * Initialise a bitmap that has already been allocated. Returns 1 on success
@@ -192,36 +188,13 @@ void DgBitmapDrawPixel(DgBitmap *this, uint16_t x, uint16_t y, DgColour colour) 
 	
 	// Old colour for alpha blending
 	DgColour old_colour;
-	
-	if ((this->flags & DG_BITMAP_DRAWING_ALPHA) == DG_BITMAP_DRAWING_ALPHA) {
-		DgBitmapGetPixel(this, x, y, &old_colour);
-	}
-	else {
-		old_colour = (DgColour) {1.0f, 1.0f, 1.0f, 1.0f};
-	}
+	DgBitmapGetPixel(this, x, y, &old_colour);
 	
 	// Invert for graph-like coordinates
 	y = (this->height - y) - 1;
 	
-	// Calculate pixel offset in memony block
+	// Calculate pixel location in memory block
 	size_t pixel_offset = ((y * this->width) + x) * this->chan;
-	
-	// Special blending or writing modes (when alpha is negative)
-	// Currently this is only invert colour
-	if (colour.a < 0.0f) {
-		this->src[pixel_offset + 0] = ~this->src[pixel_offset + 0];
-		if (this->chan >= 2) {
-			this->src[pixel_offset + 1] = ~this->src[pixel_offset + 1];
-			if (this->chan >= 3) {
-				this->src[pixel_offset + 2] = ~this->src[pixel_offset + 2];
-				if (this->chan >= 4) {
-					this->src[pixel_offset + 3] = 0xff;
-				}
-			}
-		}
-		
-		return;
-	}
 	
 	// Blend colours
 	#define DG_BITMAP_BLEND(CH) (uint8_t)(((colour.a * colour.CH) + ((1.0f - colour.a) * old_colour.CH)) * 255.0f)
@@ -253,12 +226,10 @@ void DgBitmapDrawPixelZ(DgBitmap * restrict this, uint16_t x, uint16_t y, float 
 	
 	size_t index = ((this->width * y) + x);
 	
-	if (this->depth && index < (this->width * this->height) && z <= this->depth[index] && z >= 0.0f) {
-		DgBitmapDrawPixel(this, x, y, *colour);
+	DgBitmapDrawPixel(this, x, y, *colour);
+	
+	if ((this->depth != NULL) && (index < (this->width * this->height)) && (z <= this->depth[index]) && (z >= 0.0f)) {
 		this->depth[index] = z;
-	}
-	else if (this->depth == NULL) {
-		DgBitmapDrawPixel(this, x, y, *colour);
 	}
 }
 
@@ -281,13 +252,13 @@ void DgBitmapGetPixel(DgBitmap * restrict this, uint16_t x, uint16_t y, DgColour
 	// Calculate pixel offset in memory block
 	size_t pixel_offset = ((y * this->width) + x) * this->chan;
 	
-	colour->r = (((float)this->src[pixel_offset + 0]) * (1.0f/255.0f));
+	colour->r = (((float)this->src[pixel_offset + 0]) * (1.0f / 255.0f));
 	if (this->chan >= 2) {
-		colour->g = (((float)this->src[pixel_offset + 1]) * (1.0f/255.0f));
+		colour->g = (((float)this->src[pixel_offset + 1]) * (1.0f / 255.0f));
 		if (this->chan >= 3) {
-			colour->b = (((float)this->src[pixel_offset + 2]) * (1.0f/255.0f));
+			colour->b = (((float)this->src[pixel_offset + 2]) * (1.0f / 255.0f));
 			if (this->chan >= 4) {
-				colour->a = (((float)this->src[pixel_offset + 3]) * (1.0f/255.0f));
+				colour->a = (((float)this->src[pixel_offset + 3]) * (1.0f / 255.0f));
 			}
 		}
 	}
@@ -345,7 +316,7 @@ void DgBitmapDrawLine(DgBitmap * restrict this, DgVec2 pa, DgVec2 pb, DgColour *
 	int32_t dx = b.x - a.x;
 	int32_t dy = b.y - a.y;
 	int32_t error = 0;
-	const int32_t aa = ((this->flags & DG_BITMAP_DRAWING_ALPHA) == DG_BITMAP_DRAWING_ALPHA);
+	const int32_t aa = (this->flags & DG_BITMAP_DRAWING_ALPHA) | (this->flags & DG_BITMAP_DRAWING_ANTIALIAS);
 	
 	// As part of anti-aliasing the line, we need a local copy of the colour
 	DgColour current = *colour;
@@ -476,6 +447,10 @@ void DgBitmapDrawQuadraticBezier(DgBitmap * restrict this, DgVec2 p0, DgVec2 p1,
 	 * the root finding not being a function, I would encourage you to look up
 	 * what a multivalue function is.
 	 * 
+	 * @warning Piece of shit
+	 * 
+	 * @todo Make it not a piece of shit :D
+	 * 
 	 * @param this Bitmap to draw on
 	 * @param p0 First control point
 	 * @param p1 Second control point
@@ -566,9 +541,7 @@ void DgBitmapDrawPoint(DgBitmap * restrict this, float x, float y, float r, DgCo
 		for (int32_t x = ix - rad - 2; x < ix + rad + 2; x++) {
 			uint32_t raddist = ((x - ix) * (x - ix)) + ((y - iy) * (y - iy));
 			if (raddist <= radsq) {
-				if (x < this->width && y < this->height) {
-					DgBitmapDrawPixel(this, x, y, colour);
-				}
+				DgBitmapDrawPixel(this, x, y, colour);
 			}
 		}
 	}
@@ -594,6 +567,20 @@ static bool DgBitmapIsInLineSame(DgVec2 *a, DgVec2 *b, DgVec2 *c, DgVec2 *d) {
 	int32_t sb = DgSign(result_b);
 	
 	return (sa == sb);
+}
+
+static float DgBitmapDrawConvexPolygon_PixelAlphaValue(DgVec2 pa, DgVec2 pb, DgVec2 side, DgVec2I point) {
+	/**
+	 * Return the alpha (fraction of the pixel covered) for the given line.
+	 * 
+	 * @param pa First point on the line
+	 * @param pb Second point on the line
+	 * @param side A point on the side that should be coloured in
+	 * @param point The pixel to test
+	 * @return Fraction of the pixel covered by the LT/GT relation
+	 */
+	
+	
 }
 
 void DgBitmapDrawConvexPolygon(DgBitmap * restrict this, size_t points_count, DgVec2 * restrict points, DgColour * restrict colour) {
@@ -651,7 +638,7 @@ void DgBitmapDrawConvexPolygon(DgBitmap * restrict this, size_t points_count, Dg
 	// Fill in the pixels
 	for (size_t y = pmin.y; y <= pmax.y; y++) {
 		for (size_t x = pmin.x; x <= pmax.x; x++) {
-			bool draw = true;
+			bool alpha = 1.0f;
 			
 			// Point coordinates
 			DgVec2 pc = (DgVec2) {(float)x / (float)this->width, (float)y / (float)this->height};
@@ -666,14 +653,16 @@ void DgBitmapDrawConvexPolygon(DgBitmap * restrict this, size_t points_count, Dg
 				
 				// Check if on the right side of the line
 				if (!result) {
-					draw = false;
+					alpha = 0.0f;
 					break;
 				}
 			}
 			
-			// Draw point if it can be drawn
-			if (draw) {
-				DgBitmapDrawPixel(this, x, y, *colour);
+			// Draw point if it should be drawn
+			if (alpha > 0.0f) {
+				DgColour final_colour = *colour;
+				final_colour.a *= alpha;
+				DgBitmapDrawPixel(this, x, y, final_colour);
 			}
 		}
 	}
@@ -682,6 +671,8 @@ void DgBitmapDrawConvexPolygon(DgBitmap * restrict this, size_t points_count, Dg
 inline static void DgBitmapDrawTriangle(DgBitmap * const this, DgBitmapTriangle *triangle) {
 	/**
 	 * Draw a single shaded triangle.
+	 * 
+	 * @warning Kind of a messy function
 	 * 
 	 * @param this Bitmap object
 	 * @param triangle Triangle to draw
@@ -758,11 +749,13 @@ inline static void DgBitmapDrawTriangle(DgBitmap * const this, DgBitmapTriangle 
 			
 			// Check for collision
 			if ((bary.u >= 0.0f) && (bary.v >= 0.0f) && (bary.w >= 0.0f)) {
-				// Calculate z at this spot
+				// Interpolate to get z at this spot
+				// $$ \frac{1}{(uP_{1_z}^{-1} + vP_{2_z}^{-1} + wP_{3_z}^{-1})} $$
 				float inv_z = bary.u * p1z_inv + bary.v * p2z_inv + bary.w * p3z_inv;
 				float z = 1.0f / inv_z;
 				
 				// Multiply by 1/z for perspective correct interpolation
+				// $$ \frac{z}{(z^{-1}\vec{C}_1 + z^{-1}\vec{C}_2 + z^{-1}\vec{C}_3)} $$
 				DgVec4 pa = DgVec4Scale(inv_z, triangle->p1.colour);
 				DgVec4 pb = DgVec4Scale(inv_z, triangle->p2.colour);
 				DgVec4 pc = DgVec4Scale(inv_z, triangle->p3.colour);

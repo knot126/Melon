@@ -13,7 +13,8 @@
 #include "maths.h"
 
 enum {
-	DG_BITMAP_DRAWING_ALPHA = (1 << 0),
+	DG_BITMAP_DRAWING_ALPHA = (1 << 0), /// @deprecated
+	DG_BITMAP_DRAWING_ANTIALIAS = (1 << 0),
 	DG_BITMAP_DRAWING_DEPTH = (1 << 1),
 	DG_BITMAP_DRAWING_PERSPECTIVE = (1 << 2),
 	DG_BITMAP_DRAWING_NEGATE_Z = (1 << 3),

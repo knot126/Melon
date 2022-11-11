@@ -10,7 +10,7 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
-typedef uint32_t DgError;
+typedef int32_t DgError;
 
 enum {
 	DG_ERROR_SUCCESSFUL = 0,
@@ -21,6 +21,7 @@ enum {
 	DG_ERROR_NOT_INITIALISED = -5,
 	DG_ERROR_NOT_IMPLEMENTED = -6,
 	DG_ERROR_ALREADY_EXISTS = -7,
+	DG_ERROR_ALLOCATION_FAILED = -8,
 };
 
 typedef struct DgErrorCallback {

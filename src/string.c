@@ -258,3 +258,55 @@ uint32_t *DgInt32ListFromString(char * restrict str, size_t * const restrict siz
 	
 	return list;
 }
+
+/** ============================================================================
+ * 
+ * New string functions
+ * 
+ *  ============================================================================
+ */
+
+size_t DgStringLength(const char * const string) {
+	/**
+	 * Return the length of the given string
+	 * 
+	 * @param string String to check length of
+	 * @return Length of string
+	 */
+	
+	for (size_t i = 0;; i++) {
+		if (string[i] == '\0') {
+			return i;
+		}
+	}
+}
+
+bool DgStringEqual(const char * const string1, const char * const string2) {
+	/**
+	 * Check if the two strings are equal
+	 * 
+	 * @param string1 First string
+	 * @param string2 Second string
+	 * @return If (string1 == string2)
+	 */
+	
+	for (size_t i = 0;; i++) {
+		// Check the current character
+		if (string1[i] == string2[i]) {
+			// They are the same!
+			
+			// If we are on the NUL byte, then we are done!
+			if (string1[i] == '\0') {
+				return true;
+			}
+			
+			// Otherwise we continue
+			continue;
+		}
+		else {
+			// They are not the same. Note that this handles the case where one
+			// string is shorter than another well.
+			return false;
+		}
+	}
+}

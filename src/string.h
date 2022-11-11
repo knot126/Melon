@@ -12,7 +12,9 @@
 #include <stdbool.h>
 
 char *DgStringConcatinate(const char * const string1, const char * const string2);
-char *DgStringConcatinateAndFree(const char * const string1, const char * const string2);
+char *DgStringConcatinateL(const char * const string1, const char * const string2);
+char *DgStringConcatinateR(const char * const string1, const char * const string2);
+char *DgStringConcatinateLR(const char * const string1, const char * const string2);
 char *DgStringDuplicate(const char * const string);
 bool DgStringEqual(const char * const string1, const char * const string2);
 size_t DgStringLength(const char * const string);
