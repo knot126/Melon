@@ -80,7 +80,7 @@ static DgError DgTablePreallocMore(DgTable *this) {
 	return DG_ERROR_SUCCESSFUL;
 }
 
-static DgError DgTableFind(DgTable * restrict this, const DgTableValue * restrict key, size_t * restrict index) {
+static DgError DgTableFind(DgTable * restrict this, const DgValue * restrict key, size_t * restrict index) {
 	/**
 	 * Find the index of the pair with the given key
 	 * 
@@ -102,7 +102,7 @@ static DgError DgTableFind(DgTable * restrict this, const DgTableValue * restric
 	return DG_ERROR_NOT_FOUND;
 }
 
-DgError DgTableSet(DgTable * restrict this, DgTableValue * restrict key, DgTableValue * restrict value) {
+DgError DgTableSet(DgTable * restrict this, DgValue * restrict key, DgValue * restrict value) {
 	/**
 	 * Set a key/value pair
 	 * 
@@ -151,7 +151,7 @@ DgError DgTableSet(DgTable * restrict this, DgTableValue * restrict key, DgTable
 	return DG_ERROR_SUCCESSFUL;
 }
 
-DgError DgTableGet(DgTable * restrict this, DgTableValue * restrict key, DgTableValue * restrict value) {
+DgError DgTableGet(DgTable * restrict this, DgValue * restrict key, DgValue * restrict value) {
 	/**
 	 * Get a value assocaited with a key
 	 * 
@@ -175,7 +175,7 @@ DgError DgTableGet(DgTable * restrict this, DgTableValue * restrict key, DgTable
 	return status;
 }
 
-DgError DgTableRemove(DgTable * restrict this, DgTableValue * const restrict key) {
+DgError DgTableRemove(DgTable * restrict this, DgValue * const restrict key) {
 	/**
 	 * Remove an element from the table
 	 * 
@@ -194,7 +194,7 @@ DgError DgTableRemove(DgTable * restrict this, DgTableValue * const restrict key
  * VALUES
  */
 
-DgError DgValueNil(DgTableValue * restrict value) {
+DgError DgValueNil(DgValue * restrict value) {
 	/**
 	 * Create a NIL value.
 	 * 
@@ -208,7 +208,22 @@ DgError DgValueNil(DgTableValue * restrict value) {
 	return DG_ERROR_SUCCESSFUL;
 }
 
-DgError DgValueInt8(DgTableValue * restrict value, int8_t data) {
+DgError DgValueBool(DgValue * restrict value, bool data) {
+	/**
+	 * Create a signed 8-bit integer value.
+	 * 
+	 * @param value Value object
+	 * @param data Data value to set to
+	 * @return Error code
+	 */
+	
+	value->data.asBool = data;
+	value->type = DG_TABLE_TYPE_BOOL;
+	
+	return DG_ERROR_SUCCESSFUL;
+}
+
+DgError DgValueInt8(DgValue * restrict value, int8_t data) {
 	/**
 	 * Create a signed 8-bit integer value.
 	 * 
@@ -223,7 +238,7 @@ DgError DgValueInt8(DgTableValue * restrict value, int8_t data) {
 	return DG_ERROR_SUCCESSFUL;
 }
 
-DgError DgValueUInt8(DgTableValue * restrict value, uint8_t data) {
+DgError DgValueUInt8(DgValue * restrict value, uint8_t data) {
 	/**
 	 * Create an unsigned 8-bit integer value.
 	 * 
@@ -238,7 +253,7 @@ DgError DgValueUInt8(DgTableValue * restrict value, uint8_t data) {
 	return DG_ERROR_SUCCESSFUL;
 }
 
-DgError DgValueInt16(DgTableValue * restrict value, int16_t data) {
+DgError DgValueInt16(DgValue * restrict value, int16_t data) {
 	/**
 	 * Create a signed 16-bit integer value.
 	 * 
@@ -253,7 +268,7 @@ DgError DgValueInt16(DgTableValue * restrict value, int16_t data) {
 	return DG_ERROR_SUCCESSFUL;
 }
 
-DgError DgValueUInt16(DgTableValue * restrict value, uint16_t data) {
+DgError DgValueUInt16(DgValue * restrict value, uint16_t data) {
 	/**
 	 * Create an unsigned 16-bit integer value.
 	 * 
@@ -268,7 +283,7 @@ DgError DgValueUInt16(DgTableValue * restrict value, uint16_t data) {
 	return DG_ERROR_SUCCESSFUL;
 }
 
-DgError DgValueInt32(DgTableValue * restrict value, int32_t data) {
+DgError DgValueInt32(DgValue * restrict value, int32_t data) {
 	/**
 	 * Create a signed 32-bit integer value.
 	 * 
@@ -283,7 +298,7 @@ DgError DgValueInt32(DgTableValue * restrict value, int32_t data) {
 	return DG_ERROR_SUCCESSFUL;
 }
 
-DgError DgValueUInt32(DgTableValue * restrict value, uint32_t data) {
+DgError DgValueUInt32(DgValue * restrict value, uint32_t data) {
 	/**
 	 * Create an unsigned 32-bit integer value.
 	 * 
@@ -298,7 +313,7 @@ DgError DgValueUInt32(DgTableValue * restrict value, uint32_t data) {
 	return DG_ERROR_SUCCESSFUL;
 }
 
-DgError DgValueInt64(DgTableValue * restrict value, int64_t data) {
+DgError DgValueInt64(DgValue * restrict value, int64_t data) {
 	/**
 	 * Create a signed 64-bit integer value.
 	 * 
@@ -313,7 +328,7 @@ DgError DgValueInt64(DgTableValue * restrict value, int64_t data) {
 	return DG_ERROR_SUCCESSFUL;
 }
 
-DgError DgValueUInt64(DgTableValue * restrict value, uint64_t data) {
+DgError DgValueUInt64(DgValue * restrict value, uint64_t data) {
 	/**
 	 * Create an unsigned 64-bit integer value.
 	 * 
@@ -328,7 +343,7 @@ DgError DgValueUInt64(DgTableValue * restrict value, uint64_t data) {
 	return DG_ERROR_SUCCESSFUL;
 }
 
-DgError DgValueFloat32(DgTableValue * restrict value, float data) {
+DgError DgValueFloat32(DgValue * restrict value, float data) {
 	/**
 	 * Create a 32-bit float value.
 	 * 
@@ -343,7 +358,7 @@ DgError DgValueFloat32(DgTableValue * restrict value, float data) {
 	return DG_ERROR_SUCCESSFUL;
 }
 
-DgError DgValueFloat64(DgTableValue * restrict value, double data) {
+DgError DgValueFloat64(DgValue * restrict value, double data) {
 	/**
 	 * Create a 64-bit float value.
 	 * 
@@ -358,7 +373,7 @@ DgError DgValueFloat64(DgTableValue * restrict value, double data) {
 	return DG_ERROR_SUCCESSFUL;
 }
 
-DgError DgValueString(DgTableValue * restrict value, char * restrict data) {
+DgError DgValueString(DgValue * restrict value, char * restrict data) {
 	/**
 	 * Create a regular string value.
 	 * 
@@ -382,7 +397,7 @@ DgError DgValueString(DgTableValue * restrict value, char * restrict data) {
 	return DG_ERROR_SUCCESSFUL;
 }
 
-DgError DgValueStaticString(DgTableValue * restrict value, const char * restrict data) {
+DgError DgValueStaticString(DgValue * restrict value, const char * restrict data) {
 	/**
 	 * Create a dynamic string value.
 	 * 
@@ -400,7 +415,7 @@ DgError DgValueStaticString(DgTableValue * restrict value, const char * restrict
 	return DG_ERROR_SUCCESSFUL;
 }
 
-DgError DgValuePointer(DgTableValue * restrict value, void *data) {
+DgError DgValuePointer(DgValue * restrict value, void *data) {
 	/**
 	 * Create a pointer value.
 	 * 
@@ -415,7 +430,7 @@ DgError DgValuePointer(DgTableValue * restrict value, void *data) {
 	return DG_ERROR_SUCCESSFUL;
 }
 
-DgError DgValueFree(DgTableValue * restrict this) {
+DgError DgValueFree(DgValue * restrict this) {
 	/**
 	 * Release memory assocaited with a value (if needed)
 	 * 
@@ -443,7 +458,7 @@ DgError DgValueFree(DgTableValue * restrict this) {
 	return DG_ERROR_SUCCESSFUL;
 }
 
-bool DgValueEqual(const DgTableValue * const restrict value1, const DgTableValue * const restrict value2) {
+bool DgValueEqual(const DgValue * const restrict value1, const DgValue * const restrict value2) {
 	/**
 	 * Check if the two given values are equal.
 	 * 

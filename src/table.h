@@ -7,8 +7,11 @@
 
 #pragma once
 
+#include <stdbool.h>
 #include <inttypes.h>
 #include <stdlib.h>
+
+#include "error.h"
 
 typedef uint16_t DgTableType;
 
@@ -33,6 +36,7 @@ enum {
 	//DG_TABLE_TYPE_BYTES = 14,
 	DG_TABLE_TYPE_FLOAT32 = 15,
 	DG_TABLE_TYPE_FLOAT64 = 16,
+	DG_TABLE_TYPE_BOOL = 17,
 };
 
 struct DgTableArrayHeader;
@@ -41,7 +45,7 @@ struct DgTable;
 /**
  * Data value storage type
  */
-typedef union DgTableValueData {
+typedef union DgValueData {
 	int8_t asInt8;
 	uint8_t asUInt8;
 	int16_t asInt16;
@@ -58,17 +62,18 @@ typedef union DgTableValueData {
 	uint8_t *asBytes;
 	float asFloat32;
 	double asFloat64;
-} DgTableValueData;
+	bool asBool;
+} DgValueData;
 
 /**
  * Value storage type
  */
-typedef struct DgTableValue {
-	DgTableValueData data; // Raw data bytes
+typedef struct DgValue {
+	DgValueData data; // Raw data bytes
 	uint32_t metadata;     // Used for string hash or cached array length
 	DgTableType type;      // Type of value stored
 	uint16_t flags;        // To be used for flags applied to the value
-} DgTableValue;
+} DgValue;
 
 /**
  * Header part of the array memory block
@@ -82,8 +87,8 @@ typedef struct DgTableArrayHeader {
  * Actual type for the table
  */
 typedef struct DgTable {
-	DgTableValue *key;    // Keys
-	DgTableValue *value;  // Values
+	DgValue *key;    // Keys
+	DgValue *value;  // Values
 	size_t length;        // Length of used entries
 	size_t allocated;     // Length of allocated entries
 } DgTable;
@@ -92,28 +97,29 @@ typedef struct DgTable {
 DgError DgTableInit(DgTable *this);
 DgError DgTableFree(DgTable *this);
 
-DgError DgTableSet(DgTable * restrict this, DgTableValue * restrict key, DgTableValue * restrict value);
-DgError DgTableGet(DgTable * restrict this, DgTableValue * restrict key, DgTableValue * restrict value);
-DgError DgTableRemove(DgTable * restrict this, DgTableValue * const restrict key);
+DgError DgTableSet(DgTable * restrict this, DgValue * restrict key, DgValue * restrict value);
+DgError DgTableGet(DgTable * restrict this, DgValue * restrict key, DgValue * restrict value);
+DgError DgTableRemove(DgTable * restrict this, DgValue * const restrict key);
 
 // Array functions
 // ...
 
 // Value functions
-DgError DgValueNil(DgTableValue * restrict value);
-DgError DgValueInt8(DgTableValue * restrict value, int8_t data);
-DgError DgValueUInt8(DgTableValue * restrict value, uint8_t data);
-DgError DgValueInt16(DgTableValue * restrict value, int16_t data);
-DgError DgValueUInt16(DgTableValue * restrict value, uint16_t data);
-DgError DgValueInt32(DgTableValue * restrict value, int32_t data);
-DgError DgValueUInt32(DgTableValue * restrict value, uint32_t data);
-DgError DgValueInt64(DgTableValue * restrict value, int64_t data);
-DgError DgValueUInt64(DgTableValue * restrict value, uint64_t data);
-DgError DgValueFloat32(DgTableValue * restrict value, float data);
-DgError DgValueFloat64(DgTableValue * restrict value, double data);
-DgError DgValueString(DgTableValue * restrict value, char * restrict data);
-DgError DgValueStaticString(DgTableValue * restrict value, const char * restrict data);
-DgError DgValuePointer(DgTableValue * restrict value, void *data);
-DgError DgValueFree(DgTableValue * restrict this);
+DgError DgValueNil(DgValue * restrict value);
+DgError DgValueBool(DgValue * restrict value, bool data);
+DgError DgValueInt8(DgValue * restrict value, int8_t data);
+DgError DgValueUInt8(DgValue * restrict value, uint8_t data);
+DgError DgValueInt16(DgValue * restrict value, int16_t data);
+DgError DgValueUInt16(DgValue * restrict value, uint16_t data);
+DgError DgValueInt32(DgValue * restrict value, int32_t data);
+DgError DgValueUInt32(DgValue * restrict value, uint32_t data);
+DgError DgValueInt64(DgValue * restrict value, int64_t data);
+DgError DgValueUInt64(DgValue * restrict value, uint64_t data);
+DgError DgValueFloat32(DgValue * restrict value, float data);
+DgError DgValueFloat64(DgValue * restrict value, double data);
+DgError DgValueString(DgValue * restrict value, char * restrict data);
+DgError DgValueStaticString(DgValue * restrict value, const char * restrict data);
+DgError DgValuePointer(DgValue * restrict value, void *data);
+DgError DgValueFree(DgValue * restrict this);
 
-bool DgValueEqual(const DgTableValue * const restrict value1, const DgTableValue * const restrict value2);
+bool DgValueEqual(const DgValue * const restrict value1, const DgValue * const restrict value2);
