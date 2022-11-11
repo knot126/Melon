@@ -5,6 +5,8 @@
  * Storage facilities
  */
 
+#include <string.h>
+
 #include "error.h"
 #include "alloc.h"
 #include "log.h"
@@ -51,6 +53,8 @@ static DgStorage *DgStorageInitGlobal(void) {
 	}
 	
 	DgStorageInit(gGlobalStorageConfig_);
+	
+	return gGlobalStorageConfig_;
 }
 
 static DgStorage *DgStorageResolve(DgStorage *this) {

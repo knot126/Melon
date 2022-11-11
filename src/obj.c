@@ -76,7 +76,7 @@ uint32_t DgOBJLoad(DgOBJMesh *mesh, char * const path) {
 	size_t len;
 	char *line;
 	
-	while (line = DgFileStreamGetString(f, &len)) {
+	while ((line = DgFileStreamGetString(f, &len))) {
 		if (line[0] == 'v' && line[1] == ' ') {
 			if (pushVertex(mesh, DgVec3FromString(&line[2]))) {
 				DgLog(DG_LOG_ERROR, "Failed to load OBJ mesh at %s: Failed to push vertex.", real_path);

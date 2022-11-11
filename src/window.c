@@ -116,6 +116,8 @@ DgError DgWindowAssocaiteBitmap(DgWindow * restrict this, DgBitmap * restrict bi
 	 */
 	
 	DgBitmapSetSource(bitmap, this->surface->pixels, this->size, 4);
+	
+	return DG_ERROR_SUCCESSFUL;
 }
 
 DgVec2 DgWindowGetMouseLocation(DgWindow * restrict this) {

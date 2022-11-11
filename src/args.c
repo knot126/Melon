@@ -16,7 +16,7 @@
 
 #include "args.h"
 
-void DgArgParse(DgArgs * restrict this, const int argc, char ** const restrict argv) {
+void DgArgParse(DgArgs * restrict this, const size_t argc, char ** const restrict argv) {
 	/**
 	 * Parse the given argumets into the given arguments structure.
 	 * 

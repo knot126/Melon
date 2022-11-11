@@ -16,7 +16,7 @@
 
 #include "stream.h"
 
-_Static_assert(sizeof(uint8_t) == 1);
+_Static_assert(sizeof(uint8_t) == 1, "wot");
 
 static void DgStreamInit(DgStream *stream, void * restrict buffer, size_t prealloc) {
 	/**

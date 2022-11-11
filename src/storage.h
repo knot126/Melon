@@ -111,7 +111,7 @@ typedef struct DgStoragePool {
 typedef struct DgStorage {
 	DgStoragePool *pool;
 	size_t         pool_count;
-};
+} DgStorage;
 
 DgError DgStorageInit(DgStorage *this);
 DgError DgStorageFree(DgStorage *this);

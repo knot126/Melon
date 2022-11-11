@@ -477,7 +477,7 @@ void DgBitmapDrawQuadraticBezier(DgBitmap * restrict this, DgVec2 p0, DgVec2 p1,
 		// Loop over each pixel with the curve
 		for (size_t x = min_x; x <= max_x; x++) {
 			// Find t-value(s) for the next x so we know where to stop drawing
-			DgVec2 t = DgBitmapDrawQuadraticBezier_Roots(a, b, p0.x - x);
+			t = DgBitmapDrawQuadraticBezier_Roots(a, b, p0.x - x);
 			
 			// Evaluate y value(s) at this point
 			// Don't need to worry about NaN for square roots
@@ -501,7 +501,7 @@ void DgBitmapDrawQuadraticBezier(DgBitmap * restrict this, DgVec2 p0, DgVec2 p1,
 		
 		for (size_t y = min_y; y <= max_y; y++) {
 			// Find t-value(s) for the next x so we know where to stop drawing
-			DgVec2 t = DgBitmapDrawQuadraticBezier_Roots(a, b, p0.y - y);
+			t = DgBitmapDrawQuadraticBezier_Roots(a, b, p0.y - y);
 			
 			// Evaluate x value(s) at this point
 			// Don't need to worry about NaN for square roots
@@ -573,6 +573,8 @@ static float DgBitmapDrawConvexPolygon_PixelAlphaValue(DgVec2 pa, DgVec2 pb, DgV
 	/**
 	 * Return the alpha (fraction of the pixel covered) for the given line.
 	 * 
+	 * @todo implement
+	 * 
 	 * @param pa First point on the line
 	 * @param pb Second point on the line
 	 * @param side A point on the side that should be coloured in
@@ -580,7 +582,7 @@ static float DgBitmapDrawConvexPolygon_PixelAlphaValue(DgVec2 pa, DgVec2 pb, DgV
 	 * @return Fraction of the pixel covered by the LT/GT relation
 	 */
 	
-	
+	return 0.0f;
 }
 
 void DgBitmapDrawConvexPolygon(DgBitmap * restrict this, size_t points_count, DgVec2 * restrict points, DgColour * restrict colour) {

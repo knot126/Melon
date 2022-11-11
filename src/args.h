@@ -17,7 +17,7 @@ typedef struct DgArgs {
 	size_t     pairs_count;
 } DgArgs;
 
-void DgArgParse(DgArgs * restrict this, const int argc, char ** const restrict argv);
+void DgArgParse(DgArgs * restrict this, const size_t argc, char ** const restrict argv);
 void DgArgFree(DgArgs * restrict this);
 
 bool DgArgGetFlag(DgArgs * restrict this, const char * const restrict flag);
