@@ -69,8 +69,10 @@ static DgError DgTablePreallocMore(DgTable *this) {
 	 */
 	
 	if (this->length >= this->allocated) {
-		this->key = DgMemoryReallocate(this->key, 2 + (2 * this->allocated));
-		this->value = DgMemoryReallocate(this->value, 2 + (2 * this->allocated));
+		this->allocated = 2 + (2 * this->allocated);
+		
+		this->key = DgMemoryReallocate(this->key, sizeof *this->key * this->allocated);
+		this->value = DgMemoryReallocate(this->value, sizeof *this->value * this->allocated);
 		
 		if (this->key == NULL || this->value == NULL) {
 			return DG_ERROR_ALLOCATION_FAILED;

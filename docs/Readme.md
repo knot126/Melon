@@ -9,6 +9,7 @@ Currently, the following modules are supported:
  * `alloc` for memory allocations
  * `args` for argument parsing
  * `bitmap` for bitmap images and drawing
+ * `error` for error handling
  * `hash` for basic string hashing
  * `log` for logging
  * `maths` for mathematical structures (vectors, matricies)
@@ -17,6 +18,7 @@ Currently, the following modules are supported:
  * `stream` for generic memory stream
  * `string` (alias `str`) for string utilities
  * `surface` for 3D bezier surfaces
+ * `table` for assocative arrays
  * `thread` for multi-threading
  * `time` for time utilities
  * `types` for some cores types (not used often)
@@ -46,7 +48,6 @@ The following modules are internal modules and shouldn't be included directly.
  * `resman` for resource manegement
  * `main` for a main loop manager
  * `cryptography` for cryptographic functions
- * `error` for error handling
  * `network` for networking support
  * `http` for http support
  * `image` for vector and basic raster graphics support
