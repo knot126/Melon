@@ -4,7 +4,7 @@
  * 
  * Math Utilites: Vectors and Matricies
  * 
- * @warning This maths library will probably be replaced in the future.
+ * @warning This maths library will probably be replaced.
  * 
  * For now here are some notes:
  * 
@@ -63,45 +63,6 @@ int DgSign(float n) {
 	else {
 		return -1;
 	}
-}
-
-float xcos(float n) {
-	return DgCos(n);
-}
-
-float xsin(float n) {
-	return DgSin(n);
-}
-
-float xtan(float n) {
-	return DgTan(n);
-}
-
-float xsqrt(float n) {
-	return DgSqrt(n);
-}
-
-/**
- * Other misc. utility functions
- */
-
-float xfac(float n) {
-	const uint64_t num = (uint64_t) n;
-	uint64_t res = 1;
-	
-	for (uint64_t i = 1; i <= num; i++) {
-		res *= i;
-	}
-	
-	return (float) res;
-}
-
-float xfloor(float n) {
-	return (float)(int64_t)(n - 0.5);
-}
-
-float xpow(float n, float e) {
-	return pow(n, e);
 }
 
 /* 

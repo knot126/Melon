@@ -15,6 +15,17 @@
 
 #include "surface_implementation.h"
 
+static float DgFac(float n) {
+	const uint64_t num = (uint64_t) n;
+	uint64_t res = 1;
+	
+	for (uint64_t i = 1; i <= num; i++) {
+		res *= i;
+	}
+	
+	return (float) res;
+}
+
 static float DgFacBetween(float n, float m) {
 	/**
 	 * Compute factorial between two values. ( in range [n, m] )
@@ -33,7 +44,7 @@ static float DgFacBetween(float n, float m) {
 	return r;
 }
 
-float DgCombination(float n, float k) {
+static float DgCombination(float n, float k) {
 	/**
 	 * Calculate a binomial coefficent (same as a combination)
 	 * 
@@ -48,11 +59,11 @@ float DgCombination(float n, float k) {
 // 	float res = xfac(n) / (xfac(k) * xfac(n - k));
 // 	DgLog(DG_LOG_VERBOSE, "(%f %f) = %f", n, k, res);
 	
-	float res = DgFacBetween(n, n - k) / xfac(k);
+	float res = DgFacBetween(n, n - k) / DgFac(k);
 	return res;
 }
 
-float DgBersteinPolynomial(float n, float i, float t) {
+static float DgBersteinPolynomial(float n, float i, float t) {
 	/**
 	 * Calculate a berstien basis polynomial.
 	 * 
@@ -64,7 +75,7 @@ float DgBersteinPolynomial(float n, float i, float t) {
 	 * @see https://mathworld.wolfram.com/BernsteinPolynomial.html
 	 */
 	
-	float res = DgCombination(n, i) * xpow(1.0f - t, n - i) * xpow(t, i);
+	float res = DgCombination(n, i) * pow(1.0f - t, n - i) * pow(t, i);
 // 	DgLog(DG_LOG_VERBOSE, "(%f %f) * (1 - %f)^(%f - %f) * %f^%f = %f", n, i, t, n, i, t, i, res);
 	return res;
 }

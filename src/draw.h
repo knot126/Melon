@@ -13,6 +13,22 @@
 
 #include "maths.h"
 #include "surface.h"
+#include "error.h"
+
+/**
+ * Enums
+ * =====
+ * 
+ * Enums for the draw module
+ */
+enum {
+	DG_DRAW_SOFTWARE = 0,
+	//DG_DRAW_COMPUTE = 1,
+	//DG_DRAW_OPENGL = 2,
+	//DG_DRAW_VULKAN = 3,
+	//DG_DRAW_DIRECTX = 4,
+	//DG_DRAW_METAL = 5,
+};
 
 /**
  * 2D Vertex
@@ -45,30 +61,14 @@ typedef struct DgVertex3D {
  * DgBitmap, though it might have a bitmap assocaited with it which it draws
  * to.
  */
-typedef struct DgDrawContext {
-	uint64_t flags;
+typedef struct DgDraw {
+	uint64_t flags : 60;
+	uint64_t backend : 4;
+	void *context;
 	float surface_quality;
 	bool surface_perpixel;
-} DgDrawContext;
+} DgDraw;
 
-/// @typedef This establishes the DgDraw object as a handle instead of a pointer.
-typedef DgDrawContext *DgDraw;
 
-DgDraw DgDrawInitGL(DgDraw this);
-DgDraw DgDrawInitVulkan(DgDraw this);
-DgDraw DgDrawInitSW(DgDraw this);
-
-uint32_t DgDrawBegin(DgDraw this, void *next);
-uint32_t DgDrawEnd(DgDraw this);
-
-uint32_t DgDrawClear(DgDraw this, DgVec4 *colour);
-uint32_t DgDrawTriangles3D(DgDraw this, size_t count, DgVertex3D *vertexes);
-uint32_t DgDrawSurfaces3D(DgDraw this, size_t count, DgSurface3D *surfaces);
-uint32_t DgDrawTriangles2D(DgDraw this, size_t count, DgVertex2D *vertexes);
-uint32_t DgDrawTexture2D(DgDraw this, DgBitmap *bitmap);
-
-uint32_t DgDrawSurfaceMode(DgDraw this, bool perpixel, float quality);
-
-uint32_t DgDrawFree(DgDraw this);
 
 #endif

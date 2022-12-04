@@ -10,22 +10,14 @@
 #include <stddef.h>
 #include <inttypes.h>
 
-// Angle ops
+// Trigonometry
 float DgCos(float angle);
 float DgSin(float angle);
 float DgTan(float angle);
 
-float xcos(float n);
-float xsin(float n);
-float xtan(float n);
-
 // other functions
 float DgSqrt(float n);
 int DgSign(float n);
-
-float xsqrt(float n);
-float xfac(float n);
-float xpow(float n, float e);
 
 // DgVec**
 
