@@ -19,7 +19,9 @@ int DgThreadNew(DgThread* thread, DgThreadFunction func, DgThreadArg arg) {
 	 * @return Integer status code, dependent on thread library
 	 */
 	
+#ifndef _WIN32
 	return pthread_create(&thread->_info, NULL, func, arg);
+#endif
 }
 
 int DgThreadJoin(DgThread* thread) {
@@ -30,5 +32,7 @@ int DgThreadJoin(DgThread* thread) {
 	 * @return Integer status code, dependent on thread library
 	 */
 	
+#ifndef _WIN32
 	return pthread_join(thread->_info, NULL);
+#endif
 }
