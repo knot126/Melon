@@ -13,17 +13,17 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-#if !defined(DG_NO_SDL)
-	#include <SDL2/SDL.h>
-#endif
-
+#include "log.h"
 #include "maths.h"
 #include "bitmap.h"
 #include "error.h"
+#include "rand.h" // TODO temp
 
 #include "window.h"
 
 #if !defined(DG_NO_SDL)
+
+#include <SDL2/SDL.h>
 
 uint32_t gWindowCount_ = 0;
 
@@ -162,6 +162,136 @@ bool DgWindowGetMouseDown(DgWindow * restrict this) {
 	
 	SDL_PumpEvents();
 	return !!(SDL_GetMouseState(NULL, NULL) & SDL_BUTTON_LMASK);
+}
+
+#elif defined(DG_USE_WINDOWS_API)
+
+#include <windows.h>
+
+const char DG_WINDOW_CLASS_NAME[] = "Melon Library Window";
+
+static LRESULT CALLBACK DgWindow_NTNopWindowCallback(HWND window_handle, UINT message_type, WPARAM wparam, LPARAM lparam) {
+	switch (message_type) {
+		default: {
+			DgLog(DG_LOG_INFO, "DefWindowProc %d", message_type);
+			return DefWindowProc(window_handle, message_type, wparam, lparam);
+		}
+	}
+}
+
+uint32_t DgWindowInit(DgWindow *this, const char *title, DgVec2I size) {
+	/**
+	 * Create a window (Windows NT)
+	 * 
+	 * @param this Handle to the window object
+	 * @param title Title of the window
+	 * @param size Size of the window
+	 */
+	
+	// Setup window class
+	memset(&this->window_class, 0, sizeof this->window_class);
+	this->window_class.lpfnWndProc = &DgWindow_NTNopWindowCallback; // TODO: need to be the callback
+	this->window_class.hInstance = GetModuleHandle(NULL); // It seems this can be NULL and it will take care of things.
+	this->window_class.lpszClassName = DG_WINDOW_CLASS_NAME;
+	
+	// Register the class
+	if (RegisterClass(&this->window_class) == 0) {
+		DgLog(DG_LOG_VERBOSE, "RegisterClass: error code = %d", GetLastError());
+		return 1;
+	}
+	
+	this->window_handle = CreateWindowEx(
+		0,
+		DG_WINDOW_CLASS_NAME,
+		title,
+		WS_OVERLAPPEDWINDOW,
+		CW_USEDEFAULT, CW_USEDEFAULT,
+		size.x, size.y,
+		NULL,
+		NULL,
+		GetModuleHandle(NULL),
+		NULL
+	);
+	
+	if (this->window_handle == NULL) {
+		DgLog(DG_LOG_VERBOSE, "CreateWindowEx: error code = %d", GetLastError());
+		return 1;
+	}
+	
+	// Pop up the window
+	ShowWindow(this->window_handle, SW_SHOW);
+	
+	return 0;
+}
+
+void DgWindowFree(DgWindow *this) {
+	return;
+}
+
+int32_t DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
+	/**
+	 * Update the window contents with to use the given bitmap (or NULL if using
+	 * the assocaited bitmap).
+	 * 
+	 * @param this Window object
+	 * @param bitmap Bitmap to take image from
+	 * @return Error code
+	 */
+	
+	// Handle messages
+	MSG message;
+	
+	InvalidateRect(this->window_handle, NULL, FALSE);
+	
+	while (PeekMessage(&message, this->window_handle, 0, 0) != 0) {
+		TranslateMessage(&message);
+		DispatchMessage(&message);
+		
+		switch (message.message) {
+			case WM_PAINT: {
+				PAINTSTRUCT painter;
+				
+				HDC context = BeginPaint(this->window_handle, &painter);
+				
+				FillRect(context, &painter.rcPaint, (HBRUSH) (COLOR_WINDOW + 1 + (DgRandInt() & 0xf)));
+				
+				EndPaint(this->window_handle, &painter);
+				
+				return 0;
+			}
+			
+			case WM_CLOSE:
+			case WM_DESTROY:
+			case WM_QUIT: {
+				return 1;
+			}
+			
+			default: {
+				DgLog(DG_LOG_INFO, "Got message: %d", message.message);
+				break;
+			}
+		}
+	}
+	
+	DgLog(DG_LOG_INFO, "Exit window update");
+	
+	return 0;
+}
+
+DgError DgWindowAssocaiteBitmap(DgWindow * restrict this, DgBitmap * restrict bitmap) {
+	return DG_ERROR_NOT_IMPLEMENTED;
+}
+
+DgVec2 DgWindowGetMouseLocation(DgWindow *this) {
+	return (DgVec2) {0.0f, 0.0f};
+}
+
+DgVec2I DgWindowGetMouseLocation2(DgWindow *this) {
+	return (DgVec2I) {0, 0};
+}
+
+bool DgWindowGetMouseDown(DgWindow *this) {
+	return false;
 }
 
 #else

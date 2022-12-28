@@ -12,6 +12,8 @@
 
 #if !defined(DG_NO_SDL)
 	#include <SDL2/SDL.h>
+#elif defined(DG_USE_WINDOWS_API)
+	#include <windows.h>
 #endif
 
 #include "maths.h"
@@ -27,6 +29,9 @@ typedef struct DgWindow {
 #if !defined(DG_NO_SDL)
 	SDL_Window *window;
 	SDL_Surface *surface;
+#elif defined(DG_USE_WINDOWS_API)
+	WNDCLASS window_class;
+	HWND window_handle;
 #endif
 	DgVec2I size;
 } DgWindow;
