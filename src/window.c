@@ -172,6 +172,10 @@ const char DG_WINDOW_CLASS_NAME[] = "Melon Library Window";
 
 static LRESULT CALLBACK DgWindow_NTNopWindowCallback(HWND window_handle, UINT message_type, WPARAM wparam, LPARAM lparam) {
 	switch (message_type) {
+		case WM_PAINT: {
+			return 0;
+		}
+		
 		default: {
 			DgLog(DG_LOG_INFO, "DefWindowProc %d", message_type);
 			return DefWindowProc(window_handle, message_type, wparam, lparam);
@@ -243,10 +247,8 @@ int32_t DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
 	
 	InvalidateRect(this->window_handle, NULL, FALSE);
 	
-	while (PeekMessage(&message, this->window_handle, 0, 0) != 0) {
-		TranslateMessage(&message);
-		DispatchMessage(&message);
-		
+	while (PeekMessage(&message, this->window_handle, 0, 0, PM_NOREMOVE) != 0) {
+		// Any extra handles for the message
 		switch (message.message) {
 			case WM_PAINT: {
 				PAINTSTRUCT painter;
@@ -263,14 +265,16 @@ int32_t DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
 			case WM_CLOSE:
 			case WM_DESTROY:
 			case WM_QUIT: {
+				DgLog(DG_LOG_INFO, "** Destroy window message **");
 				return 1;
 			}
-			
-			default: {
-				DgLog(DG_LOG_INFO, "Got message: %d", message.message);
-				break;
-			}
 		}
+		
+		// Remove message
+		PeekMessage(&message, this->window_handle, 0, 0, PM_REMOVE);
+		
+		TranslateMessage(&message);
+		DispatchMessage(&message);
 	}
 	
 	DgLog(DG_LOG_INFO, "Exit window update");
