@@ -32,6 +32,7 @@ typedef struct DgWindow {
 #elif defined(DG_USE_WINDOWS_API)
 	WNDCLASS window_class;
 	HWND window_handle;
+	DgBitmap *bitmap;
 #endif
 	DgVec2I size;
 } DgWindow;

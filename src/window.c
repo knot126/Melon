@@ -170,16 +170,13 @@ bool DgWindowGetMouseDown(DgWindow * restrict this) {
 
 const char DG_WINDOW_CLASS_NAME[] = "Melon Library Window";
 
-static LRESULT CALLBACK DgWindow_NTNopWindowCallback(HWND window_handle, UINT message_type, WPARAM wparam, LPARAM lparam) {
-	switch (message_type) {
-		case WM_PAINT: {
-			return 0;
-		}
-		
-		default: {
-			DgLog(DG_LOG_INFO, "DefWindowProc %d", message_type);
-			return DefWindowProc(window_handle, message_type, wparam, lparam);
-		}
+static LRESULT CALLBACK DgWindow_NTProcessWindowEvent(HWND window_handle, UINT message, WPARAM wparam, LPARAM lparam) {
+	if (message == WM_DESTROY) {
+		PostQuitMessage(0);
+		return 0;
+	}
+	else {
+		return DefWindowProc(window_handle, message, wparam, lparam);
 	}
 }
 
@@ -194,7 +191,7 @@ uint32_t DgWindowInit(DgWindow *this, const char *title, DgVec2I size) {
 	
 	// Setup window class
 	memset(&this->window_class, 0, sizeof this->window_class);
-	this->window_class.lpfnWndProc = &DgWindow_NTNopWindowCallback; // TODO: need to be the callback
+	this->window_class.lpfnWndProc = &DgWindow_NTProcessWindowEvent; // Default callback
 	this->window_class.hInstance = GetModuleHandle(NULL); // It seems this can be NULL and it will take care of things.
 	this->window_class.lpszClassName = DG_WINDOW_CLASS_NAME;
 	
@@ -247,7 +244,13 @@ int32_t DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
 	
 	InvalidateRect(this->window_handle, NULL, FALSE);
 	
-	while (PeekMessage(&message, this->window_handle, 0, 0, PM_NOREMOVE) != 0) {
+	while (PeekMessage(&message, this->window_handle, 0, 0, PM_NOREMOVE) == 1) {
+		// Handle quit message
+		// TODO This doesn't work properly, don't know why.
+		if (message.message == WM_CLOSE || message.message == WM_DESTROY || message.message == WM_QUIT || message.message == WM_NULL) {
+			DgLog(DG_LOG_INFO, "** Destroy window message **");
+		}
+		
 		// Any extra handles for the message
 		switch (message.message) {
 			case WM_PAINT: {
@@ -258,15 +261,7 @@ int32_t DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
 				FillRect(context, &painter.rcPaint, (HBRUSH) (COLOR_WINDOW + 1 + (DgRandInt() & 0xf)));
 				
 				EndPaint(this->window_handle, &painter);
-				
-				return 0;
-			}
-			
-			case WM_CLOSE:
-			case WM_DESTROY:
-			case WM_QUIT: {
-				DgLog(DG_LOG_INFO, "** Destroy window message **");
-				return 1;
+				break;
 			}
 		}
 		
@@ -277,13 +272,15 @@ int32_t DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
 		DispatchMessage(&message);
 	}
 	
-	//DgLog(DG_LOG_INFO, "Exit window update");
+	// DgLog(DG_LOG_INFO, "Exit window update");
 	
 	return 0;
 }
 
 DgError DgWindowAssocaiteBitmap(DgWindow * restrict this, DgBitmap * restrict bitmap) {
-	return DG_ERROR_NOT_IMPLEMENTED;
+	this->bitmap = bitmap;
+	
+	return DG_ERROR_SUCCESSFUL;
 }
 
 DgVec2 DgWindowGetMouseLocation(DgWindow *this) {
