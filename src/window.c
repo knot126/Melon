@@ -169,15 +169,14 @@ bool DgWindowGetMouseDown(DgWindow * restrict this) {
 #include <windows.h>
 
 const char DG_WINDOW_CLASS_NAME[] = "Melon Library Window";
+bool DG_WINDOW_WANTS_TO_QUIT = false;
 
 static LRESULT CALLBACK DgWindow_NTProcessWindowEvent(HWND window_handle, UINT message, WPARAM wparam, LPARAM lparam) {
-	if (message == WM_DESTROY) {
-		PostQuitMessage(0);
-		return 0;
+	if (message == WM_CLOSE || message == WM_DESTROY || message == WM_QUIT || message == WM_NCDESTROY) {
+		DG_WINDOW_WANTS_TO_QUIT = true;
 	}
-	else {
-		return DefWindowProc(window_handle, message, wparam, lparam);
-	}
+	
+	return DefWindowProc(window_handle, message, wparam, lparam);
 }
 
 uint32_t DgWindowInit(DgWindow *this, const char *title, DgVec2I size) {
@@ -242,27 +241,26 @@ int32_t DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
 	// Handle messages
 	MSG message;
 	
+	// Invalidate the rectange so we can draw to it.
 	InvalidateRect(this->window_handle, NULL, FALSE);
 	
 	while (PeekMessage(&message, this->window_handle, 0, 0, PM_NOREMOVE) == 1) {
-		// Handle quit message
-		// TODO This doesn't work properly, don't know why.
-		if (message.message == WM_CLOSE || message.message == WM_DESTROY || message.message == WM_QUIT || message.message == WM_NULL) {
-			DgLog(DG_LOG_INFO, "** Destroy window message **");
-		}
-		
 		// Any extra handles for the message
-		switch (message.message) {
-			case WM_PAINT: {
-				PAINTSTRUCT painter;
-				
-				HDC context = BeginPaint(this->window_handle, &painter);
-				
-				FillRect(context, &painter.rcPaint, (HBRUSH) (COLOR_WINDOW + 1 + (DgRandInt() & 0xf)));
-				
-				EndPaint(this->window_handle, &painter);
-				break;
+		if (message.message == WM_PAINT) {
+			PAINTSTRUCT painter;
+			
+			HDC context = BeginPaint(this->window_handle, &painter);
+			
+			for (int y = 0; y < 720; y++) {
+				for (int x = 0; x < 1280; x++) {
+					uint8_t r = this->bitmap->src[((1280 * y) + x) * 3], g = this->bitmap->src[((1280 * y) + x) * 3 + 1], b = this->bitmap->src[((1280 * y) + x) * 3 + 2];
+					SetPixel(context, x, y, RGB(r, g, b));
+				}
 			}
+			
+			DeleteDC(context);
+			EndPaint(this->window_handle, &painter);
+			break;
 		}
 		
 		// Remove message
@@ -272,12 +270,22 @@ int32_t DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
 		DispatchMessage(&message);
 	}
 	
-	// DgLog(DG_LOG_INFO, "Exit window update");
+	// HACK: We need to use a global variable to check if the window would like
+	// to quit becuase Windows does not use PostMessage to push the WM_QUIT or
+	// similar messages and instead calls the callback directly, which is not
+	// compatible with our architecture.
+	if (DG_WINDOW_WANTS_TO_QUIT) {
+		return 1;
+	}
 	
 	return 0;
 }
 
 DgError DgWindowAssocaiteBitmap(DgWindow * restrict this, DgBitmap * restrict bitmap) {
+	/**
+	 * Assocaite a bitmap with the window.
+	 */
+	
 	this->bitmap = bitmap;
 	
 	return DG_ERROR_SUCCESSFUL;
