@@ -277,7 +277,7 @@ int32_t DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
 		DispatchMessage(&message);
 	}
 	
-	DgLog(DG_LOG_INFO, "Exit window update");
+	//DgLog(DG_LOG_INFO, "Exit window update");
 	
 	return 0;
 }
