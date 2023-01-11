@@ -249,14 +249,15 @@ int32_t DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
 		if (message.message == WM_PAINT) {
 			PAINTSTRUCT painter;
 			
-			HDC context = BeginPaint(this->window_handle, &painter);
+			HDC device_context = BeginPaint(this->window_handle, &painter);
+			HDC bitmap_context = CreateCompatibleDC(bitmap_context);
 			
-			for (int y = 0; y < 720; y++) {
-				for (int x = 0; x < 1280; x++) {
-					uint8_t r = this->bitmap->src[((1280 * y) + x) * 3], g = this->bitmap->src[((1280 * y) + x) * 3 + 1], b = this->bitmap->src[((1280 * y) + x) * 3 + 2];
-					SetPixel(context, x, y, RGB(r, g, b));
-				}
-			}
+			// for (int y = 0; y < 720; y++) {
+			// 	for (int x = 0; x < 1280; x++) {
+			// 		uint8_t r = this->bitmap->src[((1280 * y) + x) * 3], g = this->bitmap->src[((1280 * y) + x) * 3 + 1], b = this->bitmap->src[((1280 * y) + x) * 3 + 2];
+			// 		SetPixel(context, x, y, RGB(r, g, b));
+			// 	}
+			// }
 			
 			DeleteDC(context);
 			EndPaint(this->window_handle, &painter);

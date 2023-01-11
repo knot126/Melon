@@ -11,3 +11,5 @@
 
 void DgPolyalphabeticObfuscate(const char * restrict key, char static_shift, size_t size, uint8_t * restrict data);
 void DgPolyalphabeticDeobfuscate(const char * restrict key, char static_shift, size_t size, uint8_t * restrict data);
+
+void DgObfuscateXorShiftShift(char *key, size_t length, uint8_t *data);

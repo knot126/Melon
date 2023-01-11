@@ -13,7 +13,7 @@
 
 #include "rand.h"
 
-static uint32_t DgRandXORShiftU32(uint32_t n) {
+uint32_t DgRandXORShiftU32(uint32_t n) {
 	/**
 	 * Generate a random number based on a given seed using the XOR-Shift 
 	 * method of generating a random number.
@@ -26,7 +26,7 @@ static uint32_t DgRandXORShiftU32(uint32_t n) {
 	return n;
 }
 
-static uint32_t DgRandXORShiftSU32(void) {
+uint32_t DgRandXORShiftSU32(void) {
 	/**
 	 * A pesudostateless version of the XOR-shift function. It should be 
 	 * semi-threadsafe, since it will add a (most likely) unique value to make
@@ -40,7 +40,7 @@ static uint32_t DgRandXORShiftSU32(void) {
 	return last;
 }
 
-static float DgRandXORShiftF32(void) {
+float DgRandXORShiftF32(void) {
 	return ((float) DgRandXORShiftSU32()) / 4294967295.0f;
 }
 

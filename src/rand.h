@@ -10,6 +10,8 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
+uint32_t DgRandXORShiftU32(uint32_t n);
+
 uint32_t DgRandInt(void);
 float DgRandFloat(void);
 bool DgRandBool(void);

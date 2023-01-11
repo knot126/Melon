@@ -11,6 +11,7 @@
  */
 
 #include "string.h"
+#include "rand.h"
 
 #include "obfuscate.h"
 
@@ -73,3 +74,31 @@ void DgPolyalphabeticDeobfuscate(const char * restrict key, char static_shift, s
 }
 
 #undef DG_POLYALPHABETIC_SHIFT
+
+void DgObfuscateXorShiftShift(char *key, size_t length, uint8_t *data) {
+	/**
+	 * Obfuscate a message using the XorShiftShift algorithm.
+	 * 
+	 * @param key Key to obfuscate with
+	 * @param length Length of the data
+	 * @param data Data to obfuscate
+	 */
+	
+	size_t key_length = DgStringLength(key);
+	
+	// Number of random states
+	uint32_t random_states[key_length];
+	
+	// Initialise the states...
+	// This is probably the most important part of the cipher. But it might not
+	// be very secure. For example there is already repetition in the key.
+	for (size_t i = 0; i < key_length; i++) {
+		random_states[i] = (key[(i + 3) % key_length] << 24) | (key[(i + 0) % key_length] << 16) | (key[(i + 2) % key_length] << 8) | (key[(i + 1) % key_length]);
+	}
+	
+	// Encrypt the data
+	for (size_t i = 0; i < length; i++) {
+		random_states[i % key_length] = DgRandXORShiftU32(random_states[i % key_length]);
+		data[i] ^= (char)((random_states[i % key_length]) & 0xff);
+	}
+}

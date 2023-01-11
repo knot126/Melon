@@ -264,6 +264,7 @@ char *DgFileStreamGetString(DgFileStream* stream, size_t *length) {
 	return str;
 }
 
+/*
 uint8_t *DgFileLoad(const char * restrict path, size_t *content_size) {
 	/**
 	 * Load a file into memory and return the buffer that was created.
@@ -273,7 +274,7 @@ uint8_t *DgFileLoad(const char * restrict path, size_t *content_size) {
 	 * 
 	 * @param stream File stream handle
 	 * @return Data loaded from file on success, or NULL on failure
-	 */
+	 *
 	
 	// Open stream
 	DgFile stream = DgFileOpen2(path, DG_FILE_STREAM_READ);
@@ -307,7 +308,7 @@ uint8_t *DgFileLoad(const char * restrict path, size_t *content_size) {
 	DgFileStreamClose(stream);
 	
 	return data;
-}
+}*/
 
 /**
  * Non-File Stream Functions
