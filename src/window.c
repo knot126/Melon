@@ -259,7 +259,7 @@ int32_t DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
 			// 	}
 			// }
 			
-			DeleteDC(context);
+			// DeleteDC(context);
 			EndPaint(this->window_handle, &painter);
 			break;
 		}

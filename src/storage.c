@@ -152,7 +152,28 @@ DgError DgStorageAddPool(DgStorage *this, DgStoragePool *pool) {
 	 * @return Error code
 	 */
 	
-	return DG_ERROR_NOT_IMPLEMENTED;
+	DG_STORAGE_RESOLVE();
+	
+	// Check if the pool already exists
+	if (DgStorageHasPool(this, pool->protocol)) {
+		return DG_ERROR_ALREADY_EXISTS;
+	}
+	
+	// Allocate the pool's memory
+	this->pool_count++;
+	this->pool = DgMemoryReallocate(this->pool, sizeof *this->pool * this->pool_count);
+	
+	if (!this->pool) {
+		return DG_ERROR_ALLOCATION_FAILED;
+	}
+	
+	// Copy pool data
+	this->pool[this->pool_count - 1] = *pool;
+	
+	// Clear temporary pool memory
+	DgFree(pool);
+	
+	return DG_ERROR_SUCCESSFUL;
 }
 
 DgError DgStorageRemovePool(DgStorage *this, DgStoragePath protocol) {
@@ -162,10 +183,16 @@ DgError DgStorageRemovePool(DgStorage *this, DgStoragePath protocol) {
 	 * @note Any memory assocaited with the DgStoragePool object is automatically
 	 * freed. Do not try to free it yourself!
 	 * 
+	 * @note Not currently implemented and not a priority because there is not
+	 * much of a need to remove storage configurations. (This would only really
+	 * work with game mods.)
+	 * 
 	 * @param this Storage configuration
 	 * @param protocol The protocol of the pool to be removed
 	 * @return Error code
 	 */
+	
+	DG_STORAGE_RESOLVE();
 	
 	return DG_ERROR_NOT_IMPLEMENTED;
 }
@@ -178,11 +205,23 @@ DgError DgStorageGetPool(DgStorage *this, DgStoragePath protocol, DgStoragePool 
 	 * 
 	 * @param this Storage configuration
 	 * @param protocol The protocol of the pool to retrieve
-	 * @param pool Pointer to the pointer that will store the address of the pool object
+	 * @param pool Pointer to the pointer that will store the address of the pool object (or NULL)
 	 * @return Error code
 	 */
 	
-	return DG_ERROR_NOT_IMPLEMENTED;
+	DG_STORAGE_RESOLVE();
+	
+	for (size_t index = 0; index < this->pool_count; index++) {
+		if (DgStringEqual(this->pool[index].protocol, protocol)) {
+			if (pool) {
+				pool[0] = &this->pool[index];
+			}
+			
+			return DG_ERROR_SUCCESSFUL;
+		}
+	}
+	
+	return DG_ERROR_NOT_FOUND;
 }
 
 bool DgStorageHasPool(DgStorage *this, DgStoragePath protocol) {
@@ -195,7 +234,7 @@ bool DgStorageHasPool(DgStorage *this, DgStoragePath protocol) {
 	 * @return True if the storage configuration has a pool by the name `protocol`
 	 */
 	
-	return false;
+	return (DgStorageGetPool(this, protocol, NULL) == DG_ERROR_SUCCESSFUL);
 }
 
 DgError DgStorageRenamePool(DgStorage *this, DgStoragePath old_protocol, DgStoragePath new_protocol) {
@@ -207,6 +246,8 @@ DgError DgStorageRenamePool(DgStorage *this, DgStoragePath old_protocol, DgStora
 	 * @param new_protocol New protocol name
 	 * @return Error code
 	 */
+	
+	DG_STORAGE_RESOLVE();
 	
 	return DG_ERROR_NOT_IMPLEMENTED;
 }
@@ -223,6 +264,8 @@ DgError DgStorageDelete(DgStorage *this, DgStoragePath path) {
 	 * @param path Path to the file to delete (including protocol)
 	 * @return Error code
 	 */
+	
+	DG_STORAGE_RESOLVE();
 	
 	return DG_ERROR_NOT_IMPLEMENTED;
 }
@@ -243,6 +286,8 @@ DgError DgStorageRename(DgStorage *this, DgStoragePath old_path, DgStoragePath n
 	 * @return Error code
 	 */
 	
+	DG_STORAGE_RESOLVE();
+	
 	return DG_ERROR_NOT_IMPLEMENTED;
 }
 
@@ -260,6 +305,8 @@ DgError DgStorageCreateFile(DgStorage *this, DgStoragePath path) {
 	 * @return Error code
 	 */
 	
+	DG_STORAGE_RESOLVE();
+	
 	return DG_ERROR_NOT_IMPLEMENTED;
 }
 
@@ -275,6 +322,8 @@ DgError DgStorageCreateFolder(DgStorage *this, DgStoragePath path) {
 	 * @return Error code
 	 */
 	
+	DG_STORAGE_RESOLVE();
+	
 	return DG_ERROR_NOT_IMPLEMENTED;
 }
 
@@ -287,7 +336,24 @@ DgStorageObjectType DgStorageType(DgStorage *this, DgStoragePath path) {
 	 * @return Type of object
 	 */
 	
+	DG_STORAGE_RESOLVE();
+	
 	return DG_ERROR_NOT_IMPLEMENTED;
+}
+
+DgError DgStoragePoolFree(DgStoragePool *pool) {
+	/**
+	 * Release memory assocaited with a storage pool.
+	 * 
+	 * @param pool The pool to free
+	 * @return Errors encountered freeing pool
+	 */
+	
+	if (pool == NULL) {
+		return DG_ERROR_NOT_SAFE;
+	}
+	
+	return pool->functions->free_specific_config(pool);
 }
 
 // Undefine resolve macro just to be clean

@@ -63,7 +63,7 @@ typedef DgError (*DgStorageCreateFolderFunction)(DgStorage *storage, DgStoragePo
 typedef DgError (*DgStorageTypeFunction)(DgStorage *storage, DgStoragePool *pool, DgStoragePath path, DgStorageObjectType *type);
 
 // Specific config destruction
-typedef DgError (*DgStorageFreeSpecificConfig)(DgStorage *storage, DgStoragePool *pool);
+typedef DgError (*DgStorageFreeSpecificConfig)(DgStoragePool *pool);
 
 /**
  * The storage function array/pointer.
@@ -129,6 +129,9 @@ DgError DgStorageRename(DgStorage *this, DgStoragePath old_path, DgStoragePath n
 DgError DgStorageCreateFile(DgStorage *this, DgStoragePath path);
 DgError DgStorageCreateFolder(DgStorage *this, DgStoragePath path);
 DgStorageObjectType DgStorageType(DgStorage *this, DgStoragePath path);
+
+// Generic pool free function
+DgError DgStoragePoolFree(DgStoragePool *pool);
 
 /* Abstract stream API */
 #if 0
