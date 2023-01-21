@@ -29,6 +29,10 @@ static void DgLogPushMessage(const DgLogLevel level, const char * const buf) {
 	// Firstly, write to console
 	
 	switch (level) {
+		case DG_LOG_SUCCESS:
+			printf("\033[1;32mSUCCESS: \033[0m");
+			break;
+		
 		case DG_LOG_INFO:
 			printf("\033[1;34mINFO: \033[0m");
 			break;
@@ -54,7 +58,7 @@ static void DgLogPushMessage(const DgLogLevel level, const char * const buf) {
 			break;
 	}
 	
-	printf(buf);
+	printf("%s", buf);
 	
 	switch (level) {
 		case DG_LOG_FATAL:

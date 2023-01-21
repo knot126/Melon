@@ -12,6 +12,7 @@
  * Bèzier surface object
  */
 
+#if defined(DG_MELON_OLD_SURFACE)
 #include <string.h>
 
 #include "alloc.h"
@@ -190,3 +191,4 @@ DgVec3 DgSurface3DGetBoundingBoxSize(const DgSurface3D * const restrict this) {
 	
 	return DgVec3Subtract(max, min);
 }
+#endif

@@ -65,11 +65,14 @@ void DgArgParse(DgArgs * restrict this, const size_t argc, char ** const restric
 		}
 		
 		// skip the initial dashes for an argument
-		next += DgStrspn(next, "-");
+		// next += DgStrspn(next, "-"); (Changed because this function was deprecated)
+		while (next[0] == '-') {
+			next++;
+		}
 		
-		this->pairs[this->pairs_count - 1].key = DgStrdup(next);
+		this->pairs[this->pairs_count - 1].key = DgStringDuplicate(next);
 		// strdup(NULL) is undefined behaviour, so we need to do a test.
-		this->pairs[this->pairs_count - 1].value = (value) ? DgStrdup(value) : NULL;
+		this->pairs[this->pairs_count - 1].value = (value) ? DgStringDuplicate(value) : NULL;
 	}
 }
 

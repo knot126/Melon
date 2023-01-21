@@ -16,6 +16,7 @@
 
 #include "error.h"
 #include "alloc.h"
+#include "string.h"
 #include "log.h"
 
 #include "storage.h"

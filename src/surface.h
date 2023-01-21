@@ -14,6 +14,7 @@
 
 #pragma once
 
+#if defined(DG_MELON_OLD_SURFACE)
 #include "maths.h"
 
 typedef struct DgSurface3D {
@@ -32,3 +33,4 @@ DgVec2I DgSurface3DGetOrder(const DgSurface3D * const restrict this);
 
 void DgSurface3DGetBoundingBox(const DgSurface3D * const restrict this, DgVec3 * const restrict min, DgVec3 * const restrict max);
 DgVec3 DgSurface3DGetBoundingBoxSize(const DgSurface3D * const restrict this);
+#endif

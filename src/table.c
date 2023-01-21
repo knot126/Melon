@@ -394,7 +394,7 @@ DgError DgValueString(DgValue * restrict value, char * restrict data) {
 	 * @return Error code
 	 */
 	
-	value->data.asString = DgStrdup(data);
+	value->data.asString = DgStringDuplicate(data);
 	
 	if (value->data.asString == NULL) {
 		return DG_ERROR_ALLOCATION_FAILED;

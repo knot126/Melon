@@ -20,6 +20,9 @@
 #include "alloc.h"
 #include "log.h"
 
+#include "string.h"
+
+#if defined(DG_MELON_OLD_STRING_FUNCTIONS)
 char *DgStrcad(const char * const src1, const char * const src2) {
 	/**
 	 * Concatinate two strings into one, the resulting memory must be freed
@@ -265,6 +268,7 @@ uint32_t *DgInt32ListFromString(char * restrict str, size_t * const restrict siz
 	
 	return list;
 }
+#endif
 
 /** ============================================================================
  * 
@@ -272,6 +276,26 @@ uint32_t *DgInt32ListFromString(char * restrict str, size_t * const restrict siz
  * 
  *  ============================================================================
  */
+
+char *DgStringDuplicate(const char * const string) {
+	/*
+	 * Duplicate a string
+	 */
+	
+	size_t length = DgStringLength(string) + 1;
+	
+	char *result = DgAlloc(length);
+	
+	if (!result) {
+		return NULL;
+	}
+	
+	for (size_t i = 0; i < length; i++) {
+		result[i] = string[i];
+	}
+	
+	return result;
+}
 
 size_t DgStringLength(const char * const string) {
 	/**
@@ -316,4 +340,32 @@ bool DgStringEqual(const char * const string1, const char * const string2) {
 			return false;
 		}
 	}
+}
+
+char *DgStringSlice(const char *base, size_t start, size_t end) {
+	/**
+	 * Allocate a slice of a string given a string.
+	 * 
+	 * @warning You need to free the string returned when you are done with it.
+	 * 
+	 * @param base The base string
+	 * @param start The starting index of the substring (inclusive)
+	 * @param end The ending index of the substring (exclusive)
+	 * @return Allocated substring
+	 */
+	
+	return NULL;
+}
+
+int64_t DgStringFind(const char * const string, const char * const what, const size_t which) {
+	/**
+	 * Find the `which`th substring in a given string.
+	 * 
+	 * @param string The string to search for the substring
+	 * @param what The string to find
+	 * @param which How many found substrings should be skipped
+	 * @return The index of the substring, or -1 if not found
+	 */
+	
+	return -1;
 }

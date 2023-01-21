@@ -15,7 +15,9 @@
 
 #pragma once
 
+#if defined(DG_MELON_OLD_SURFACE)
 #include "maths.h"
 
 DgVec3 DgBezCurveVec3(size_t n, DgVec3 *points, float u);
 DgVec3 DgBezSurfVec3(size_t n, size_t m, DgVec3 *points, float u, float v);
+#endif

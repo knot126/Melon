@@ -159,7 +159,7 @@ void DgFileStreamRead(DgFileStream* stream, size_t size, void* data) {
 	
 	DgLog(DG_LOG_DEPRECATION, "DgFileStreamRead(<0x%X>, %x, <0x%X>)", stream, size, data);
 	
-	fread(data, sizeof(byte), size, stream->_c_file_stream);
+	fread(data, 1, size, stream->_c_file_stream);
 }
 
 void DgFileStreamWrite(DgFileStream* stream, size_t size, const void* data) {
@@ -173,7 +173,7 @@ void DgFileStreamWrite(DgFileStream* stream, size_t size, const void* data) {
 	
 	DgLog(DG_LOG_DEPRECATION, "DgFileStreamWrite(<0x%X>, %x, <0x%X>)", stream, size, data);
 	
-	fwrite(data, sizeof(byte), size, stream->_c_file_stream);
+	fwrite(data, 1, size, stream->_c_file_stream);
 }
 
 size_t DgFileStreamLength(DgFileStream* stream) {
@@ -349,7 +349,7 @@ char* DgEvalPath(char* path) {
 	
 	// Check for a path that does not need evaluation
 	if (!strstr(path, "://")) {
-		return DgStrdup(path);
+		return DgStringDuplicate(path);
 	}
 	
 	uint8_t i; // For the path to use
@@ -580,5 +580,5 @@ inline void DgFileStreamWriteIntegerString(DgFileStream *stream, size_t data) {
 	 * Write a string as an integer.
 	 */
 	
-	fprintf(stream->_c_file_stream, "%ld", data);
+	fprintf(stream->_c_file_stream, "%zu", data);
 }

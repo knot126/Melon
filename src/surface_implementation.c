@@ -17,6 +17,7 @@
  * @warning Do not include this file directly
  */
 
+#if defined(DG_MELON_OLD_SURFACE)
 #include "maths.h"
 #include "log.h"
 
@@ -150,3 +151,4 @@ DgVec3 DgBezSurfVec3(size_t n, size_t m, DgVec3 *points, float u, float v) {
 	
 	return result;
 }
+#endif

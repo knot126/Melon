@@ -28,6 +28,8 @@ int DgThreadNew(DgThread* thread, DgThreadFunction func, DgThreadArg arg) {
 	
 #ifndef _WIN32
 	return pthread_create(&thread->_info, NULL, func, arg);
+#else
+	return 1;
 #endif
 }
 
@@ -41,5 +43,7 @@ int DgThreadJoin(DgThread* thread) {
 	
 #ifndef _WIN32
 	return pthread_join(thread->_info, NULL);
+#else
+	return 1;
 #endif
 }

@@ -645,8 +645,8 @@ void DgBitmapDrawConvexPolygon(DgBitmap * restrict this, size_t points_count, Dg
 	centre = DgVec2Scale(1.0f / (float)points_count, centre);
 	
 	// Fill in the pixels
-	for (size_t y = pmin.y; y <= pmax.y; y++) {
-		for (size_t x = pmin.x; x <= pmax.x; x++) {
+	for (int32_t y = pmin.y; y <= pmax.y; y++) {
+		for (int32_t x = pmin.x; x <= pmax.x; x++) {
 			bool alpha = 1.0f;
 			
 			// Point coordinates
@@ -748,8 +748,8 @@ inline static void DgBitmapDrawTriangle(DgBitmap * const this, DgBitmapTriangle 
 	float p3z_inv = 1.0f / triangle->p3.position.z;
 	
 	// Fill in the pixels
-	for (size_t y = pmin.y; y <= pmax.y; y++) {
-		for (size_t x = pmin.x; x <= pmax.x; x++) {
+	for (int32_t y = pmin.y; y <= pmax.y; y++) {
+		for (int32_t x = pmin.x; x <= pmax.x; x++) {
 			// Convert point to float
 			DgVec2 point = (DgVec2) {(float)x / (float)this->width, (float)y / (float)this->height};
 			
