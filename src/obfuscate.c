@@ -22,9 +22,35 @@
 
 #include "obfuscate.h"
 
+#ifdef DG_MELON_OBFUSCATE_EXTRA
 #define DG_POLYALPHABETIC_SHIFT() (key[i % key_length] + static_shift)
 
-void DgPolyalphabeticObfuscate(const char * restrict key, char static_shift, size_t size, uint8_t * restrict data) {
+void DgObfuscate_Rot13(size_t length, uint8_t * restrict data) {
+	/**
+	 * Obfuscate data (only alphabetic chars) using the ROT13 cipher.
+	 * 
+	 * @param length Length of the data
+	 * @param data Data to obfuscate
+	 */
+	
+	for (size_t i = 0; i < length; i++) {
+		char c = data[i];
+		
+		// Encrypt lowercase
+		if (c >= 'a' && c <= 'z') {
+			c = (((c - 'a') + 13) % 26) + 'a';
+		}
+		
+		// Encrypt uppercase
+		if (c >= 'A' && c <= 'Z') {
+			c = (((c - 'A') + 13) % 26) + 'A';
+		}
+		
+		data[i] = c;
+	}
+}
+
+void DgObfuscate_Polyalphabetic(const char * restrict key, char static_shift, size_t size, uint8_t * restrict data) {
 	/**
 	 * Obfuscate data using a polyalphabetic cipher. You can also have an extra
 	 * static shift character.
@@ -52,7 +78,7 @@ void DgPolyalphabeticObfuscate(const char * restrict key, char static_shift, siz
 	}
 }
 
-void DgPolyalphabeticDeobfuscate(const char * restrict key, char static_shift, size_t size, uint8_t * restrict data) {
+void DgDeobfuscate_Polyalphabetic(const char * restrict key, char static_shift, size_t size, uint8_t * restrict data) {
 	/**
 	 * Deobfuscate data using a polyalphabetic cipher. You can also have an extra
 	 * static shift character.
@@ -81,8 +107,9 @@ void DgPolyalphabeticDeobfuscate(const char * restrict key, char static_shift, s
 }
 
 #undef DG_POLYALPHABETIC_SHIFT
+#endif
 
-void DgObfuscateXorShiftShift(char *key, size_t length, uint8_t *data) {
+void DgObfuscate_SEA1(const char * restrict key, size_t length, uint8_t * restrict data) {
 	/**
 	 * Obfuscate a message using the XorShiftShift algorithm.
 	 * 
@@ -109,3 +136,97 @@ void DgObfuscateXorShiftShift(char *key, size_t length, uint8_t *data) {
 		data[i] ^= (char)((random_states[i % key_length]) & 0xff);
 	}
 }
+
+#ifdef DG_MELON_OBFUSCATE_EXTRA
+void DgObfuscateData(DgObfuscateAlgorithm algorithm, const char * restrict key, size_t length, uint8_t * restrict data) {
+	/**
+	 * Obfuscate a given block of data by using weak encryption algorithm.
+	 * 
+	 * @param algorithm Obfuscation algorithm to use
+	 * @param key Obfuscation key to use
+	 * @param length Length of the data to obfuscate
+	 * @param data Data to obfuscate
+	 */
+	
+	switch (algorithm) {
+		case DG_OBFUSCATE_ROT13: {
+			DgObfuscate_Rot13(length, data);
+			break;
+		}
+		
+		case DG_OBFUSCATE_CESAR: {
+			DgObfuscate_Polyalphabetic(NULL, key[0], length, data);
+			break;
+		}
+		
+		case DG_OBFUSCATE_POLYALPHABETIC: {
+			DgObfuscate_Polyalphabetic(key, 0, length, data);
+			break;
+		}
+		
+		case DG_OBFUSCATE_MEDIOCRE: {
+			DgObfuscate_Polyalphabetic(key, (char)(length & 0xff), length, data);
+			break;
+		}
+		
+		case DG_OBFUSCATE_SEA1: {
+			DgObfuscate_SEA1(key, length, data);
+			break;
+		}
+		
+		default: {
+			break;
+		}
+	}
+}
+
+void DgDeobfuscateData(DgObfuscateAlgorithm algorithm, const char * restrict key, size_t length, uint8_t * restrict data) {
+	/**
+	 * Obfuscate a given block of data by using weak encryption algorithm.
+	 * 
+	 * @param algorithm Obfuscation algorithm to use
+	 * @param key Obfuscation key to use
+	 * @param length Length of the data to obfuscate
+	 * @param data Data to obfuscate
+	 */
+	
+	switch (algorithm) {
+		case DG_OBFUSCATE_ROT13: {
+			DgObfuscate_Rot13(length, data);
+			break;
+		}
+		
+		case DG_OBFUSCATE_CESAR: {
+			DgDeobfuscate_Polyalphabetic(NULL, key[0], length, data);
+			break;
+		}
+		
+		case DG_OBFUSCATE_POLYALPHABETIC: {
+			DgDeobfuscate_Polyalphabetic(key, 0, length, data);
+			break;
+		}
+		
+		case DG_OBFUSCATE_MEDIOCRE: {
+			DgDeobfuscate_Polyalphabetic(key, (char)(length & 0xff), length, data);
+			break;
+		}
+		
+		case DG_OBFUSCATE_SEA1: {
+			DgObfuscate_SEA1(key, length, data);
+			break;
+		}
+		
+		default: {
+			break;
+		}
+	}
+}
+#else
+void DgObfuscateData(const char * restrict key, size_t length, uint8_t * restrict data) {
+	DgObfuscate_SEA1(key, length, data);
+}
+
+void DgDeobfuscateData(const char * restrict key, size_t length, uint8_t * restrict data) {
+	DgObfuscate_SEA1(key, length, data);
+}
+#endif

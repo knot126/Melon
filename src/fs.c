@@ -11,10 +11,8 @@
  * 
  * File System Utilites
  * 
- * @deprecated See todo
- * @warning See todo
- * @todo This library is in need of a major rewrite to support the new File
- * Systems concept as well as to update the crufty parts.
+ * @note Once the new storage module is implemented, this will be reworked into
+ * a "simple" file API.
  */
 
 #include <stdio.h>
@@ -49,17 +47,6 @@ const char *dg_special_directory_paths[3] = {
 	".",
 };
 
-void DgInitPaths2(const char * restrict assets) {
-	/**
-	 * This will initialise the paths in dg_special_directory_paths using
-	 * specified paths.
-	 */
-	
-	DgLog(DG_LOG_DEPRECATION, "DgInitPaths2('%s')", assets);
-	
-	dg_special_directory_paths[0] = assets;
-}
-
 DgFileStream* DgFileStreamOpen(char* path, char* permissions) {
 	/**
 	 * Opens a file stream
@@ -68,9 +55,7 @@ DgFileStream* DgFileStreamOpen(char* path, char* permissions) {
 	 * @param permissions Mode to open the file in
 	 * @return File stream handle or NULL on failure
 	 */
-	
-	DgLog(DG_LOG_DEPRECATION, "DgFileStreamOpen('%s', '%s')", path, permissions);
-	
+		
 	FILE *f;
 	
 	f = fopen(path, permissions);
@@ -94,9 +79,7 @@ DgFile DgFileOpen2(const char * const filepath, DgFileStreamFlags flags) {
 	 * @param flags Flags to use when opening the file
 	 * @return File stream handle, or NULL on failure
 	 */
-	
-	DgLog(DG_LOG_DEPRECATION, "DgFileOpen2('%s', %x)", filepath, flags);
-	
+		
 	DgFileStream *stream = NULL;
 	char *realpath = DgEvalPath((char *) filepath);
 	
@@ -125,14 +108,6 @@ DgFile DgFileOpen2(const char * const filepath, DgFileStreamFlags flags) {
 	}
 	
 	return stream;
-}
-
-DgFileStream* DgFileStreamReopen(DgFileStream* stream, char* path, char* permissions) {
-	return NULL;
-}
-
-DgFileStream* DgChangeStreamPermissions(DgFileStream* stream, char* permissions) {
-	return NULL;
 }
 
 void DgFileStreamClose(DgFileStream* stream) {
@@ -271,52 +246,6 @@ char *DgFileStreamGetString(DgFileStream* stream, size_t *length) {
 	return str;
 }
 
-/*
-uint8_t *DgFileLoad(const char * restrict path, size_t *content_size) {
-	/**
-	 * Load a file into memory and return the buffer that was created.
-	 * 
-	 * @note If you are processing a **trusted** text file, then it is safe to
-	 * provide NULL to content_size and a NUL char will be appended to the end.
-	 * 
-	 * @param stream File stream handle
-	 * @return Data loaded from file on success, or NULL on failure
-	 *
-	
-	// Open stream
-	DgFile stream = DgFileOpen2(path, DG_FILE_STREAM_READ);
-	
-	if (!stream) {
-		return NULL;
-	}
-	
-	// Read stream size
-	size_t size = DgFileStreamLength(stream);
-	
-	if (content_size != NULL) {
-		*content_size = size;
-	}
-	
-	// Allocate room for data plus NUL char
-	unsigned char *data = (unsigned char *) DgAlloc(size + 1);
-	
-	if (!data) {
-		DgFileStreamClose(stream);
-		return NULL;
-	}
-	
-	// Read data in
-	DgFileStreamRead(stream, size, data);
-	
-	// Write NUL char to end
-	data[size] = '\0';
-	
-	// Close stream
-	DgFileStreamClose(stream);
-	
-	return data;
-}*/
-
 /**
  * Non-File Stream Functions
  * -------------------------
@@ -419,16 +348,6 @@ bool DgIsDir(const char* dir) {
 	return ret;
 }
 
-char *DgGetUserDir(void) {
-	/**
-	 * Return the path to the user directory
-	 * 
-	 * @return Path to the user directory
-	 */
-	
-	return NULL;
-}
-
 int32_t DgDeleteFile(char* path) {
 	/** 
 	 * Delete a file
@@ -462,12 +381,6 @@ int32_t DgMoveFile(char* src, char* dest) {
 	}
 	
 	return status;
-}
-
-int32_t DgCopyFile(char* src, char* dest) {
-	DgLog(DG_LOG_WARNING, "Function DgCopyFile() is not implemented.");
-	
-	return 1;
 }
 
 /* =============================================================================
