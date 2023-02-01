@@ -4,7 +4,7 @@
 
 ## Support
 
-This library is **not well supported for thirdparty projects**, though it is MIT licenced. There is a lot of messy code.
+This library is **not well supported for thirdparty projects**, though it is MIT licenced (with exceptions stating you will need to get our permission for using AI and ML with Melon). There is a lot of messy code.
 
 There is some documentation in the [docs](docs) folder. Most documentation is inline at the start of the implementation of each function.
 
