@@ -9,25 +9,17 @@
  * 
  * =============================================================================
  * 
- * Random Numbers and Strings
+ * Memory Allocation
  */
 
 #pragma once
 
-#include <inttypes.h>
-#include <stdbool.h>
+#include <stdlib.h>
 
-uint32_t DgRandXORShiftU32(uint32_t n);
-float DgRandXORShiftF32(void);
+void *DgAlloc(size_t size);
+void DgFree(void *block);
+void *DgRealloc(void *block, size_t size);
 
-uint32_t DgRandInt(void);
-float DgRandFloat(void);
-bool DgRandBool(void);
-
-#if !defined(DG_NO_LUA)
-
-#include "script.h"
-
-void DgRegisterRandFuncs(DgScript *script);
-
-#endif
+void *DgMemoryAllocate(size_t size);
+void DgMemoryFree(void *block);
+void *DgMemoryReallocate(void *block, size_t size);

@@ -9,25 +9,15 @@
  * 
  * =============================================================================
  * 
- * Random Numbers and Strings
+ * Bèzier surface core implementation and anything needed for them not provided
+ * by the maths library.
  */
 
 #pragma once
 
-#include <inttypes.h>
-#include <stdbool.h>
+#if defined(DG_MELON_OLD_SURFACE)
+#include "maths.h"
 
-uint32_t DgRandXORShiftU32(uint32_t n);
-float DgRandXORShiftF32(void);
-
-uint32_t DgRandInt(void);
-float DgRandFloat(void);
-bool DgRandBool(void);
-
-#if !defined(DG_NO_LUA)
-
-#include "script.h"
-
-void DgRegisterRandFuncs(DgScript *script);
-
+DgVec3 DgBezCurveVec3(size_t n, DgVec3 *points, float u);
+DgVec3 DgBezSurfVec3(size_t n, size_t m, DgVec3 *points, float u, float v);
 #endif

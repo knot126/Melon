@@ -9,25 +9,15 @@
  * 
  * =============================================================================
  * 
- * Random Numbers and Strings
+ * Dynamic library loading
  */
 
 #pragma once
 
-#include <inttypes.h>
-#include <stdbool.h>
+typedef struct DgLibrary {
+	void *handle;
+} DgLibrary;
 
-uint32_t DgRandXORShiftU32(uint32_t n);
-float DgRandXORShiftF32(void);
-
-uint32_t DgRandInt(void);
-float DgRandFloat(void);
-bool DgRandBool(void);
-
-#if !defined(DG_NO_LUA)
-
-#include "script.h"
-
-void DgRegisterRandFuncs(DgScript *script);
-
-#endif
+DgError DgLibraryInit(DgLibrary * const restrict this, const char * const restrict path);
+DgError DgLibraryFree(DgLibrary * const restrict this);
+void *DgLibraryGetSymbol(DgLibrary * const restrict this, const char * const restrict symbol);

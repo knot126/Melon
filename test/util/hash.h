@@ -9,25 +9,13 @@
  * 
  * =============================================================================
  * 
- * Random Numbers and Strings
- */
+ * Hashing Strings and Data
+ */ 
 
 #pragma once
 
 #include <inttypes.h>
-#include <stdbool.h>
 
-uint32_t DgRandXORShiftU32(uint32_t n);
-float DgRandXORShiftF32(void);
-
-uint32_t DgRandInt(void);
-float DgRandFloat(void);
-bool DgRandBool(void);
-
-#if !defined(DG_NO_LUA)
-
-#include "script.h"
-
-void DgRegisterRandFuncs(DgScript *script);
-
-#endif
+uint32_t DgHashStringU32_366(const char * str);
+uint32_t DgHashStringU32_DJB2(const char * str);
+uint32_t DgHashStringU32(const char * str);

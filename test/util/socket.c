@@ -9,25 +9,38 @@
  * 
  * =============================================================================
  * 
- * Random Numbers and Strings
+ * Raw network sockets
  */
 
-#pragma once
-
-#include <inttypes.h>
-#include <stdbool.h>
-
-uint32_t DgRandXORShiftU32(uint32_t n);
-float DgRandXORShiftF32(void);
-
-uint32_t DgRandInt(void);
-float DgRandFloat(void);
-bool DgRandBool(void);
-
-#if !defined(DG_NO_LUA)
-
-#include "script.h"
-
-void DgRegisterRandFuncs(DgScript *script);
-
+#ifdef __linux__
+	#include <sys/socket.h>
+#elif defined(_WIN32)
+	#include <winsock2.h>
 #endif
+
+#include "log.h"
+#include "error.h"
+
+#include "socket.h"
+
+DgError DgSocketInit(DgSocket *this, const char *address, uint16_t port) {
+	/**
+	 * 
+	 */
+	
+	this->handle = socket(AF_INET, SOCK_STREAM, 0);
+	
+	if (this->handle < 0) {
+		return DG_ERROR_FAILED;
+	}
+	
+	return DG_ERROR_SUCCESS;
+}
+
+DgError DgSocketSend(DgSocket *this, size_t size, void *data) {
+	
+}
+
+DgError DgSocketRecieve(DgSocket *this, size_t *size, void **data) {
+	
+}

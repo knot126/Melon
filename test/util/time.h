@@ -9,25 +9,16 @@
  * 
  * =============================================================================
  * 
- * Random Numbers and Strings
+ * Time Functions
  */
 
 #pragma once
 
 #include <inttypes.h>
-#include <stdbool.h>
 
-uint32_t DgRandXORShiftU32(uint32_t n);
-float DgRandXORShiftF32(void);
+void DgInitTime(void);
 
-uint32_t DgRandInt(void);
-float DgRandFloat(void);
-bool DgRandBool(void);
+double DgTime(void);
+double DgRealTime(void);
 
-#if !defined(DG_NO_LUA)
-
-#include "script.h"
-
-void DgRegisterRandFuncs(DgScript *script);
-
-#endif
+uint32_t DgNsecTime(void);

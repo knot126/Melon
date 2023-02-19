@@ -9,25 +9,20 @@
  * 
  * =============================================================================
  * 
- * Random Numbers and Strings
+ * Thread abstraction
  */
 
-#pragma once
+#include <pthread.h>
 
-#include <inttypes.h>
-#include <stdbool.h>
+// First two typedefs may change depending on threading library
+typedef void *DgThreadArg;
+typedef void *DgThreadReturn;
 
-uint32_t DgRandXORShiftU32(uint32_t n);
-float DgRandXORShiftF32(void);
+typedef DgThreadReturn (*DgThreadFunction)(DgThreadArg);
 
-uint32_t DgRandInt(void);
-float DgRandFloat(void);
-bool DgRandBool(void);
+typedef struct DgThread {
+	pthread_t _info;
+} DgThread;
 
-#if !defined(DG_NO_LUA)
-
-#include "script.h"
-
-void DgRegisterRandFuncs(DgScript *script);
-
-#endif
+int DgThreadNew(DgThread* thread, DgThreadFunction func, DgThreadArg arg);
+int DgThreadJoin(DgThread* thread);

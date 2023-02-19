@@ -1,0 +1,26 @@
+{
+	"linux": {
+		"prebuild": [
+			"rm -r ./test/util",
+			"cp -r ./src ./test/util"
+		],
+		"compiler": "clang",
+		"folders": ["test"],
+		"includes": ["test"],
+		"links": ["m", "pthread", "SDL2"],
+		"defines": ["DG_NO_LUA"],
+		"output": "temp/melon-test-linux-native.elf"
+	},
+	"windows-arm64": {
+		"prebuild": [
+			"rd test\\util /s /q",
+			"xcopy .\\src test\\util /e /i"
+		],
+		"compiler": "C:/Users/User/bin/llvm-mingw-20220323-ucrt-aarch64/llvm-mingw-20220323-ucrt-aarch64/bin/clang.exe",
+		"folders": ["test"],
+		"includes": ["test"],
+		"links": ["gdi32", "Ws2_32"],
+		"defines": ["DG_NO_LUA", "DG_NO_SDL", "DG_USE_WINDOWS_API"],
+		"output": "temp/melon-test-windows-arm64.exe"
+	}
+}

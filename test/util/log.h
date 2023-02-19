@@ -9,25 +9,28 @@
  * 
  * =============================================================================
  * 
- * Random Numbers and Strings
- */
+ * Logging Facialites
+ */ 
 
 #pragma once
 
-#include <inttypes.h>
-#include <stdbool.h>
+#include <stdio.h>
+#include <stdarg.h>
 
-uint32_t DgRandXORShiftU32(uint32_t n);
-float DgRandXORShiftF32(void);
+#include "fs.h"
 
-uint32_t DgRandInt(void);
-float DgRandFloat(void);
-bool DgRandBool(void);
+typedef enum DgLogLevel {
+	DG_LOG_VERBOSE = -1,
+	DG_LOG_SUCCESS = 0,
+	DG_LOG_INFO = 1,
+	DG_LOG_WARNING = 2,
+	DG_LOG_DEPRECATION = 3,
+	DG_LOG_ERROR = 4,
+	DG_LOG_FATAL = 5,
+} DgLogLevel;
 
-#if !defined(DG_NO_LUA)
+typedef struct DgLogger {
+	DgFile *log_file;
+} DgLogger;
 
-#include "script.h"
-
-void DgRegisterRandFuncs(DgScript *script);
-
-#endif
+void DgLog(const DgLogLevel level, const char * const format, ...);

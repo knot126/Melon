@@ -9,25 +9,8 @@
  * 
  * =============================================================================
  * 
- * Random Numbers and Strings
+ * This file exsists because string utilities used to be called 'str' and not
+ * 'string'.
  */
 
-#pragma once
-
-#include <inttypes.h>
-#include <stdbool.h>
-
-uint32_t DgRandXORShiftU32(uint32_t n);
-float DgRandXORShiftF32(void);
-
-uint32_t DgRandInt(void);
-float DgRandFloat(void);
-bool DgRandBool(void);
-
-#if !defined(DG_NO_LUA)
-
-#include "script.h"
-
-void DgRegisterRandFuncs(DgScript *script);
-
-#endif
+#include "string.h"

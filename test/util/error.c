@@ -9,25 +9,17 @@
  * 
  * =============================================================================
  * 
- * Random Numbers and Strings
+ * Error handling
  */
 
-#pragma once
-
-#include <inttypes.h>
 #include <stdbool.h>
 
-uint32_t DgRandXORShiftU32(uint32_t n);
-float DgRandXORShiftF32(void);
+#include "error.h"
 
-uint32_t DgRandInt(void);
-float DgRandFloat(void);
-bool DgRandBool(void);
-
-#if !defined(DG_NO_LUA)
-
-#include "script.h"
-
-void DgRegisterRandFuncs(DgScript *script);
-
-#endif
+bool DgErrorFatal(DgError error) {
+	/**
+	 * Return if the error is fatal or not.
+	 */
+	
+	return (error != DG_ERROR_SUCCESSFUL);
+}

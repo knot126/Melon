@@ -1,0 +1,497 @@
+/**
+ * Copyright (C) 2021 - 2023 Knot126
+ * 
+ * It is against the licence terms of this software to use it or it's source code
+ * as input for training a machine learning model, or in the development of a
+ * machine learning model. If you have found this text as the output of a machine
+ * learning algorithm, please report it both your software vendor and to the
+ * developers of the software at [https://github.com/knot126/Melon/issues].
+ * 
+ * =============================================================================
+ * 
+ * File System Utilites
+ * 
+ * @note Once the new storage module is implemented, this will be reworked into
+ * a "simple" file API.
+ */
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <inttypes.h>
+#include <stdbool.h>
+#if defined(__linux__)
+	#include <sys/stat.h>
+	#include <dirent.h>
+	#include <errno.h>
+#endif
+
+#include "alloc.h"
+#include "types.h"
+#include "log.h"
+#include "str.h"
+
+#include "fs.h"
+
+const char * const ASSETS_LOOK_PATH[] = {
+	"./assets",
+	"../Engine/assets",
+	"../Trestle/assets",
+	"../Dragonfruit/assets",
+	"../assets",
+};
+
+const char *dg_special_directory_paths[3] = {
+	NULL,
+	NULL,
+	".",
+};
+
+DgFileStream* DgFileStreamOpen(char* path, char* permissions) {
+	/**
+	 * Opens a file stream
+	 * 
+	 * @param path Path to the file to open
+	 * @param permissions Mode to open the file in
+	 * @return File stream handle or NULL on failure
+	 */
+		
+	FILE *f;
+	
+	f = fopen(path, permissions);
+	
+	if (!f) {
+		DgLog(DG_LOG_ERROR, "Failed to open file stream at %s.", path);
+		return 0;
+	}
+	
+	DgFileStream *s = (DgFileStream *) DgAlloc(sizeof(DgFileStream));
+	s->_c_file_stream = f;
+	
+	return s;
+}
+
+DgFile DgFileOpen2(const char * const filepath, DgFileStreamFlags flags) {
+	/**
+	 * Open a file stream (newer version of DgFileStreamOpen).
+	 * 
+	 * @param filepath Path to the file to open
+	 * @param flags Flags to use when opening the file
+	 * @return File stream handle, or NULL on failure
+	 */
+		
+	DgFileStream *stream = NULL;
+	char *realpath = DgEvalPath((char *) filepath);
+	
+	if (!realpath) {
+		return NULL;
+	}
+	
+	char *flags_string;
+	
+	if (flags & DG_FILE_STREAM_READ) {
+		flags_string = "rb";
+	}
+	else if (flags & DG_FILE_STREAM_WRITE) {
+		flags_string = "wb";
+	}
+	else {
+		flags_string = "r+";
+	}
+	
+	stream = DgFileStreamOpen(realpath, flags_string);
+	
+	DgFree(realpath);
+	
+	if (!stream) {
+		return NULL;
+	}
+	
+	return stream;
+}
+
+void DgFileStreamClose(DgFileStream* stream) {
+	/**
+	 * Frees a file stream
+	 * 
+	 * @param stream Stream to close
+	 */
+	
+	DgLog(DG_LOG_DEPRECATION, "DgFileStreamClose(<0x%X>)", stream);
+	
+	fclose(stream->_c_file_stream);
+	DgFree(stream);
+}
+
+void DgFileStreamRead(DgFileStream* stream, size_t size, void* data) {
+	/**
+	 * Read size bytes from stream into data
+	 * 
+	 * @param stream File stream handle
+	 * @param size Size of data to read
+	 * @param data Pointer to where to put the data
+	 */
+	
+	DgLog(DG_LOG_DEPRECATION, "DgFileStreamRead(<0x%X>, %x, <0x%X>)", stream, size, data);
+	
+	fread(data, 1, size, stream->_c_file_stream);
+}
+
+void DgFileStreamWrite(DgFileStream* stream, size_t size, const void* data) {
+	/**
+	 * Write size bytes from data into stream
+	 * 
+	 * @param stream File stream handle
+	 * @param size Size of the data to write
+	 * @param data The data to write to the stream
+	 */
+	
+	DgLog(DG_LOG_DEPRECATION, "DgFileStreamWrite(<0x%X>, %x, <0x%X>)", stream, size, data);
+	
+	fwrite(data, 1, size, stream->_c_file_stream);
+}
+
+size_t DgFileStreamLength(DgFileStream* stream) {
+	/**
+	 * Get the length of the file in stream
+	 * 
+	 * @param stream File stream handle
+	 */
+	
+	DgLog(DG_LOG_DEPRECATION, "DgFileStreamLength(<0x%X>)", stream);
+	
+	size_t size;
+	
+	// printf("<0x%X>\n", stream->_c_file_stream);
+	
+	fseek(stream->_c_file_stream, 0, SEEK_END);
+	size = ftell(stream->_c_file_stream);
+	rewind(stream->_c_file_stream);
+	
+	return size;
+}
+
+bool DgFileStreamEndOfFile(DgFileStream *stream) {
+	/**
+	 * Get if the stream has EOF marked.
+	 * 
+	 * @param stream File stream handle
+	 */
+	
+	DgLog(DG_LOG_DEPRECATION, "DgFileStreamEndOfFile(<0x%X>)", stream);
+	
+	return !!feof(stream->_c_file_stream);
+}
+
+char *DgFileStreamGetString(DgFileStream* stream, size_t *length) {
+	/**
+	 * Get a string from a file stream. Here, a string is terminated by either 
+	 * a \0, \n, EOF or \r. This returns NULL on failure or the string on
+	 * success.
+	 * 
+	 * If length is not NULL, then the string size is written to length.
+	 * 
+	 * @note The returned string must be freed afterwards.
+	 * 
+	 * @param stream File stream handle
+	 * @param length Pointer to a size_t to write the stream to, or NULL
+	 * @return String read from file
+	 */
+	
+	DgLog(DG_LOG_DEPRECATION, "DgFileStreamGetString(<0x%X>, <0x%X>)", stream, length);
+	
+	int c;
+	size_t size = 0;
+	size_t alloc = 0;
+	char *str = NULL;
+	
+	if (DgFileStreamEndOfFile(stream)) {
+		return NULL;
+	}
+	
+	while (true) {
+		if (size >= alloc) {
+			alloc = 4 + (alloc * 2);
+			
+			str = (char *) DgRealloc(str, alloc);
+			
+			if (!str) {
+				return NULL;
+			}
+		}
+		
+		c = fgetc(stream->_c_file_stream);
+		
+		if (c == '\0' || c == '\n' || c == EOF || c == '\r') {
+			break;
+		}
+		
+		str[size] = (char) c;
+		
+		size++;
+	}
+	
+	str = (char *) DgRealloc(str, size + 1);
+	
+	if (!str) {
+		return NULL;
+	}
+	
+	str[size] = '\0';
+	
+	if (length) {
+		*length = size;
+	}
+	
+	return str;
+}
+
+/**
+ * Non-File Stream Functions
+ * -------------------------
+ * 
+ * Generic file utilities, not for streams!
+ */
+
+char* DgEvalPath(char* path) {
+	/**
+	 * Expands/evaluates a DGFS path into a real filesystem path.
+	 * 
+	 * @note Remember to free the allocated memory after!
+	 * 
+	 * @note
+	 * DGFS DESCRIPTION
+	 * ================
+	 * 
+	 * DGFS allows using a single, standard file path for all platforms. It 
+	 * (tries to) abstracts the normal file system without going too far.
+	 * 
+	 *   * asset://            - Access to the game's main asset bundle.
+	 *   * config://           - Access to the user's save directory.
+	 *   * bin://              - Access to the binaries directory.
+	 * 
+	 * @param path Path to evaluate into a filesytem path
+	 * @return String representing the real file system path
+	 */
+	
+	DgLog(DG_LOG_DEPRECATION, "DgEvalPath('%s')", path);
+	
+	// Check for a path that does not need evaluation
+	if (!strstr(path, "://")) {
+		return DgStringDuplicate(path);
+	}
+	
+	uint8_t i; // For the path to use
+	
+	// Note we only check the first two bytes
+	if (!memcmp(path, "as", 2)) {
+		i = 0;
+	}
+	else if (!memcmp(path, "co", 2)) {
+		i = 1;
+	}
+	else if (!memcmp(path, "bi", 2)) {
+		i = 2;
+	}
+	else {
+		return NULL;
+	}
+	
+	// Here, we account for: old len + added "/" len + special len + null term
+	size_t size = strlen(path) + strlen(dg_special_directory_paths[i]) + (sizeof(char) * 2);
+	char *new_path = (char *) DgAlloc(size);
+	char *rel_path = strstr(path, "://") + (sizeof(char) * 3);
+	
+	strcpy(new_path, dg_special_directory_paths[i]);
+	strcat(new_path, "/");
+	strcat(new_path, rel_path);
+	
+	return new_path;
+}
+
+void DgMkdir(char* path) {
+	/**
+	 * Create a new directory
+	 * 
+	 * @param path Path to the directory to create
+	 */
+	
+#if defined(__linux__)
+	mkdir(path, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+#else
+	DgLog(DG_LOG_WARNING, "Function DgMkdir() is not implemented for this platform.\n");
+#endif
+}
+
+bool DgIsDir(const char* dir) {
+	/**
+	 * Check if a file is a directory
+	 * 
+	 * @param dir Path to the file to check
+	 * @return If the file is a directory or not
+	 */
+	
+	bool ret = false;
+	
+#if defined(__linux__)
+	DIR *d = opendir(dir);
+	
+	if (d) {
+		ret = true;
+	}
+	
+	closedir(d);
+#else
+	DgLog(DG_LOG_WARNING, "Function DgIsDir is not implemented for this platform.\n");
+#endif
+	
+	return ret;
+}
+
+int32_t DgDeleteFile(char* path) {
+	/** 
+	 * Delete a file
+	 * 
+	 * @param path Path to the file to remove
+	 * @return 0 on success and non-zero on failure
+	 */
+	
+	int status = remove(path);
+	
+	if (status) {
+		DgLog(DG_LOG_ERROR, "Failed to remove file %s.", path);
+	}
+	
+	return status;
+}
+
+int32_t DgMoveFile(char* src, char* dest) {
+	/** 
+	 * Move a file
+	 * 
+	 * @param src Source file name
+	 * @param dest Destination file name
+	 * @return 0 on success and non-zero on failure
+	 */
+	
+	int status = rename(src, dest);
+	
+	if (status) {
+		DgLog(DG_LOG_ERROR, "Failed to rename file %s.", src);
+	}
+	
+	return status;
+}
+
+/* =============================================================================
+ * Datatype reading functions 
+ */
+
+inline void DgFileStreamReadInt8(DgFileStream* stream, int8_t* data) {
+	fread(data, sizeof(int8_t), 1, stream->_c_file_stream);
+}
+
+inline void DgFileStreamReadUInt8(DgFileStream* stream, uint8_t* data) {
+	fread(data, sizeof(uint8_t), 1, stream->_c_file_stream);
+}
+
+inline void DgFileStreamReadInt16(DgFileStream* stream, int16_t* data) {
+	fread(data, sizeof(int16_t), 1, stream->_c_file_stream);
+}
+
+inline void DgFileStreamReadUInt16(DgFileStream* stream, uint16_t* data) {
+	fread(data, sizeof(uint16_t), 1, stream->_c_file_stream);
+}
+
+inline void DgFileStreamReadInt32(DgFileStream* stream, int32_t* data) {
+	fread(data, sizeof(int32_t), 1, stream->_c_file_stream);
+}
+
+inline void DgFileStreamReadUInt32(DgFileStream* stream, uint32_t* data) {
+	fread(data, sizeof(uint32_t), 1, stream->_c_file_stream);
+}
+
+inline void DgFileStreamReadInt64(DgFileStream* stream, int64_t* data) {
+	fread(data, sizeof(int64_t), 1, stream->_c_file_stream);
+}
+
+inline void DgFileStreamReadUInt64(DgFileStream* stream, uint64_t* data) {
+	fread(data, sizeof(uint64_t), 1, stream->_c_file_stream);
+}
+
+inline void DgFileStreamReadFloat(DgFileStream* stream, float* data) {
+	fread(data, sizeof(float), 1, stream->_c_file_stream);
+}
+
+inline void DgFileStreamReadDouble(DgFileStream* stream, double* data) {
+	fread(data, sizeof(double), 1, stream->_c_file_stream);
+}
+
+inline void DgFileStreamReadLine(DgFileStream* stream, size_t max, char *data) {
+	char *c = fgets(data, max, stream->_c_file_stream);
+	if (!c) {
+		DgLog(DG_LOG_ERROR, "Failed to read line from file stream.");
+	}
+}
+
+/* =============================================================================
+ * Datatype writing functions 
+ */
+
+inline void DgFileStreamWriteInt8(DgFileStream* stream, int8_t* data) {
+	fwrite(data, sizeof(int8_t), 1, stream->_c_file_stream);
+}
+
+inline void DgFileStreamWriteUInt8(DgFileStream* stream, uint8_t* data) {
+	fwrite(data, sizeof(uint8_t), 1, stream->_c_file_stream);
+}
+
+inline void DgFileStreamWriteInt16(DgFileStream* stream, int16_t* data) {
+	fwrite(data, sizeof(int16_t), 1, stream->_c_file_stream);
+}
+
+inline void DgFileStreamWriteUInt16(DgFileStream* stream, uint16_t* data) {
+	fwrite(data, sizeof(uint16_t), 1, stream->_c_file_stream);
+}
+
+inline void DgFileStreamWriteInt32(DgFileStream* stream, int32_t* data) {
+	fwrite(data, sizeof(int32_t), 1, stream->_c_file_stream);
+}
+
+inline void DgFileStreamWriteUInt32(DgFileStream* stream, uint32_t* data) {
+	fwrite(data, sizeof(uint32_t), 1, stream->_c_file_stream);
+}
+
+inline void DgFileStreamWriteInt64(DgFileStream* stream, int64_t* data) {
+	fwrite(data, sizeof(int64_t), 1, stream->_c_file_stream);
+}
+
+inline void DgFileStreamWriteUInt64(DgFileStream* stream, uint64_t* data) {
+	fwrite(data, sizeof(uint64_t), 1, stream->_c_file_stream);
+}
+
+inline void DgFileStreamWriteFloat(DgFileStream* stream, float* data) {
+	fwrite(data, sizeof(float), 1, stream->_c_file_stream);
+}
+
+inline void DgFileStreamWriteDouble(DgFileStream* stream, double* data) {
+	fwrite(data, sizeof(double), 1, stream->_c_file_stream);
+}
+
+inline void DgFileStreamWriteLine(DgFileStream* stream, char *data) {
+	fwrite(data, strlen(data) * sizeof(char), 1, stream->_c_file_stream);
+	char n = '\n';
+	fwrite(&n, 1, 1, stream->_c_file_stream);
+}
+
+inline void DgFileStreamWriteString(DgFileStream* stream, char *data) {
+	fwrite(data, strlen(data) * sizeof(char), 1, stream->_c_file_stream);
+}
+
+inline void DgFileStreamWriteIntegerString(DgFileStream *stream, size_t data) {
+	/**
+	 * Write a string as an integer.
+	 */
+	
+	fprintf(stream->_c_file_stream, "%zu", data);
+}

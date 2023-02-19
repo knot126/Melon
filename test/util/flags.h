@@ -9,25 +9,18 @@
  * 
  * =============================================================================
  * 
- * Random Numbers and Strings
+ * Bit flag feilds
  */
 
 #pragma once
 
-#include <inttypes.h>
 #include <stdbool.h>
+#include <inttypes.h>
 
-uint32_t DgRandXORShiftU32(uint32_t n);
-float DgRandXORShiftF32(void);
+typedef uint64_t DgFlags;
 
-uint32_t DgRandInt(void);
-float DgRandFloat(void);
-bool DgRandBool(void);
-
-#if !defined(DG_NO_LUA)
-
-#include "script.h"
-
-void DgRegisterRandFuncs(DgScript *script);
-
-#endif
+DgFlags DgFlagSet(DgFlags feild, DgFlags flag);
+DgFlags DgFlagUnset(DgFlags feild, DgFlags flag);
+DgFlags DgFlagToggle(DgFlags feild, DgFlags flag);
+bool DgFlagCheckOr(DgFlags feild, DgFlags flags);
+bool DgFlagCheckAnd(DgFlags feild, DgFlags flags);

@@ -272,12 +272,6 @@ DgError DgStorageSplitPathIntoParts(DgStoragePath path, char **protocol, char **
 	 * @param filename Where to store the resulting file name
 	 */
 	
-	int64_t seperator_index = DgStringFind(path, "://", 0);
-	
-	if (seperator_index == -1) {
-		return DG_ERROR_FILE_NOT_FOUND;
-	}
-	
 	
 }
 

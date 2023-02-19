@@ -279,14 +279,6 @@ char *DgStringDuplicate(const char * const string) {
 	return result;
 }
 
-char *DgStringDuplicateUntil(const char * const string, size_t length) {
-	/**
-	 * Duplicate a string up to (but not including) the `length`th character.
-	 * 
-	 * 
-	 */
-}
-
 size_t DgStringLength(const char * const string) {
 	/**
 	 * Return the length of the given string
@@ -332,7 +324,7 @@ bool DgStringEqual(const char * const string1, const char * const string2) {
 	}
 }
 
-bool DgStringStartsWith(const char * restrict base, const char * restrict what) {
+bool DgStringStartsWith(const char *base, const char *what) {
 	/**
 	 * Check if `base` starts with `what`.
 	 * 

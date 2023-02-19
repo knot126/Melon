@@ -9,25 +9,14 @@
  * 
  * =============================================================================
  * 
- * Random Numbers and Strings
+ * Load and save file functions
  */
 
 #pragma once
 
-#include <inttypes.h>
-#include <stdbool.h>
+#include "storage.h"
+#include "error.h"
 
-uint32_t DgRandXORShiftU32(uint32_t n);
-float DgRandXORShiftF32(void);
-
-uint32_t DgRandInt(void);
-float DgRandFloat(void);
-bool DgRandBool(void);
-
-#if !defined(DG_NO_LUA)
-
-#include "script.h"
-
-void DgRegisterRandFuncs(DgScript *script);
-
-#endif
+DgError DgFileLoad(DgStorage *storage, DgStoragePath path, size_t *size, void **buffer);
+DgError DgFileSave(DgStorage *storage, DgStoragePath path, size_t size, void *buffer);
+DgError DgFileAppend(DgStorage *storage, DgStoragePath path, size_t size, void *buffer);
