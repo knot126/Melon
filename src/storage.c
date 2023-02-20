@@ -261,15 +261,16 @@ DgError DgStorageRenamePool(DgStorage *this, DgStoragePath old_protocol, DgStora
 }
 
 /**
- * File system misc. functions
+ * Utility functions for type implementations
  */
 DgError DgStorageSplitPathIntoParts(DgStoragePath path, char **protocol, char **filename) {
 	/**
 	 * Splits a path into the protocol and the filename.
 	 * 
 	 * @param path Path to the file
-	 * @param protocol Where to store the resulting potocol string
-	 * @param filename Where to store the resulting file name
+	 * @param protocol Where to store the resulting potocol string (or NULL)
+	 * @param filename Where to store the resulting file name (or NULL)
+	 * @return Error code
 	 */
 	
 	int64_t seperator_index = DgStringFind(path, "://", 0);
@@ -278,7 +279,63 @@ DgError DgStorageSplitPathIntoParts(DgStoragePath path, char **protocol, char **
 		return DG_ERROR_FILE_NOT_FOUND;
 	}
 	
+	// Store the protocol string
+	if (protocol) {
+		char *protocol_ = DgStringDuplicateUntil(path, seperator_index);
+		
+		if (!protocol_) {
+			return DG_ERROR_OUT_OF_MEMORY;
+		}
+		
+		protocol[0] = protocol_;
+	}
 	
+	// Store the other part of the path
+	if (filename) {
+		char *filename_ = DgStringDuplicate(&path[seperator_index + 3]);
+		
+		if (!filename_) {
+			return DG_ERROR_OUT_OF_MEMORY;
+		}
+		
+		filename[0] = filename_;
+	}
+	
+	return DG_ERROR_SUCCESSFUL;
+}
+
+DgError DgStorageGetPoolFromPath(DgStorage *this, DgStoragePath path, DgStoragePool **pool) {
+	/**
+	 * Get the storage pool assocaited with the given path.
+	 * 
+	 * @param this Storage config object
+	 * @param path Path to use to find the pool
+	 * @param pool Where to store the found pool
+	 * @return Error code
+	 */
+	
+	char *protocol;
+	
+	// Get the protocol
+	DgError status = DgStorageSplitPathIntoParts(path, &protocol, NULL);
+	
+	if (status) {
+		return status;
+	}
+	
+	// Find the pool from the protocol
+	status = DgStorageGetPool(this, protocol, pool);
+	
+	if (status) {
+		return status;
+	}
+	
+	// Free temporary memory
+	DgFree(protocol);
+	
+	pool[0] = pool;
+	
+	return DG_ERROR_SUCCESSFUL;
 }
 
 /**
@@ -296,7 +353,19 @@ DgError DgStorageDelete(DgStorage *this, DgStoragePath path) {
 	
 	DG_STORAGE_RESOLVE();
 	
-	return DG_ERROR_NOT_IMPLEMENTED;
+	// Find the pool
+	DgStoragePool *pool;
+	
+	DgError status = DgStorageGetPoolFromPath(this, path, &pool);
+	
+	if (status) {
+		return status;
+	}
+	
+	// Call its function
+	pool->functions->delete(this, pool, path);
+	
+	return DG_ERROR_SUCCESSFUL;
 }
 
 DgError DgStorageRename(DgStorage *this, DgStoragePath old_path, DgStoragePath new_path) {
@@ -309,6 +378,8 @@ DgError DgStorageRename(DgStorage *this, DgStoragePath old_path, DgStoragePath n
 	 * @note Generally, you should try to avoid renaming files unless the user has
 	 * explicitly asked you to do so.
 	 * 
+	 * @warning You cannot currently change the pool that a file is in.
+	 * 
 	 * @param this Storage configuration
 	 * @param old_path Old file path
 	 * @param new_path New file path
@@ -317,7 +388,19 @@ DgError DgStorageRename(DgStorage *this, DgStoragePath old_path, DgStoragePath n
 	
 	DG_STORAGE_RESOLVE();
 	
-	return DG_ERROR_NOT_IMPLEMENTED;
+	// Find the pool
+	DgStoragePool *pool;
+	
+	DgError status = DgStorageGetPoolFromPath(this, path, &pool);
+	
+	if (status) {
+		return status;
+	}
+	
+	// Call its function
+	pool->functions->rename(this, pool, old_path, new_path);
+	
+	return DG_ERROR_SUCCESSFUL;
 }
 
 DgError DgStorageCreateFile(DgStorage *this, DgStoragePath path) {

@@ -423,3 +423,15 @@ int64_t DgStringFind(const char * const string, const char * const what, size_t 
 	
 	return -1;
 }
+
+int64_t DgStringFindFirst(const char * const string, const char * const what) {
+	/**
+	 * Find the first occurance of "what" in "string"
+	 * 
+	 * @param string String to search for the substring
+	 * @param what String to find
+	 * @return The index of the substring, or -1 if not found
+	 */
+	
+	return DgStringFind(string, what, 0);
+}

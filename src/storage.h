@@ -130,6 +130,9 @@ DgError DgStorageGetPool(DgStorage *this, DgStoragePath protocol, DgStoragePool 
 bool DgStorageHasPool(DgStorage *this, DgStoragePath protocol);
 DgError DgStorageRenamePool(DgStorage *this, DgStoragePath old_protocol, DgStoragePath new_protocol);
 
+// Utility functions
+DgError DgStorageSplitPathIntoParts(DgStoragePath path, char **protocol, char **filename);
+
 // Standard filesystem functions
 DgError DgStorageDelete(DgStorage *this, DgStoragePath path);
 DgError DgStorageRename(DgStorage *this, DgStoragePath old_path, DgStoragePath new_path);

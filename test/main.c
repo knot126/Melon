@@ -1,5 +1,6 @@
 #include "util/log.h"
 #include "util/string.h"
+#include "util/storage.h"
 
 void TestString(void) {
 	DgLog(DG_LOG_INFO, "TestString()");
@@ -18,10 +19,33 @@ void TestString(void) {
 	DgLog(DG_LOG_SUCCESS, "TestString()");
 }
 
+void TestStorage(void) {
+	DgLog(DG_LOG_INFO, "TestStorage()");
+	
+	char *proto, *file;
+	
+	// TEST 1
+	DgStorageSplitPathIntoParts("assets://stage/canyon.xml", &proto, &file);
+	
+	DgLog(DG_LOG_INFO, "Path: %s %s", proto, file);
+	
+	DgFree(proto);
+	DgFree(file);
+	
+	DgStorageSplitPathIntoParts("fs://what/the/shit.fuck", &proto, NULL);
+	
+	DgLog(DG_LOG_INFO, "Path: %s", proto);
+	
+	DgFree(proto);
+	
+	DgLog(DG_LOG_SUCCESS, "TestStorage()");
+}
+
 int main(const int argc, const char *argv[]) {
 	DgLog(DG_LOG_INFO, "Hello, world!");
 	
 	TestString();
+	TestStorage();
 	
 	return 0;
 }
