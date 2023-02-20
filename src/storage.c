@@ -93,7 +93,10 @@ static DgStorage *DgStorageResolve(DgStorage *this) {
 	if (!this) {\
 		DgLog(DG_LOG_ERROR, "Failed to initialise storage config!");\
 		return DG_ERROR_NOT_INITIALISED;\
-	}
+	}\
+	\
+	DgLog(DG_LOG_VERBOSE, "Using storage pool <0x%.16x>", this);\
+	
 
 /**
  * Init and free
@@ -333,8 +336,6 @@ DgError DgStorageGetPoolFromPath(DgStorage *this, DgStoragePath path, DgStorageP
 	// Free temporary memory
 	DgFree(protocol);
 	
-	pool[0] = pool;
-	
 	return DG_ERROR_SUCCESSFUL;
 }
 
@@ -363,9 +364,7 @@ DgError DgStorageDelete(DgStorage *this, DgStoragePath path) {
 	}
 	
 	// Call its function
-	pool->functions->delete(this, pool, path);
-	
-	return DG_ERROR_SUCCESSFUL;
+	return pool->functions->delete(this, pool, path);
 }
 
 DgError DgStorageRename(DgStorage *this, DgStoragePath old_path, DgStoragePath new_path) {
@@ -391,16 +390,14 @@ DgError DgStorageRename(DgStorage *this, DgStoragePath old_path, DgStoragePath n
 	// Find the pool
 	DgStoragePool *pool;
 	
-	DgError status = DgStorageGetPoolFromPath(this, path, &pool);
+	DgError status = DgStorageGetPoolFromPath(this, old_path, &pool);
 	
 	if (status) {
 		return status;
 	}
 	
 	// Call its function
-	pool->functions->rename(this, pool, old_path, new_path);
-	
-	return DG_ERROR_SUCCESSFUL;
+	return pool->functions->rename(this, pool, old_path, new_path);
 }
 
 DgError DgStorageCreateFile(DgStorage *this, DgStoragePath path) {
@@ -419,7 +416,17 @@ DgError DgStorageCreateFile(DgStorage *this, DgStoragePath path) {
 	
 	DG_STORAGE_RESOLVE();
 	
-	return DG_ERROR_NOT_IMPLEMENTED;
+	// Find the pool
+	DgStoragePool *pool;
+	
+	DgError status = DgStorageGetPoolFromPath(this, path, &pool);
+	
+	if (status) {
+		return status;
+	}
+	
+	// Call its function
+	return pool->functions->create_file(this, pool, path);
 }
 
 DgError DgStorageCreateFolder(DgStorage *this, DgStoragePath path) {
@@ -436,10 +443,20 @@ DgError DgStorageCreateFolder(DgStorage *this, DgStoragePath path) {
 	
 	DG_STORAGE_RESOLVE();
 	
-	return DG_ERROR_NOT_IMPLEMENTED;
+	// Find the pool
+	DgStoragePool *pool;
+	
+	DgError status = DgStorageGetPoolFromPath(this, path, &pool);
+	
+	if (status) {
+		return status;
+	}
+	
+	// Call its function
+	return pool->functions->create_folder(this, pool, path);
 }
 
-DgStorageObjectType DgStorageType(DgStorage *this, DgStoragePath path) {
+DgStorageObjectType DgStorageType(DgStorage *this, DgStoragePath path, DgStorageObjectType *type) {
 	/**
 	 * Return the type of the object at `path`.
 	 * 
@@ -450,7 +467,17 @@ DgStorageObjectType DgStorageType(DgStorage *this, DgStoragePath path) {
 	
 	DG_STORAGE_RESOLVE();
 	
-	return DG_ERROR_NOT_IMPLEMENTED;
+	// Find the pool
+	DgStoragePool *pool;
+	
+	DgError status = DgStorageGetPoolFromPath(this, path, &pool);
+	
+	if (status) {
+		return status;
+	}
+	
+	// Call its function
+	return pool->functions->type(this, pool, path, type);
 }
 
 DgError DgStoragePoolFree(DgStoragePool *pool) {
@@ -460,6 +487,10 @@ DgError DgStoragePoolFree(DgStoragePool *pool) {
 	 * @param pool The pool to free
 	 * @return Errors encountered freeing pool
 	 */
+	
+	if (pool->protocol) {
+		DgFree((void *) pool->protocol);
+	}
 	
 	if (pool == NULL) {
 		return DG_ERROR_NOT_SAFE;

@@ -1,6 +1,7 @@
 #include "util/log.h"
 #include "util/string.h"
 #include "util/storage.h"
+#include "util/alloc.h"
 
 void TestString(void) {
 	DgLog(DG_LOG_INFO, "TestString()");
@@ -18,6 +19,50 @@ void TestString(void) {
 	
 	DgLog(DG_LOG_SUCCESS, "TestString()");
 }
+
+/////// TEST POOL TYPE ////////
+
+DgError DgVoid_Delete(DgStorage *storage, DgStoragePool *pool, DgStoragePath path) {
+	DgLog(DG_LOG_VERBOSE, "DgVoid_Func() called!!");
+	
+	return DG_ERROR_SUCCESSFUL;
+}
+
+DgStorageFunctions gVoidFunctions = {
+	.create_file = NULL,
+	.create_folder = NULL,
+	.type = NULL,
+	.rename = NULL,
+	.delete = &DgVoid_Delete,
+	.open = NULL,
+	.close = NULL,
+	.read = NULL,
+	.write = NULL,
+	.get_position = NULL,
+	.set_position = NULL,
+	.seek = NULL,
+	.free_specific_config = NULL,
+};
+
+DgStoragePool *DgVoidCreatePool(const char *protocol) {
+	/**
+	 * Create an empty pool void pool
+	 */
+	
+	DgStoragePool *pool = DgAlloc(sizeof *pool);
+	
+	if (!pool) {
+		return NULL;
+	}
+	
+	pool->protocol = DgStringDuplicate(protocol);
+	pool->functions = &gVoidFunctions;
+	pool->specific_config = NULL;
+	
+	return pool;
+}
+
+/////// END TEST POOL TYPE ////////
 
 void TestStorage(void) {
 	DgLog(DG_LOG_INFO, "TestStorage()");
@@ -37,6 +82,12 @@ void TestStorage(void) {
 	DgLog(DG_LOG_INFO, "Path: %s", proto);
 	
 	DgFree(proto);
+	
+	// TEST 2
+	
+	DgLog(DG_LOG_INFO, "%x", DgStorageAddPool(NULL, DgVoidCreatePool("void")));
+	
+	DgLog(DG_LOG_INFO, "%x", DgStorageDelete(NULL, "void://help.txt"));
 	
 	DgLog(DG_LOG_SUCCESS, "TestStorage()");
 }

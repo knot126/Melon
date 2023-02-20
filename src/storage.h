@@ -101,15 +101,16 @@ typedef struct DgStorageFunctions {
  * classes
  */
 typedef struct DgStoragePool {
-	DgStoragePath protocol; // example: = "fs", "info", "ramdisk0", "assets", "http" etc
-	
-	void *specific_config; // This is the specific config for this protocol. It
-	                       // is passed to the functions and can contain any
-	                       // relevant info for that type of storage.
+	// example: = "fs", "info", "ramdisk0", "assets", "http" etc
+	DgStoragePath protocol;
 	
 	// Function pointer array
 	// This is meant to point to static memory that has the functions for a pool class
 	DgStorageFunctions *functions;
+	
+	// This is the specific config for this protocol. It is passed to the
+	// functions and can contain any relevant info for that type of storage.
+	void *specific_config;
 } DgStoragePool;
 
 /**
@@ -138,7 +139,7 @@ DgError DgStorageDelete(DgStorage *this, DgStoragePath path);
 DgError DgStorageRename(DgStorage *this, DgStoragePath old_path, DgStoragePath new_path);
 DgError DgStorageCreateFile(DgStorage *this, DgStoragePath path);
 DgError DgStorageCreateFolder(DgStorage *this, DgStoragePath path);
-DgStorageObjectType DgStorageType(DgStorage *this, DgStoragePath path);
+DgStorageObjectType DgStorageType(DgStorage *this, DgStoragePath path, DgStorageObjectType *type);
 
 // Generic pool free function
 DgError DgStoragePoolFree(DgStoragePool *pool);
