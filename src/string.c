@@ -259,6 +259,21 @@ uint32_t *DgInt32ListFromString(char * restrict str, size_t * const restrict siz
  *  ============================================================================
  */
 
+size_t DgStringLength(const char * const string) {
+	/**
+	 * Return the length of the given string
+	 * 
+	 * @param string String to check length of
+	 * @return Length of string
+	 */
+	
+	for (size_t i = 0;; i++) {
+		if (string[i] == '\0') {
+			return i;
+		}
+	}
+}
+
 char *DgStringDuplicate(const char * const string) {
 	/*
 	 * Duplicate a string
@@ -283,23 +298,34 @@ char *DgStringDuplicateUntil(const char * const string, size_t length) {
 	/**
 	 * Duplicate a string up to (but not including) the `length`th character.
 	 * 
+	 * @warning You need to free the string returned by this function.
 	 * 
-	 */
-}
-
-size_t DgStringLength(const char * const string) {
-	/**
-	 * Return the length of the given string
-	 * 
-	 * @param string String to check length of
-	 * @return Length of string
+	 * @param string String to duplicate
+	 * @param length Number of characters to duplicate
+	 * @return Duplicated string
 	 */
 	
-	for (size_t i = 0;; i++) {
-		if (string[i] == '\0') {
-			return i;
-		}
+	size_t string_length = DgStringLength(string);
+	
+	// Use the length of the normal string if it's less
+	length = (string_length < length) ? (string_length) : (length);
+	
+	// Allocate memory for the string
+	char *result = DgMemoryAllocate(length + 1);
+	
+	if (!result) {
+		return NULL;
 	}
+	
+	// Copy the string up to the `length`th character
+	for (size_t i = 0; i < length; i++) {
+		result[i] = string[i];
+	}
+	
+	// Set the last byte to the NUL char
+	result[length] = '\0';
+	
+	return result;
 }
 
 bool DgStringEqual(const char * const string1, const char * const string2) {
