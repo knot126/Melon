@@ -234,6 +234,9 @@ DgStorageFunctions gVoidFunctions = {
 DgStoragePool *DgVoidCreatePool(const char *protocol) {
 	/**
 	 * Create an empty pool void pool
+	 * 
+	 * @param protocol Protocol this pool can be accessed by
+	 * @return Pointer to the storage pool (or NULL if failed)
 	 */
 	
 	DgStoragePool *pool = DgAlloc(sizeof *pool);

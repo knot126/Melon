@@ -96,22 +96,6 @@ void DgBitmapSetSource(DgBitmap * restrict this, uint8_t * restrict source, DgVe
 	DgBitmapSetFlags(this, DgBitmapGetFlags(this) | DG_BITMAP_EXTERNAL_SOURCE);
 }
 
-static void DgBitmapSwapSimilar(DgBitmap *dest, DgBitmap *from) {
-	/**
-	 * Move an atrribute-identical bitmap to where another bitmap is.
-	 * 
-	 * @param dest Bitmap to copy into
-	 * @param src Bitmap to copy from
-	 */
-	
-	if (dest->src) {
-		DgFree(dest->src);
-	}
-	
-	dest->src = from->src;
-	from->src = NULL;
-}
-
 static DgVec2I DgBitmapToScreenSpace(DgBitmap *this, DgVec2 point) {
 	/**
 	 * Convert graph (resolution-independent) coordinates to screen space
@@ -574,22 +558,6 @@ static bool DgBitmapIsInLineSame(DgVec2 *a, DgVec2 *b, DgVec2 *c, DgVec2 *d) {
 	int32_t sb = DgSign(result_b);
 	
 	return (sa == sb);
-}
-
-static float DgBitmapDrawConvexPolygon_PixelAlphaValue(DgVec2 pa, DgVec2 pb, DgVec2 side, DgVec2I point) {
-	/**
-	 * Return the alpha (fraction of the pixel covered) for the given line.
-	 * 
-	 * @todo implement
-	 * 
-	 * @param pa First point on the line
-	 * @param pb Second point on the line
-	 * @param side A point on the side that should be coloured in
-	 * @param point The pixel to test
-	 * @return Fraction of the pixel covered by the LT/GT relation
-	 */
-	
-	return 0.0f;
 }
 
 void DgBitmapDrawConvexPolygon(DgBitmap * restrict this, size_t points_count, DgVec2 * restrict points, DgColour * restrict colour) {

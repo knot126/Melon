@@ -25,7 +25,7 @@
 
 DgError DgSocketInit(DgSocket *this, const char *address, uint16_t port) {
 	/**
-	 * 
+	 * Initialise a socket (and maybe connect to a client)
 	 */
 	
 	this->handle = socket(AF_INET, SOCK_STREAM, 0);
@@ -38,9 +38,9 @@ DgError DgSocketInit(DgSocket *this, const char *address, uint16_t port) {
 }
 
 DgError DgSocketSend(DgSocket *this, size_t size, void *data) {
-	
+	return DG_ERROR_NOT_IMPLEMENTED;
 }
 
 DgError DgSocketRecieve(DgSocket *this, size_t *size, void **data) {
-	
+	return DG_ERROR_NOT_IMPLEMENTED;
 }
