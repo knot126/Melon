@@ -4,11 +4,17 @@
 
 ## Support
 
-This library is **not well supported for thirdparty projects**, though it is MIT licenced. There is a lot of messy code.
+This library is **not well supported for thirdparty projects**, though it is MIT licenced (with some extra restrictions). There is a lot of messy code.
 
 There is some documentation in the [docs](docs) folder. Most documentation is inline at the start of the implementation of each function.
 
 It would probably be more fun for you to build your own tech, anyways.
+
+### About Melon and ML/AI
+
+AI can be a very powerful tool, and we don't intend to restrict what you can do with Melon. However, we feel we have an ethical resposiblity to verify that any AI involving Melon is ethical, and that training data is provided with consent of the original creators of the work.
+
+Melon itself will likely never support AI as the primary author (Knot126) perfers analytical solutions as opposed to statistical ones.
 
 ## Including in Projects
 
