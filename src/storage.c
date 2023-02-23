@@ -496,7 +496,135 @@ DgError DgStoragePoolFree(DgStoragePool *pool) {
 		return DG_ERROR_NOT_SAFE;
 	}
 	
+	if (!pool->functions->free_specific_config) {
+		return DG_ERROR_SUCCESSFUL;
+	}
+	
 	return pool->functions->free_specific_config(pool);
+}
+
+/* Stream functions and similar */
+
+DgError DgStreamOpen(DgStorage *this, DgStream *context, DgStoragePath path, DgStorageFlags flags) {
+	/**
+	 * Open a stream
+	 * 
+	 * @param this Storage object to use
+	 * @param stream Where to store the resulting stream object
+	 * @param path Path to the stream source to open
+	 * @param flags Properties of the stream
+	 * @return Error code
+	 */
+	
+	DG_STORAGE_RESOLVE();
+	
+	// Find the pool
+	DgStoragePool *pool;
+	
+	DgError status = DgStorageGetPoolFromPath(this, path, &pool);
+	
+	if (status) {
+		return status;
+	}
+	
+	// Pre-set the stream storage and pool
+	context->storage = this;
+	context->pool = pool;
+	
+	// Call its function
+	return pool->functions->open(this, pool, context, path, flags);
+}
+
+DgError DgStreamClose(DgStream *context) {
+	/**
+	 * Close the file stream
+	 * 
+	 * @param context Stream object
+	 * @return Error code
+	 */
+	
+	DgStorage *this = context->storage;
+	DgStoragePool *pool = context->pool;
+	
+	return pool->functions->close(this, pool, context);
+}
+
+DgError DgStreamRead(DgStream *context, size_t size, void *buffer) {
+	/**
+	 * Read a buffer from the file stream
+	 * 
+	 * @param context Stream object
+	 * @param size Size of the buffer
+	 * @param buffer Pointer to where to store the data
+	 * @return Error code
+	 */
+	
+	DgStorage *this = context->storage;
+	DgStoragePool *pool = context->pool;
+	
+	return pool->functions->read(this, pool, context, size, buffer);
+}
+
+DgError DgStreamWrite(DgStream *context, size_t size, void *buffer) {
+	/**
+	 * Write a buffer to the file stream
+	 * 
+	 * @param context Stream object
+	 * @param size Size of the buffer
+	 * @param buffer Pointer to where to store the data
+	 * @return Error code
+	 */
+	
+	DgStorage *this = context->storage;
+	DgStoragePool *pool = context->pool;
+	
+	return pool->functions->write(this, pool, context, size, buffer);
+}
+
+DgError DgStreamGetPosition(DgStream *context, size_t *position) {
+	/**
+	 * Get the position in the file stream.
+	 * 
+	 * @param context Stream object
+	 * @param position Where to put the position
+	 * @return Error code
+	 */
+	
+	DgStorage *this = context->storage;
+	DgStoragePool *pool = context->pool;
+	
+	return pool->functions->get_position(this, pool, context, position);
+}
+
+DgError DgStreamSetPosition(DgStream *context, size_t position) {
+	/**
+	 * Get the position in the file stream.
+	 * 
+	 * @param context Stream object
+	 * @param position The position to go to
+	 * @return Error code
+	 */
+	
+	DgStorage *this = context->storage;
+	DgStoragePool *pool = context->pool;
+	
+	return pool->functions->set_position(this, pool, context, position);
+}
+
+DgError DgStreamSeekFunction(DgStream *context, DgStorageSeekBase base, size_t offset) {
+	/**
+	 * Get the position in the file stream.
+	 * 
+	 * @param context Stream object
+	 * @param base Seek base (current pos, start, end)
+	 * @param offset The offset from the base
+	 * @return Error code
+	 */
+	
+	DgStorage *this = context->storage;
+	DgStoragePool *pool = context->pool;
+	
+	return pool->functions->seek(this, pool, context, base, offset);
 }
 
 // Undefine resolve macro just to be clean

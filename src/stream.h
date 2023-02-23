@@ -18,23 +18,23 @@
 #include <inttypes.h>
 #include <stdlib.h>
 
-typedef enum DgStreamEnum {
+typedef enum DgMemoryStreamEnum {
 	/* errors */
-	DG_STRM_OKAY = 0,
-	DG_STRM_ALLOC_ERROR = 1,
-	DG_STRM_NO_SPACE = 2,
-	DG_STRM_INVALID = 3,
-	DG_STRM_UNKNOWN = 4,
-	DG_STRM_EOF = 5,
-	DG_STRM_RANGE = 6,
+	DG_MEMORY_STREAM_OKAY = 0,
+	DG_MEMORY_STREAM_ALLOC_ERROR = 1,
+	DG_MEMORY_STREAM_NO_SPACE = 2,
+	DG_MEMORY_STREAM_INVALID = 3,
+	DG_MEMORY_STREAM_UNKNOWN = 4,
+	DG_MEMORY_STREAM_EOF = 5,
+	DG_MEMORY_STREAM_RANGE = 6,
 	
 	/* offsets */
-	DG_STRM_CUR = 0,
-	DG_STRM_SET = 1,
-	DG_STRM_END = 2,
-} DgStreamEnum;
+	DG_MEMORY_STREAM_CUR = 0,
+	DG_MEMORY_STREAM_SET = 1,
+	DG_MEMORY_STREAM_END = 2,
+} DgMemoryStreamEnum;
 
-typedef struct DgStream {
+typedef struct DgMemoryStream {
 	/* For storing data */
 	uint8_t *data;
 	size_t allocated;
@@ -43,42 +43,42 @@ typedef struct DgStream {
 	
 	/* Errors */
 	size_t error;
-} DgStream;
+} DgMemoryStream;
 
-DgStream *DgStreamCreate(void);
-DgStream *DgStreamFromBuffer(void *buffer, size_t size);
+DgMemoryStream *DgMemoryStreamCreate(void);
+DgMemoryStream *DgMemoryStreamFromBuffer(void *buffer, size_t size);
 
-void DgStreamFree(DgStream *stream);
-void DgBufferFromStream(DgStream *stream, void **pointer, size_t *size);
+void DgMemoryStreamFree(DgMemoryStream *stream);
+void DgBufferFromStream(DgMemoryStream *stream, void **pointer, size_t *size);
 
-size_t DgStreamError(DgStream *stream);
+size_t DgMemoryStreamError(DgMemoryStream *stream);
 
-size_t DgStreamGetpos(DgStream *stream);
-size_t DgStreamLength(DgStream *stream);
-void DgStreamSetpos(DgStream *stream, DgStreamEnum offset, int64_t pos);
-void DgStreamRewind(DgStream *stream);
+size_t DgMemoryStreamGetpos(DgMemoryStream *stream);
+size_t DgMemoryStreamLength(DgMemoryStream *stream);
+void DgMemoryStreamSetpos(DgMemoryStream *stream, DgMemoryStreamEnum offset, int64_t pos);
+void DgMemoryStreamRewind(DgMemoryStream *stream);
 
-void DgStreamRead(DgStream *stream, size_t size, void *buffer);
-void DgStreamWrite(DgStream *stream, size_t size, void *buffer);
+void DgMemoryStreamRead(DgMemoryStream *stream, size_t size, void *buffer);
+void DgMemoryStreamWrite(DgMemoryStream *stream, size_t size, void *buffer);
 
-int8_t DgStreamReadInt8(DgStream *stream);
-uint8_t DgStreamReadUInt8(DgStream *stream);
-int16_t DgStreamReadInt16(DgStream *stream);
-uint16_t DgStreamReadUInt16(DgStream *stream);
-int32_t DgStreamReadInt32(DgStream *stream);
-uint32_t DgStreamReadUInt32(DgStream *stream);
-int64_t DgStreamReadInt64(DgStream *stream);
-uint64_t DgStreamReadUInt64(DgStream *stream);
-float DgStreamReadFloat(DgStream *stream);
-double DgStreamReadDouble(DgStream *stream);
+int8_t DgMemoryStreamReadInt8(DgMemoryStream *stream);
+uint8_t DgMemoryStreamReadUInt8(DgMemoryStream *stream);
+int16_t DgMemoryStreamReadInt16(DgMemoryStream *stream);
+uint16_t DgMemoryStreamReadUInt16(DgMemoryStream *stream);
+int32_t DgMemoryStreamReadInt32(DgMemoryStream *stream);
+uint32_t DgMemoryStreamReadUInt32(DgMemoryStream *stream);
+int64_t DgMemoryStreamReadInt64(DgMemoryStream *stream);
+uint64_t DgMemoryStreamReadUInt64(DgMemoryStream *stream);
+float DgMemoryStreamReadFloat(DgMemoryStream *stream);
+double DgMemoryStreamReadDouble(DgMemoryStream *stream);
 
-void DgStreamWriteInt8(DgStream *stream, int8_t *data);
-void DgStreamWriteUInt8(DgStream *stream, uint8_t *data);
-void DgStreamWriteInt16(DgStream *stream, int16_t *data);
-void DgStreamWriteUInt16(DgStream *stream, uint16_t *data);
-void DgStreamWriteInt32(DgStream *stream, int32_t *data);
-void DgStreamWriteUInt32(DgStream *stream, uint32_t *data);
-void DgStreamWriteInt64(DgStream *stream, int64_t *data);
-void DgStreamWriteUInt64(DgStream *stream, uint64_t *data);
-void DgStreamWriteFloat(DgStream *stream, float *data);
-void DgStreamWriteDouble(DgStream *stream, double *data);
+void DgMemoryStreamWriteInt8(DgMemoryStream *stream, int8_t *data);
+void DgMemoryStreamWriteUInt8(DgMemoryStream *stream, uint8_t *data);
+void DgMemoryStreamWriteInt16(DgMemoryStream *stream, int16_t *data);
+void DgMemoryStreamWriteUInt16(DgMemoryStream *stream, uint16_t *data);
+void DgMemoryStreamWriteInt32(DgMemoryStream *stream, int32_t *data);
+void DgMemoryStreamWriteUInt32(DgMemoryStream *stream, uint32_t *data);
+void DgMemoryStreamWriteInt64(DgMemoryStream *stream, int64_t *data);
+void DgMemoryStreamWriteUInt64(DgMemoryStream *stream, uint64_t *data);
+void DgMemoryStreamWriteFloat(DgMemoryStream *stream, float *data);
+void DgMemoryStreamWriteDouble(DgMemoryStream *stream, double *data);

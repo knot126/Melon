@@ -25,7 +25,7 @@
 
 _Static_assert(sizeof(uint8_t) == 1, "wot");
 
-static void DgStreamInit(DgStream *stream, void * restrict buffer, size_t prealloc) {
+static void DgMemoryStreamInit(DgMemoryStream *stream, void * restrict buffer, size_t prealloc) {
 	/**
 	 * Initialises a stream based on the contents of buffer and prealloc.
 	 * 
@@ -42,7 +42,7 @@ static void DgStreamInit(DgStream *stream, void * restrict buffer, size_t preall
 		stream->data = (uint8_t *) DgAlloc(prealloc);
 		
 		if (!stream->data) {
-			stream->error = DG_STRM_ALLOC_ERROR;
+			stream->error = DG_MEMORY_STREAM_ALLOC_ERROR;
 			return;
 		}
 	}
@@ -55,40 +55,40 @@ static void DgStreamInit(DgStream *stream, void * restrict buffer, size_t preall
 	stream->head = (!!buffer) ? prealloc - 1 : 0;
 }
 
-DgStream *DgStreamCreate(void) {
+DgMemoryStream *DgMemoryStreamCreate(void) {
 	/**
 	 * Creates a stream in memory from no exsiting stream.
 	 */
 	
-	DgStream *stream = (DgStream *) DgAlloc(sizeof(DgStream));
+	DgMemoryStream *stream = DgAlloc(sizeof *stream);
 	
 	if (!stream) {
 		return NULL;
 	}
 	
-	DgStreamInit(stream, NULL, 1024);
+	DgMemoryStreamInit(stream, NULL, 1024);
 	
 	return stream;
 }
 
-DgStream *DgStreamFromBuffer(void *buffer, size_t size) {
+DgMemoryStream *DgMemoryStreamFromBuffer(void *buffer, size_t size) {
 	/**
 	 * Creates a stream based on the memory buffer buffer and its size. The
 	 * memory will now be managed by the stream.
 	 */
 	
-	DgStream *stream = (DgStream *) DgAlloc(sizeof(DgStream));
+	DgMemoryStream *stream = DgAlloc(sizeof *stream);
 	
 	if (!stream) {
 		return NULL;
 	}
 	
-	DgStreamInit(stream, buffer, size);
+	DgMemoryStreamInit(stream, buffer, size);
 	
 	return stream;
 }
 
-void DgStreamFree(DgStream *stream) {
+void DgMemoryStreamFree(DgMemoryStream *stream) {
 	/**
 	 * Frees all memory allocated by a stream.
 	 */
@@ -100,7 +100,7 @@ void DgStreamFree(DgStream *stream) {
 	DgFree(stream);
 }
 
-void DgBufferFromStream(DgStream *stream, void **pointer, size_t *size) {
+void DgBufferFromStream(DgMemoryStream *stream, void **pointer, size_t *size) {
 	/**
 	 * Degrade the stream to a pointer to memory and size. This will free the
 	 * memory allocated for the management of the stream.
@@ -118,22 +118,22 @@ void DgBufferFromStream(DgStream *stream, void **pointer, size_t *size) {
 	DgFree(stream);
 }
 
-size_t DgStreamError(DgStream *stream) {
+size_t DgMemoryStreamError(DgMemoryStream *stream) {
 	/**
-	 * Get the latest error from the stream and set the error to DG_STRM_OKAY.
+	 * Get the latest error from the stream and set the error to DG_MEMORY_STREAM_OKAY.
 	 */
 	
 	size_t r = stream->error;
-	stream->error = DG_STRM_OKAY;
+	stream->error = DG_MEMORY_STREAM_OKAY;
 	return r;
 }
 
-size_t DgStreamGetpos(DgStream *stream) {
+size_t DgMemoryStreamGetpos(DgMemoryStream *stream) {
 	/**
 	 * Get the current position in the file stream as the offset to the start of
 	 * the stream.
 	 * 
-	 * This will not return the size of the stream if at DG_STRM_END; instead,
+	 * This will not return the size of the stream if at DG_MEMORY_STREAM_END; instead,
 	 * it will return (size - 1). If you really need to get the size, use the
 	 * respective function for getting the stream data's length.
 	 */
@@ -141,7 +141,7 @@ size_t DgStreamGetpos(DgStream *stream) {
 	return stream->head;
 }
 
-size_t DgStreamLength(DgStream *stream) {
+size_t DgMemoryStreamLength(DgMemoryStream *stream) {
 	/**
 	 * Get the length of the stream.
 	 */
@@ -149,7 +149,7 @@ size_t DgStreamLength(DgStream *stream) {
 	return stream->size;
 }
 
-void DgStreamSetpos(DgStream *stream, DgStreamEnum offset, int64_t pos) {
+void DgMemoryStreamSetpos(DgMemoryStream *stream, DgMemoryStreamEnum offset, int64_t pos) {
 	/**
 	 * Set the stream position according to the offset. Note that pos is signed
 	 * so it can be negitive.
@@ -158,20 +158,20 @@ void DgStreamSetpos(DgStream *stream, DgStreamEnum offset, int64_t pos) {
 	size_t base;
 	
 	switch (offset) {
-		case DG_STRM_CUR:
+		case DG_MEMORY_STREAM_CUR:
 			base = stream->head;
 			break;
 		
-		case DG_STRM_SET:
+		case DG_MEMORY_STREAM_SET:
 			base = 0;
 			break;
 		
-		case DG_STRM_END:
+		case DG_MEMORY_STREAM_END:
 			base = stream->size - 1;
 			break;
 		
 		default:
-			stream->error = DG_STRM_INVALID;
+			stream->error = DG_MEMORY_STREAM_INVALID;
 			return;
 			break;
 	}
@@ -179,29 +179,29 @@ void DgStreamSetpos(DgStream *stream, DgStreamEnum offset, int64_t pos) {
 	base += pos;
 	
 	if (base < 0 || base >= stream->size) {
-		stream->error = DG_STRM_RANGE;
+		stream->error = DG_MEMORY_STREAM_RANGE;
 		return;
 	}
 	
 	stream->head = base;
 }
 
-void DgStreamRewind(DgStream *stream) {
+void DgMemoryStreamRewind(DgMemoryStream *stream) {
 	/**
 	 * Rewind a stream to its starting position, clearing any erorrs.
 	 */
 	
 	stream->head = 0;
-	stream->error = DG_STRM_OKAY;
+	stream->error = DG_MEMORY_STREAM_OKAY;
 }
 
-void DgStreamRead(DgStream *stream, size_t size, void *buffer) {
+void DgMemoryStreamRead(DgMemoryStream *stream, size_t size, void *buffer) {
 	/**
 	 * Read a stream's data starting at its current head position until either
 	 * the size (provided as size) bytes are read or until the end of the stream
 	 * is encountred.
 	 * 
-	 * The DG_STRM_RANGE error is produced if one of the following happens:
+	 * The DG_MEMORY_STREAM_RANGE error is produced if one of the following happens:
 	 * 
 	 *   * If the stream ends and the size is still not zero, then the error is
 	 *     set. The available bytes will not be copied and other stream state 
@@ -213,7 +213,7 @@ void DgStreamRead(DgStream *stream, size_t size, void *buffer) {
 	// and that size > 0 and buffer is not NULL. If any of these are so, then
 	// we will need to set error and return.
 	if (((stream->head + size) >= stream->size) || (size == 0) || (buffer == NULL)) {
-		stream->error = DG_STRM_RANGE;
+		stream->error = DG_MEMORY_STREAM_RANGE;
 		return;
 	}
 	
@@ -224,7 +224,7 @@ void DgStreamRead(DgStream *stream, size_t size, void *buffer) {
 	stream->head += size;
 }
 
-void DgStreamWrite(DgStream *stream, size_t size, void *buffer) {
+void DgMemoryStreamWrite(DgMemoryStream *stream, size_t size, void *buffer) {
 	/**
 	 * Write to a stream at the current head location of the stream. If this
 	 * raises any errors, the data should be assumed to be corrupt.
@@ -236,7 +236,7 @@ void DgStreamWrite(DgStream *stream, size_t size, void *buffer) {
 		stream->data = (uint8_t *) DgRealloc(stream->data, stream->allocated);
 		
 		if (!stream->data) {
-			stream->error = DG_STRM_ALLOC_ERROR;
+			stream->error = DG_MEMORY_STREAM_ALLOC_ERROR;
 			return;
 		}
 	}
@@ -258,63 +258,63 @@ void DgStreamWrite(DgStream *stream, size_t size, void *buffer) {
  * Reading functions for common integer and floating-point types.
  */
 
-int8_t DgStreamReadInt8(DgStream *stream) {
+int8_t DgMemoryStreamReadInt8(DgMemoryStream *stream) {
 	int8_t data;
-	DgStreamRead(stream, sizeof(int8_t), &data);
+	DgMemoryStreamRead(stream, sizeof(int8_t), &data);
 	return data;
 }
 
-uint8_t DgStreamReadUInt8(DgStream *stream) {
+uint8_t DgMemoryStreamReadUInt8(DgMemoryStream *stream) {
 	uint8_t data;
-	DgStreamRead(stream, sizeof(uint8_t), &data);
+	DgMemoryStreamRead(stream, sizeof(uint8_t), &data);
 	return data;
 }
 
-int16_t DgStreamReadInt16(DgStream *stream) {
+int16_t DgMemoryStreamReadInt16(DgMemoryStream *stream) {
 	int16_t data;
-	DgStreamRead(stream, sizeof(int16_t), &data);
+	DgMemoryStreamRead(stream, sizeof(int16_t), &data);
 	return data;
 }
 
-uint16_t DgStreamReadUInt16(DgStream *stream) {
+uint16_t DgMemoryStreamReadUInt16(DgMemoryStream *stream) {
 	uint16_t data;
-	DgStreamRead(stream, sizeof(uint16_t), &data);
+	DgMemoryStreamRead(stream, sizeof(uint16_t), &data);
 	return data;
 }
 
-int32_t DgStreamReadInt32(DgStream *stream) {
+int32_t DgMemoryStreamReadInt32(DgMemoryStream *stream) {
 	int32_t data;
-	DgStreamRead(stream, sizeof(int32_t), &data);
+	DgMemoryStreamRead(stream, sizeof(int32_t), &data);
 	return data;
 }
 
-uint32_t DgStreamReadUInt32(DgStream *stream) {
+uint32_t DgMemoryStreamReadUInt32(DgMemoryStream *stream) {
 	uint32_t data;
-	DgStreamRead(stream, sizeof(uint32_t), &data);
+	DgMemoryStreamRead(stream, sizeof(uint32_t), &data);
 	return data;
 }
 
-int64_t DgStreamReadInt64(DgStream *stream) {
+int64_t DgMemoryStreamReadInt64(DgMemoryStream *stream) {
 	int64_t data;
-	DgStreamRead(stream, sizeof(int64_t), &data);
+	DgMemoryStreamRead(stream, sizeof(int64_t), &data);
 	return data;
 }
 
-uint64_t DgStreamReadUInt64(DgStream *stream) {
+uint64_t DgMemoryStreamReadUInt64(DgMemoryStream *stream) {
 	uint64_t data;
-	DgStreamRead(stream, sizeof(uint64_t), &data);
+	DgMemoryStreamRead(stream, sizeof(uint64_t), &data);
 	return data;
 }
 
-float DgStreamReadFloat(DgStream *stream) {
+float DgMemoryStreamReadFloat(DgMemoryStream *stream) {
 	float data;
-	DgStreamRead(stream, sizeof(float), &data);
+	DgMemoryStreamRead(stream, sizeof(float), &data);
 	return data;
 }
 
-double DgStreamReadDouble(DgStream *stream) {
+double DgMemoryStreamReadDouble(DgMemoryStream *stream) {
 	double data;
-	DgStreamRead(stream, sizeof(double), &data);
+	DgMemoryStreamRead(stream, sizeof(double), &data);
 	return data;
 }
 
@@ -322,42 +322,42 @@ double DgStreamReadDouble(DgStream *stream) {
  * Functions for writing common integer and floting point types.
  */
 
-void DgStreamWriteInt8(DgStream *stream, int8_t *data) {
-	DgStreamWrite(stream, sizeof(int8_t), data);
+void DgMemoryStreamWriteInt8(DgMemoryStream *stream, int8_t *data) {
+	DgMemoryStreamWrite(stream, sizeof(int8_t), data);
 }
 
-void DgStreamWriteUInt8(DgStream *stream, uint8_t *data) {
-	DgStreamWrite(stream, sizeof(uint8_t), data);
+void DgMemoryStreamWriteUInt8(DgMemoryStream *stream, uint8_t *data) {
+	DgMemoryStreamWrite(stream, sizeof(uint8_t), data);
 }
 
-void DgStreamWriteInt16(DgStream *stream, int16_t *data) {
-	DgStreamWrite(stream, sizeof(int16_t), data);
+void DgMemoryStreamWriteInt16(DgMemoryStream *stream, int16_t *data) {
+	DgMemoryStreamWrite(stream, sizeof(int16_t), data);
 }
 
-void DgStreamWriteUInt16(DgStream *stream, uint16_t *data) {
-	DgStreamWrite(stream, sizeof(uint16_t), data);
+void DgMemoryStreamWriteUInt16(DgMemoryStream *stream, uint16_t *data) {
+	DgMemoryStreamWrite(stream, sizeof(uint16_t), data);
 }
 
-void DgStreamWriteInt32(DgStream *stream, int32_t *data) {
-	DgStreamWrite(stream, sizeof(int32_t), data);
+void DgMemoryStreamWriteInt32(DgMemoryStream *stream, int32_t *data) {
+	DgMemoryStreamWrite(stream, sizeof(int32_t), data);
 }
 
-void DgStreamWriteUInt32(DgStream *stream, uint32_t *data) {
-	DgStreamWrite(stream, sizeof(uint32_t), data);
+void DgMemoryStreamWriteUInt32(DgMemoryStream *stream, uint32_t *data) {
+	DgMemoryStreamWrite(stream, sizeof(uint32_t), data);
 }
 
-void DgStreamWriteInt64(DgStream *stream, int64_t *data) {
-	DgStreamWrite(stream, sizeof(int64_t), data);
+void DgMemoryStreamWriteInt64(DgMemoryStream *stream, int64_t *data) {
+	DgMemoryStreamWrite(stream, sizeof(int64_t), data);
 }
 
-void DgStreamWriteUInt64(DgStream *stream, uint64_t *data) {
-	DgStreamWrite(stream, sizeof(uint64_t), data);
+void DgMemoryStreamWriteUInt64(DgMemoryStream *stream, uint64_t *data) {
+	DgMemoryStreamWrite(stream, sizeof(uint64_t), data);
 }
 
-void DgStreamWriteFloat(DgStream *stream, float *data) {
-	DgStreamWrite(stream, sizeof(float), data);
+void DgMemoryStreamWriteFloat(DgMemoryStream *stream, float *data) {
+	DgMemoryStreamWrite(stream, sizeof(float), data);
 }
 
-void DgStreamWriteDouble(DgStream *stream, double *data) {
-	DgStreamWrite(stream, sizeof(double), data);
+void DgMemoryStreamWriteDouble(DgMemoryStream *stream, double *data) {
+	DgMemoryStreamWrite(stream, sizeof(double), data);
 }
