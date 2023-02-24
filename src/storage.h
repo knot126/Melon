@@ -43,7 +43,8 @@ typedef enum DgStorageSeekBase {
 typedef enum DgStorageFlags {
 	DG_STREAM_READ = (1 << 0),
 	DG_STREAM_WRITE = (1 << 1),
-	DG_STREAM_APPEND = (1 << 2),
+	DG_STREAM_START_AT_END = (1 << 2),
+	DG_STREAM_DONT_OVERWRITE = (1 << 3),
 } DgStorageFlags;
 
 /** Function pointers for various storage and stream operations */
@@ -70,7 +71,7 @@ typedef DgError (*DgStorageCreateFolderFunction)(DgStorage *storage, DgStoragePo
 typedef DgError (*DgStorageTypeFunction)(DgStorage *storage, DgStoragePool *pool, DgStoragePath path, DgStorageObjectType *type);
 
 // Specific config destruction
-typedef DgError (*DgStorageFreeSpecificConfig)(DgStoragePool *pool);
+typedef DgError (*DgStorageFreeSpecificConfigFunction)(DgStoragePool *pool);
 
 /**
  * The storage function array/pointer.
@@ -93,7 +94,7 @@ typedef struct DgStorageFunctions {
 	DgStorageSeekFunction seek;
 	
 	// Specific config destruction
-	DgStorageFreeSpecificConfig free_specific_config;
+	DgStorageFreeSpecificConfigFunction free_specific_config;
 } DgStorageFunctions;
 
 /**

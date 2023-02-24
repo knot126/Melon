@@ -2,6 +2,7 @@
 #include "util/string.h"
 #include "util/storage.h"
 #include "util/storage_void.h"
+#include "util/storage_filesystem.h"
 #include "util/alloc.h"
 
 void TestString(void) {
@@ -58,7 +59,17 @@ void TestStorage(void) {
 	
 	DgStreamClose(&s);
 	
-	DgLog(DG_LOG_SUCCESS, "TestStorage()");
+	DgLog(DG_LOG_SUCCESS, "PART 1 === TestStorage()");
+	
+	// TEST 3
+	
+	DgLog(DG_LOG_INFO, "%x", DgStorageAddPool(NULL, DgFilesystemCreatePool("fs", ".")));
+	
+	DgLog(DG_LOG_INFO, "%x", DgStreamOpen(NULL, &s, "fs://test.txt", DG_STREAM_READ | DG_STREAM_WRITE));
+	
+	DgLog(DG_LOG_INFO, "%x", DgStreamClose(&s));
+	
+	DgLog(DG_LOG_SUCCESS, "PART 2 === TestStorage()");
 }
 
 int main(const int argc, const char *argv[]) {

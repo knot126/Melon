@@ -40,7 +40,7 @@ enum {
 	DG_ERROR_NOT_IMPLEMENTED = -0x40,
 	DG_ERROR_NOT_SUPPORTED = -0x41,
 	
-	DG_ERROR_FAILED = -0x7fffffff,
+	DG_ERROR_FAILED = -0x80000000,
 };
 
 typedef struct DgErrorCallback {

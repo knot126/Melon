@@ -259,6 +259,42 @@ uint32_t *DgInt32ListFromString(char * restrict str, size_t * const restrict siz
  *  ============================================================================
  */
 
+char *DgStringConcatinate(const char * const string1, const char * const string2) {
+	/**
+	 * Concatinate string1 and string2
+	 * 
+	 * @warning You need to free the string returned by this function.
+	 * 
+	 * @param string1 First string
+	 * @param string2 Second string
+	 * @return Resulting string (or NULL if failed)
+	 */
+	
+	size_t length1 = DgStringLength(string1);
+	size_t length2 = DgStringLength(string2);
+	
+	char *result = DgAlloc(length1 + length2 + 1);
+	
+	if (!result) {
+		return NULL;
+	}
+	
+	// Copy bytes in first string
+	for (size_t i = 0; i < length1; i++) {
+		result[i] = string1[i];
+	}
+	
+	// Copy bytes in second string
+	for (size_t i = length1; i < (length1 + length2); i++) {
+		result[i] = string2[i - length1];
+	}
+	
+	// Set last to NUL byte
+	result[length1 + length2] = '\0';
+	
+	return result;
+}
+
 size_t DgStringLength(const char * const string) {
 	/**
 	 * Return the length of the given string

@@ -163,6 +163,11 @@ DgError DgStorageAddPool(DgStorage *this, DgStoragePool *pool) {
 	 * @return Error code
 	 */
 	
+	// Check for null
+	if (pool == NULL) {
+		return DG_ERROR_NOT_SAFE;
+	}
+	
 	DG_STORAGE_RESOLVE();
 	
 	// Check if the pool already exists
@@ -611,7 +616,7 @@ DgError DgStreamSetPosition(DgStream *context, size_t position) {
 	return pool->functions->set_position(this, pool, context, position);
 }
 
-DgError DgStreamSeekFunction(DgStream *context, DgStorageSeekBase base, size_t offset) {
+DgError DgStreamSeek(DgStream *context, DgStorageSeekBase base, size_t offset) {
 	/**
 	 * Get the position in the file stream.
 	 * 
