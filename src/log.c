@@ -17,7 +17,6 @@
 #include <string.h>
 
 #include "str.h"
-#include "fs.h"
 
 #include "log.h"
 

@@ -22,7 +22,7 @@
 #include "alloc.h"
 #include "maths.h"
 #include "log.h"
-#include "fs.h"
+#include "storage.h"
 
 #include "bitmap.h"
 
@@ -812,29 +812,26 @@ void DgBitmapWritePPM(DgBitmap *this, const char * const filepath) {
 	 * @param filepath Path to write the file
 	 */
 	
-	if (this->chan < 3) {
+	if (this->chan != 3) {
 		return;
 	}
 	
-	DgFile file = DgFileOpen2(filepath, DG_FILE_STREAM_WRITE);
-	
-	if (!file) {
-		return;
-	}
+	DgStream stream;
+	DgStreamOpen(NULL, &stream, filepath, DG_STREAM_WRITE);
 	
 	// Write header
-	DgFileStreamWriteString(file, "P6\n");
-	DgFileStreamWriteIntegerString(file, this->width);
-	DgFileStreamWriteString(file, " ");
-	DgFileStreamWriteIntegerString(file, this->height);
-	DgFileStreamWriteString(file, "\n255\n");
+// 	DgFileStreamWriteString(file, "P6\n");
+// 	DgFileStreamWriteIntegerString(file, this->width);
+// 	DgFileStreamWriteString(file, " ");
+// 	DgFileStreamWriteIntegerString(file, this->height);
+// 	DgFileStreamWriteString(file, "\n255\n");
+// 	
+// 	const size_t pixels = this->width * this->height;
+// 	
+// 	// Write pixels
+// 	for (size_t i = 0; i < pixels; i++) {
+// 		DgFileStreamWrite(file, 3, &this->src[i * this->chan]);
+// 	}
 	
-	const size_t pixels = this->width * this->height;
-	
-	// Write pixels
-	for (size_t i = 0; i < pixels; i++) {
-		DgFileStreamWrite(file, 3, &this->src[i * this->chan]);
-	}
-	
-	DgFileStreamClose(file);
+	DgStreamClose(&stream);
 }

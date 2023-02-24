@@ -17,8 +17,6 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-#include "fs.h"
-
 typedef enum DgLogLevel {
 	DG_LOG_VERBOSE = -1,
 	DG_LOG_SUCCESS = 0,
@@ -28,9 +26,5 @@ typedef enum DgLogLevel {
 	DG_LOG_ERROR = 4,
 	DG_LOG_FATAL = 5,
 } DgLogLevel;
-
-typedef struct DgLogger {
-	DgFile *log_file;
-} DgLogger;
 
 void DgLog(const DgLogLevel level, const char * const format, ...);
