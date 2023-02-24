@@ -158,7 +158,35 @@ static DgError DgFilesystem_Open(DgStorage *storage, DgStoragePool *pool, DgStre
 	
 	path = REAL_PATH(path);
 	
-	context->context = (void *) fopen(path, "r+");
+	char *mode = "r";
+	
+	// Find the mode that matches the given flags the best.
+	if ((flags & DG_STREAM_READ) && !(flags & DG_STREAM_WRITE)) {
+		mode = "r";
+	}
+	else if (!(flags & DG_STREAM_READ) && (flags & DG_STREAM_WRITE)) {
+		mode = "w";
+	}
+	else if ((flags & DG_STREAM_READ) && (flags & DG_STREAM_WRITE)) {
+		mode = "r+";
+		
+		// Make sure the file exists first!
+		// This will create the file if it doesn't exist but won't do anything
+		// if it does.
+		FILE *temp = fopen(path, "w+x");
+		
+		if (temp) {
+			fclose(temp);
+		}
+	}
+	else {
+		DgFree((void *) path);
+		return DG_ERROR_NOT_SUPPORTED;
+	}
+	
+	DgLog(DG_LOG_VERBOSE, "Opening file %s in mode %s", path, mode);
+	
+	context->context = (void *) fopen(path, mode);
 	
 	DgFree((void *) path);
 	
@@ -196,7 +224,11 @@ static DgError DgFilesystem_Read(DgStorage *storage, DgStoragePool *pool, DgStre
 	 * @return Error code
 	 */
 	
-	DgLog(DG_LOG_VERBOSE, "DgVoid_Read() called!!");
+	size_t result = fread(buffer, 1, size, (FILE *) context->context);
+	
+	if (result != size) {
+		return DG_ERROR_FAILED;
+	}
 	
 	return DG_ERROR_SUCCESSFUL;
 }
@@ -213,7 +245,11 @@ static DgError DgFilesystem_Write(DgStorage *storage, DgStoragePool *pool, DgStr
 	 * @return Error code
 	 */
 	
-	DgLog(DG_LOG_VERBOSE, "DgVoid_Write() called!!");
+	size_t result = fwrite(buffer, 1, size, (FILE *) context->context);
+	
+	if (result != size) {
+		return DG_ERROR_FAILED;
+	}
 	
 	return DG_ERROR_SUCCESSFUL;
 }
@@ -268,7 +304,7 @@ static DgError DgFilesystem_Seek(DgStorage *storage, DgStoragePool *pool, DgStre
 }
 
 static DgError DgFilesystem_FreeSpecificConfig(DgStoragePool *pool) {
-	DgFree(((DgFilesytem_SpecificConfig *) pool->specific_config)->basedir);
+	DgFree((void *) ((DgFilesytem_SpecificConfig *) pool->specific_config)->basedir);
 	DgFree(pool->specific_config);
 	
 	return DG_ERROR_SUCCESSFUL;

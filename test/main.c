@@ -67,6 +67,10 @@ void TestStorage(void) {
 	
 	DgLog(DG_LOG_INFO, "%x", DgStreamOpen(NULL, &s, "fs://test.txt", DG_STREAM_READ | DG_STREAM_WRITE));
 	
+	char sample[] = "This is my lovely document! It's very nice!";
+	
+	DgLog(DG_LOG_INFO, "%x", DgStreamWrite(&s, sizeof(sample) - 1, sample));
+	
 	DgLog(DG_LOG_INFO, "%x", DgStreamClose(&s));
 	
 	DgLog(DG_LOG_SUCCESS, "PART 2 === TestStorage()");

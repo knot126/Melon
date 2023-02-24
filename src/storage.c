@@ -95,7 +95,6 @@ static DgStorage *DgStorageResolve(DgStorage *this) {
 		return DG_ERROR_NOT_INITIALISED;\
 	}\
 	\
-	DgLog(DG_LOG_VERBOSE, "Using storage pool <0x%.16x>", this);\
 	
 
 /**
