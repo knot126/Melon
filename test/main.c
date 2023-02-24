@@ -28,6 +28,8 @@ void TestStorage(void) {
 	char *proto, *file;
 	
 	// TEST 1
+	DgLog(DG_LOG_INFO, "Testing path splitting function...");
+	
 	DgStorageSplitPathIntoParts("assets://stage/canyon.xml", &proto, &file);
 	
 	DgLog(DG_LOG_INFO, "Path: %s %s", proto, file);
@@ -41,7 +43,10 @@ void TestStorage(void) {
 	
 	DgFree(proto);
 	
+	DgLog(DG_LOG_SUCCESS, "TestStorage() - 1");
+	
 	// TEST 2
+	DgLog(DG_LOG_INFO, "Adding a void pool and testing it...");
 	
 	DgLog(DG_LOG_INFO, "%x", DgStorageAddPool(NULL, DgVoidCreatePool("void")));
 	
@@ -59,23 +64,20 @@ void TestStorage(void) {
 	
 	DgStreamClose(&s);
 	
-	DgLog(DG_LOG_SUCCESS, "PART 1 === TestStorage()");
+	DgLog(DG_LOG_SUCCESS, "TestStorage() - 2");
 	
 	// TEST 3
+	DgLog(DG_LOG_INFO, "Real filesystem test...");
 	
 	DgLog(DG_LOG_INFO, "%x", DgStorageAddPool(NULL, DgFilesystemCreatePool("fs", ".")));
-	
 	DgLog(DG_LOG_INFO, "%x", DgStreamOpen(NULL, &s, "fs://test.txt", DG_STREAM_WRITE));
 	
 	char sample[] = "This is my lovely document! It's very nice!";
 	
 	DgLog(DG_LOG_INFO, "%x", DgStreamWrite(&s, sizeof(sample) - 1, sample));
-	
 	DgLog(DG_LOG_INFO, "%x", DgStreamClose(&s));
 	
-	//DgStorageCreateFile(NULL, "fs://test/test/test.txt");
-	
-	DgLog(DG_LOG_SUCCESS, "PART 2 === TestStorage()");
+	DgLog(DG_LOG_SUCCESS, "TestStorage() - 3");
 }
 
 int main(const int argc, const char *argv[]) {

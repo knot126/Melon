@@ -12,7 +12,6 @@
  * Load and save file functions
  */
 
-#include "fs.h" // TEMP
 #include "storage.h"
 #include "error.h"
 #include "alloc.h"
@@ -31,7 +30,34 @@ DgError DgFileLoad(DgStorage *storage, DgStoragePath path, size_t *size, void **
 	 * @return Error status
 	 */
 	
-	return DG_ERROR_NOT_IMPLEMENTED;
+	DgStream stream;
+	DgError status;
+	
+	status = DgStreamOpen(storage, &stream, path, DG_STREAM_READ);
+	
+	if (status) {
+		return status;
+	}
+	
+	size_t length = DgStreamLength(&stream);
+	
+	buffer[0] = DgMemoryAllocate(length);
+	
+	if (!buffer[0]) {
+		DgStreamClose(&stream);
+		return DG_ERROR_ALLOCATION_FAILED;
+	}
+	
+	status = DgStreamRead(&stream, length, buffer[0]);
+	
+	DgStreamClose(&stream);
+	
+	if (status) {
+		DgFree(buffer[0]);
+		return DG_ERROR_FAILED;
+	}
+	
+	return DG_ERROR_SUCCESS;
 }
 
 DgError DgFileSave(DgStorage *storage, DgStoragePath path, size_t size, void *buffer) {

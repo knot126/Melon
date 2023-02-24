@@ -159,6 +159,8 @@ static DgError DgFilesystem_CreateFile(DgStorage *storage, DgStoragePool *pool, 
 	
 	if (f) {
 		fclose(f);
+	}
+	else {
 		return DG_ERROR_FAILED;
 	}
 	

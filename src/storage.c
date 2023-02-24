@@ -633,3 +633,44 @@ DgError DgStreamSeek(DgStream *context, DgStorageSeekBase base, int64_t offset) 
 
 // Undefine resolve macro just to be clean
 #undef DG_STORAGE_RESOLVE
+
+/* Extra and conviecne functions */
+
+size_t DgStreamLength(DgStream *context) {
+	/**
+	 * Get the length of a file.
+	 * 
+	 * @param context Stream object
+	 * @return Size of the file
+	 */
+	
+	size_t old_pos, length;
+	DgError status;
+	
+	// We store the old position so we can later restore it
+	status = DgStreamGetPosition(context, &old_pos);
+	
+	if (status) {
+		return 0;
+	}
+	
+	status = DgStreamSeek(context, DG_STORAGE_SEEK_END, 0);
+	
+	if (status) {
+		return 0;
+	}
+	
+	status = DgStreamGetPosition(context, &length);
+	
+	if (status) {
+		return 0;
+	}
+	
+	status = DgStreamSetPosition(context, old_pos);
+	
+	if (status) {
+		return 0;
+	}
+	
+	return length;
+}

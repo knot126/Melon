@@ -161,3 +161,6 @@ DgError DgStreamWrite(DgStream *context, size_t size, void *buffer);
 DgError DgStreamGetPosition(DgStream *context, size_t *position);
 DgError DgStreamSetPosition(DgStream *context, size_t position);
 DgError DgStreamSeek(DgStream *context, DgStorageSeekBase base, int64_t offset);
+
+// Extra functions
+size_t DgStreamLength(DgStream *context);
