@@ -14,4 +14,6 @@
 
 #pragma once
 
+#include "storage.h"
+
 DgStoragePool *DgFilesystemCreatePool(const char *protocol, const char *basedir);

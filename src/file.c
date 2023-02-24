@@ -41,6 +41,8 @@ DgError DgFileLoad(DgStorage *storage, DgStoragePath path, size_t *size, void **
 	
 	size_t length = DgStreamLength(&stream);
 	
+	size[0] = length;
+	
 	buffer[0] = DgMemoryAllocate(length);
 	
 	if (!buffer[0]) {

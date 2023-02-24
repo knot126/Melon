@@ -38,6 +38,8 @@ void DgArgParse(DgArgs * restrict this, const size_t argc, char ** const restric
 	 * @todo Support for '--key=value' (note: '--key' 'value' works)
 	 */
 	
+	memset(this, 0, sizeof *this);
+	
 	// NOTE: We start at the first real argument, not the name of the exec...
 	for (size_t i = 1; i < argc; i++) {
 		char *next = argv[i];

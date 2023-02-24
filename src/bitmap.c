@@ -413,34 +413,9 @@ void DgBitmapDrawLine(DgBitmap * restrict this, DgVec2 pa, DgVec2 pb, DgColour *
 	}
 }
 
-static inline uint16_t DgBitmapDrawQuadraticBezier_Eval(float t, float p0, float p1, float p2) {
-	return (uint16_t)(((1.0f - t) * (1.0f - t) * p0) + (2.0f * (1.0f - t) * t * p1) + (t * t * p2));
-}
-
-static inline DgVec2 DgBitmapDrawQuadraticBezier_Roots(float a, float b, float c) {
-	DgVec2 roots;
-	
-	float det = sqrtf((b * b) - (4.0f * a * c));
-	
-	roots.x = (-b - det) / (2.0f * a);
-	roots.y = (-b + det) / (2.0f * a);
-	
-	return roots;
-}
-
 void DgBitmapDrawQuadraticBezier(DgBitmap * restrict this, DgVec2 p0, DgVec2 p1, DgVec2 p2, DgColour * restrict colour) {
 	/**
-	 * Draw a quadratic bezier curve using a naïve algorithm, so it should
-	 * always work without a need for special cases.
-	 * 
-	 * Essentially, we use the fact that we can find a t-value from any given
-	 * x-value of a curve in order to draw the curve. If you are concerned about
-	 * the root finding not being a function, I would encourage you to look up
-	 * what a multivalue function is.
-	 * 
-	 * @warning Piece of shit
-	 * 
-	 * @todo Make it not a piece of shit :D
+	 * This didn't work and was removed.
 	 * 
 	 * @param this Bitmap to draw on
 	 * @param p0 First control point
@@ -449,64 +424,7 @@ void DgBitmapDrawQuadraticBezier(DgBitmap * restrict this, DgVec2 p0, DgVec2 p1,
 	 * @param colour Colour of the curve
 	 */
 	
-	// Convert coordinates to the proper range
-	const float base_y = (float)(this->height);
-	p0 = (DgVec2) {p0.x * this->width, base_y - p0.y * base_y};
-	p1 = (DgVec2) {p1.x * this->width, base_y - p1.y * base_y};
-	p2 = (DgVec2) {p2.x * this->width, base_y - p2.y * base_y};
-	
-	// Find min and max x-values for point
-	const uint16_t min_x = DgFloatMin3(p0.x, p1.x, p2.x), max_x = DgFloatMax3(p0.x, p1.x, p2.x);
-	const uint16_t min_y = DgFloatMin3(p0.y, p1.y, p2.y), max_y = DgFloatMax3(p0.y, p1.y, p2.y);
-	
-	{
-		// Precompute a and b values for x
-		float a = p0.x - 2.0f * p1.x + p2.x;
-		float b = 2.0f * (p1.x - p0.x);
-		DgVec2 t;
-		
-		// Loop over each pixel with the curve
-		for (size_t x = min_x; x <= max_x; x++) {
-			// Find t-value(s) for the next x so we know where to stop drawing
-			t = DgBitmapDrawQuadraticBezier_Roots(a, b, p0.x - x);
-			
-			// Evaluate y value(s) at this point
-			// Don't need to worry about NaN for square roots
-			if (0.0f <= t.data[0] && t.data[0] <= 1.0f) {
-				int16_t y = DgBitmapDrawQuadraticBezier_Eval(t.data[0], p0.y, p1.y, p2.y);
-				DgBitmapDrawPixel(this, x, y, *colour);
-			}
-			
-			if (0.0f <= t.data[1] && t.data[1] <= 1.0f) {
-				int16_t y = DgBitmapDrawQuadraticBezier_Eval(t.data[1], p0.y, p1.y, p2.y);
-				DgBitmapDrawPixel(this, x, y, *colour);
-			}
-		}
-	}
-	
-	{
-		// Precompute a and b values for y
-		float a = p0.y - 2.0f * p1.y + p2.y;
-		float b = 2.0f * (p1.y - p0.y);
-		DgVec2 t;
-		
-		for (size_t y = min_y; y <= max_y; y++) {
-			// Find t-value(s) for the next x so we know where to stop drawing
-			t = DgBitmapDrawQuadraticBezier_Roots(a, b, p0.y - y);
-			
-			// Evaluate x value(s) at this point
-			// Don't need to worry about NaN for square roots
-			if (0.0f <= t.data[0] && t.data[0] <= 1.0f) {
-				int16_t x = DgBitmapDrawQuadraticBezier_Eval(t.data[0], p0.y, p1.y, p2.y);
-				DgBitmapDrawPixel(this, x, y, *colour);
-			}
-			
-			if (0.0f <= t.data[1] && t.data[1] <= 1.0f) {
-				int16_t x = DgBitmapDrawQuadraticBezier_Eval(t.data[1], p0.y, p1.y, p2.y);
-				DgBitmapDrawPixel(this, x, y, *colour);
-			}
-		}
-	}
+	return;
 }
 
 void DgBitmapDrawPoint(DgBitmap * restrict this, float x, float y, float r, DgColour colour) {
@@ -650,6 +568,8 @@ inline static void DgBitmapDrawTriangle(DgBitmap * const this, DgBitmapTriangle 
 	 * Draw a single shaded triangle.
 	 * 
 	 * @warning Kind of a messy function
+	 * 
+	 * @note This is not currenlty a fast implementation
 	 * 
 	 * @param this Bitmap object
 	 * @param triangle Triangle to draw
