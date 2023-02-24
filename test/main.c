@@ -3,6 +3,7 @@
 #include "util/storage.h"
 #include "util/storage_void.h"
 #include "util/storage_filesystem.h"
+#include "util/file.h"
 #include "util/alloc.h"
 
 void TestString(void) {
@@ -70,12 +71,14 @@ void TestStorage(void) {
 	DgLog(DG_LOG_INFO, "Real filesystem test...");
 	
 	DgLog(DG_LOG_INFO, "%x", DgStorageAddPool(NULL, DgFilesystemCreatePool("fs", ".")));
-	DgLog(DG_LOG_INFO, "%x", DgStreamOpen(NULL, &s, "fs://test.txt", DG_STREAM_WRITE));
+	//DgLog(DG_LOG_INFO, "%x", DgStreamOpen(NULL, &s, "fs://test.txt", DG_STREAM_WRITE));
 	
-	char sample[] = "This is my lovely document! It's very nice!";
+	char sample[] = "This is my lovely document! It's very nice!\n\n";
 	
-	DgLog(DG_LOG_INFO, "%x", DgStreamWrite(&s, sizeof(sample) - 1, sample));
-	DgLog(DG_LOG_INFO, "%x", DgStreamClose(&s));
+	//DgLog(DG_LOG_INFO, "%x", DgStreamWrite(&s, sizeof(sample) - 1, sample));
+	//DgLog(DG_LOG_INFO, "%x", DgStreamClose(&s));
+	
+	DgFileAppend(NULL, "fs://hello.txt", sizeof(sample) - 1, sample);
 	
 	DgLog(DG_LOG_SUCCESS, "TestStorage() - 3");
 }
