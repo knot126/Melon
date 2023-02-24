@@ -198,7 +198,7 @@ static DgError DgVoid_SetPosition(DgStorage *storage, DgStoragePool *pool, DgStr
 	return DG_ERROR_SUCCESSFUL;
 }
 
-static DgError DgVoid_Seek(DgStorage *storage, DgStoragePool *pool, DgStream *context, DgStorageSeekBase base, size_t offset) {
+static DgError DgVoid_Seek(DgStorage *storage, DgStoragePool *pool, DgStream *context, DgStorageSeekBase base, int64_t offset) {
 	/**
 	 * Seek to a positon in the file stream, relative to base
 	 * 

@@ -55,6 +55,46 @@ static const char *DgFilesystemRealPath(const char *basedir, DgStoragePath abstr
 	return result;
 }
 
+DgError DgFilesystemMakedirs(const char *deepest, bool last) {
+	/**
+	 * Make the directory up to `deepest`.
+	 * 
+	 * @param deepest The deepest dir
+	 * @return Error code
+	 */
+	
+	char *path = DgStringDuplicate(deepest);
+	size_t length = DgStringLength(path);
+	int status;
+	
+	// Create every directory before the top file/dir
+	for (size_t i = 0; i < length; i++) {
+		if (path[i] == '/'
+		#ifdef _WIN32
+			|| path[i] == '\\'
+		#endif
+		) {
+			// Set the string up to here
+			path[i] = '\0';
+			
+			// Make the directory
+			status = mkdir(path);
+			
+			// Set the string back once again
+			path[i] = '/';
+		}
+	}
+	
+	// If we should also create the last directory
+	if (last) {
+		status = mkdir(path);
+	}
+	
+	DgFree((void *) path);
+	
+	return status ? DG_ERROR_FAILED : DG_ERROR_SUCCESSFUL;
+}
+
 #define REAL_PATH(VAR) DgFilesystemRealPath(((DgFilesytem_SpecificConfig *) pool->specific_config)->basedir, VAR);
 
 static DgError DgFilesystem_Rename(DgStorage *storage, DgStoragePool *pool, DgStoragePath old_path, DgStoragePath new_path) {
@@ -108,9 +148,21 @@ static DgError DgFilesystem_CreateFile(DgStorage *storage, DgStoragePool *pool, 
 	 * @return Error code
 	 */
 	
-	DgLog(DG_LOG_ERROR, "DgFilesystem_CreateFile()", path);
+	path = REAL_PATH(path);
 	
-	return DG_ERROR_NOT_IMPLEMENTED;
+	DgFilesystemMakedirs(path, false);
+	
+	// Touch the file
+	FILE *f = fopen(path, "w");
+	
+	DgFree((void *) path);
+	
+	if (f) {
+		fclose(f);
+		return DG_ERROR_FAILED;
+	}
+	
+	return DG_ERROR_SUCCESSFUL;
 }
 
 static DgError DgFilesystem_CreateFolder(DgStorage *storage, DgStoragePool *pool, DgStoragePath path) {
@@ -123,9 +175,13 @@ static DgError DgFilesystem_CreateFolder(DgStorage *storage, DgStoragePool *pool
 	 * @return Error code
 	 */
 	
-	DgLog(DG_LOG_ERROR, "DgFilesystem_CreateFolder()", path);
+	path = REAL_PATH(path);
 	
-	return DG_ERROR_NOT_IMPLEMENTED;
+	DgError status = DgFilesystemMakedirs(path, true);
+	
+	DgFree((void *) path);
+	
+	return status;
 }
 
 static DgError DgFilesystem_Type(DgStorage *storage, DgStoragePool *pool, DgStoragePath path, DgStorageObjectType *type) {
@@ -139,7 +195,7 @@ static DgError DgFilesystem_Type(DgStorage *storage, DgStoragePool *pool, DgStor
 	 * @return Error code
 	 */
 	
-	DgLog(DG_LOG_ERROR, "DgFilesystem_CreateFolder()", path);
+	DgLog(DG_LOG_ERROR, "DgFilesystem_Type()", path);
 	
 	return DG_ERROR_NOT_IMPLEMENTED;
 }
@@ -158,17 +214,17 @@ static DgError DgFilesystem_Open(DgStorage *storage, DgStoragePool *pool, DgStre
 	
 	path = REAL_PATH(path);
 	
-	char *mode = "r";
+	char *mode = "rb";
 	
 	// Find the mode that matches the given flags the best.
 	if ((flags & DG_STREAM_READ) && !(flags & DG_STREAM_WRITE)) {
-		mode = "r";
+		mode = "rb";
 	}
 	else if (!(flags & DG_STREAM_READ) && (flags & DG_STREAM_WRITE)) {
-		mode = "w";
+		mode = "wb";
 	}
 	else if ((flags & DG_STREAM_READ) && (flags & DG_STREAM_WRITE)) {
-		mode = "r+";
+		mode = "r+b";
 		
 		// Make sure the file exists first!
 		// This will create the file if it doesn't exist but won't do anything
@@ -265,7 +321,7 @@ static DgError DgFilesystem_GetPosition(DgStorage *storage, DgStoragePool *pool,
 	 * @return Error code
 	 */
 	
-	DgLog(DG_LOG_VERBOSE, "DgVoid_GetPosition() called!!");
+	position[0] = ftell((FILE *) context->context);
 	
 	return DG_ERROR_SUCCESSFUL;
 }
@@ -281,12 +337,16 @@ static DgError DgFilesystem_SetPosition(DgStorage *storage, DgStoragePool *pool,
 	 * @return Error code
 	 */
 	
-	DgLog(DG_LOG_VERBOSE, "DgVoid_SetPosition() called!!");
+	int status = fseek((FILE *) context->context, position, SEEK_SET);
+	
+	if (status) {
+		return DG_ERROR_FAILED;
+	}
 	
 	return DG_ERROR_SUCCESSFUL;
 }
 
-static DgError DgFilesystem_Seek(DgStorage *storage, DgStoragePool *pool, DgStream *context, DgStorageSeekBase base, size_t offset) {
+static DgError DgFilesystem_Seek(DgStorage *storage, DgStoragePool *pool, DgStream *context, DgStorageSeekBase base, int64_t offset) {
 	/**
 	 * Seek to a positon in the file stream, relative to base
 	 * 
@@ -298,7 +358,19 @@ static DgError DgFilesystem_Seek(DgStorage *storage, DgStoragePool *pool, DgStre
 	 * @return Error code
 	 */
 	
-	DgLog(DG_LOG_VERBOSE, "DgVoid_Seek() called!!");
+	int origin;
+	
+	switch (base) {
+		case DG_STORAGE_SEEK_RELATIVE: origin = SEEK_CUR; break;
+		case DG_STORAGE_SEEK_START:    origin = SEEK_SET; break;
+		case DG_STORAGE_SEEK_END:      origin = SEEK_END; break;
+	}
+	
+	int status = fseek((FILE *) context->context, offset, origin);
+	
+	if (status) {
+		return DG_ERROR_FAILED;
+	}
 	
 	return DG_ERROR_SUCCESSFUL;
 }

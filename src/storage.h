@@ -61,7 +61,7 @@ typedef DgError (*DgStorageWriteFunction)(DgStorage *storage, DgStoragePool *poo
 
 typedef DgError (*DgStorageGetPositionFunction)(DgStorage *storage, DgStoragePool *pool, DgStream *context, size_t *position);
 typedef DgError (*DgStorageSetPositionFunction)(DgStorage *storage, DgStoragePool *pool, DgStream *context, size_t position);
-typedef DgError (*DgStorageSeekFunction)(DgStorage *storage, DgStoragePool *pool, DgStream *context, DgStorageSeekBase base, size_t offset);
+typedef DgError (*DgStorageSeekFunction)(DgStorage *storage, DgStoragePool *pool, DgStream *context, DgStorageSeekBase base, int64_t offset);
 
 // Filesystems
 typedef DgError (*DgStorageDeleteFunction)(DgStorage *storage, DgStoragePool *pool, DgStoragePath path);
@@ -160,4 +160,4 @@ DgError DgStreamWrite(DgStream *context, size_t size, void *buffer);
 
 DgError DgStreamGetPosition(DgStream *context, size_t *position);
 DgError DgStreamSetPosition(DgStream *context, size_t position);
-DgError DgStreamSeekFunction(DgStream *context, DgStorageSeekBase base, size_t offset);
+DgError DgStreamSeek(DgStream *context, DgStorageSeekBase base, int64_t offset);

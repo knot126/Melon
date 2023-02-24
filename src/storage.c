@@ -615,7 +615,7 @@ DgError DgStreamSetPosition(DgStream *context, size_t position) {
 	return pool->functions->set_position(this, pool, context, position);
 }
 
-DgError DgStreamSeek(DgStream *context, DgStorageSeekBase base, size_t offset) {
+DgError DgStreamSeek(DgStream *context, DgStorageSeekBase base, int64_t offset) {
 	/**
 	 * Get the position in the file stream.
 	 * 
