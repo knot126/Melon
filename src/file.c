@@ -54,7 +54,7 @@ DgError DgFileLoad(DgStorage *storage, DgStoragePath path, size_t *size, void **
 	
 	if (status) {
 		DgFree(buffer[0]);
-		return DG_ERROR_FAILED;
+		return status;
 	}
 	
 	return DG_ERROR_SUCCESS;
@@ -71,16 +71,22 @@ DgError DgFileSave(DgStorage *storage, DgStoragePath path, size_t size, void *bu
 	 * @return Error status
 	 */
 	
-	static int message_shown;
+	DgStream stream;
+	DgError status;
 	
-	if (!message_shown) {
-		DgLog(DG_LOG_WARNING, "DgFileSave() uses legacy file stream implementation.");
-		message_shown = 1;
+	status = DgStreamOpen(storage, &stream, path, DG_STREAM_WRITE);
+	
+	if (status) {
+		return status;
 	}
 	
-	DgFileStream *file = DgFileOpen2(path, DG_FILE_STREAM_WRITE);
-	DgFileStreamWrite(file, size, buffer);
-	DgFileStreamClose(file);
+	status = DgStreamWrite(&stream, size, buffer);
+	
+	if (status) {
+		return status;
+	}
+	
+	DgStreamClose(&stream);
 	
 	return DG_ERROR_SUCCESS;
 }
@@ -96,5 +102,22 @@ DgError DgFileAppend(DgStorage *storage, DgStoragePath path, size_t size, void *
 	 * @return Error status
 	 */
 	
-	return DG_ERROR_NOT_IMPLEMENTED;
+	DgStream stream;
+	DgError status;
+	
+	status = DgStreamOpen(storage, &stream, path, DG_STREAM_READ | DG_STREAM_WRITE | DG_STREAM_START_AT_END);
+	
+	if (status) {
+		return status;
+	}
+	
+	status = DgStreamWrite(&stream, size, buffer);
+	
+	DgStreamClose(&stream);
+	
+	if (status) {
+		return status;
+	}
+	
+	return DG_ERROR_SUCCESS;
 }
