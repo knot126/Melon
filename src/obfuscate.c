@@ -11,10 +11,9 @@
  * 
  * Data Obfuscation
  * 
- * @note These are really just weak encryption ciphers; however, we don't really
- * want people using these for encryption and they are more useful for e.g. hiding
- * your yiff from your father's grand mother than actually keeping people from
- * looking at your data.
+ * @note These are really just weak ciphers. They are only to be used for hinding
+ * things from non-technical people; e.g. hiding the yiff folder from grandma.
+ * Your local intellegence service might be able to crack this if they like.
  */
 
 #include "string.h"
@@ -113,6 +112,22 @@ void DgObfuscate_SEA1(const char * restrict key, size_t length, uint8_t * restri
 	/**
 	 * Obfuscate a message using the XorShiftShift algorithm.
 	 * 
+	 * @note The issues with this cipher include:
+	 * 
+	 * - Choosing the same key results in the same keystream expansion. There is
+	 *   no protection to make sure that data encrypted with the same key can't
+	 *   be analysed. (You could analyse mutlipule messages and determine the
+	 *   probablity of what occurs at each point the message.)
+	 * 
+	 * - XORShift fails statistical tests for randomness.
+	 * 
+	 * - It's might be possible to brute force. There are (2^8 - 1)^L possible
+	 *   keys of length L. The averege attack only needs to check about half: 
+	 *   ((2^8 - 1)^L)/2. Use d for the time in seconds it takes to compute
+	 *   a single encryption: ((2^8 - 1)^L)/(2 * 31536000 * d) years.
+	 * 
+	 * - There is a devil in these details ...
+	 * 
 	 * @param key Key to obfuscate with
 	 * @param length Length of the data
 	 * @param data Data to obfuscate
@@ -127,7 +142,11 @@ void DgObfuscate_SEA1(const char * restrict key, size_t length, uint8_t * restri
 	// This is probably the most important part of the cipher. But it might not
 	// be very secure. For example there is already repetition in the key.
 	for (size_t i = 0; i < key_length; i++) {
-		random_states[i] = (key[(i + 3) % key_length] << 24) | (key[(i + 0) % key_length] << 16) | (key[(i + 2) % key_length] << 8) | (key[(i + 1) % key_length]);
+		random_states[i] =
+			  (key[(i + 3) % key_length] << 24)
+			| (key[(i + 0) % key_length] << 16)
+			| (key[(i + 2) % key_length] << 8)
+			| (key[(i + 1) % key_length]);
 	}
 	
 	// Encrypt the data
@@ -138,6 +157,48 @@ void DgObfuscate_SEA1(const char * restrict key, size_t length, uint8_t * restri
 }
 
 #ifdef DG_MELON_OBFUSCATE_EXTRA
+void DgObfuscate_SEA2(const char * restrict key, size_t length, uint8_t * restrict data) {
+	/**
+	 * Obfuscate a message using the 2nd Stupid Encryption Algorithm.
+	 * 
+	 * @note What this does differently from SEA1:
+	 * 
+	 * - Adds a counter(-ish thing) based on the length of the message and bits
+	 *   of the plaintext.
+	 * 
+	 * - I'm not sure that using the plaintext as part of the random states is
+	 *   really secure but since it's only a few bits to make the keystream
+	 *   depend on the plaintext I think that could be fine(?)
+	 * 
+	 * @param key Key to obfuscate with
+	 * @param length Length of the data
+	 * @param data Data to obfuscate
+	 */
+	
+	size_t key_length = DgStringLength(key);
+	
+	// Number of random states
+	uint32_t random_states[key_length];
+	
+	// Initialise the states...
+	// This is probably the most important part of the cipher. But it might not
+	// be very secure. For example there is already repetition in the key.
+	for (size_t i = 0; i < key_length; i++) {
+		random_states[i] =
+			( (key[(i + 3) % key_length] << 24)
+			| (key[(i + 0) % key_length] << 16)
+			| (key[(i + 2) % key_length] << 8)
+			| (key[(i + 1) % key_length]));
+	}
+	
+	// Encrypt the data
+	for (size_t i = 0; i < length; i++) {
+		random_states[i % key_length] = DgRandXORShiftU32(random_states[i % key_length]) + (length + i);
+		
+		data[i] ^= (char)((random_states[i % key_length]) & 0xff);
+	}
+}
+
 void DgObfuscateData(DgObfuscateAlgorithm algorithm, const char * restrict key, size_t length, uint8_t * restrict data) {
 	/**
 	 * Obfuscate a given block of data by using weak encryption algorithm.
@@ -155,7 +216,7 @@ void DgObfuscateData(DgObfuscateAlgorithm algorithm, const char * restrict key, 
 		}
 		
 		case DG_OBFUSCATE_CESAR: {
-			DgObfuscate_Polyalphabetic(NULL, key[0], length, data);
+			DgObfuscate_Polyalphabetic(NULL, key[0], 0, data);
 			break;
 		}
 		
@@ -171,6 +232,11 @@ void DgObfuscateData(DgObfuscateAlgorithm algorithm, const char * restrict key, 
 		
 		case DG_OBFUSCATE_SEA1: {
 			DgObfuscate_SEA1(key, length, data);
+			break;
+		}
+		
+		case DG_OBFUSCATE_SEA2: {
+			DgObfuscate_SEA2(key, length, data);
 			break;
 		}
 		
@@ -197,7 +263,7 @@ void DgDeobfuscateData(DgObfuscateAlgorithm algorithm, const char * restrict key
 		}
 		
 		case DG_OBFUSCATE_CESAR: {
-			DgDeobfuscate_Polyalphabetic(NULL, key[0], length, data);
+			DgDeobfuscate_Polyalphabetic(NULL, key[0], 0, data);
 			break;
 		}
 		
@@ -213,6 +279,11 @@ void DgDeobfuscateData(DgObfuscateAlgorithm algorithm, const char * restrict key
 		
 		case DG_OBFUSCATE_SEA1: {
 			DgObfuscate_SEA1(key, length, data);
+			break;
+		}
+		
+		case DG_OBFUSCATE_SEA2: {
+			DgObfuscate_SEA2(key, length, data);
 			break;
 		}
 		
