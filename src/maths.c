@@ -76,7 +76,7 @@ int DgSign(float n) {
  * DgVec2 
  */
 
-inline DgVec2 DgVec2Add(DgVec2 a, DgVec2 b) {
+DgVec2 DgVec2Add(DgVec2 a, DgVec2 b) {
 	DgVec2 c;
 	
 	c.x = a.x + b.x;
@@ -85,7 +85,7 @@ inline DgVec2 DgVec2Add(DgVec2 a, DgVec2 b) {
 	return c;
 }
 
-inline DgVec2 DgVec2Subtract(DgVec2 a, DgVec2 b) {
+DgVec2 DgVec2Subtract(DgVec2 a, DgVec2 b) {
 	DgVec2 c;
 	
 	c.x = a.x - b.x;
@@ -94,7 +94,7 @@ inline DgVec2 DgVec2Subtract(DgVec2 a, DgVec2 b) {
 	return c;
 }
 
-inline DgVec2 DgVec2Scale(float a, DgVec2 b) {
+DgVec2 DgVec2Scale(float a, DgVec2 b) {
 	DgVec2 c;
 	
 	c.x = a * b.x;
@@ -103,7 +103,7 @@ inline DgVec2 DgVec2Scale(float a, DgVec2 b) {
 	return c;
 }
 
-inline DgVec2 DgVec2Multiply(DgVec2 a, DgVec2 b) {
+DgVec2 DgVec2Multiply(DgVec2 a, DgVec2 b) {
 	DgVec2 c;
 	
 	c.x = a.x * b.x;
@@ -112,15 +112,15 @@ inline DgVec2 DgVec2Multiply(DgVec2 a, DgVec2 b) {
 	return c;
 }
 
-inline float DgVec2Magnitude(DgVec2 a) {
+float DgVec2Magnitude(DgVec2 a) {
 	return sqrt((a.x * a.x) + (a.y * a.y));
 }
 
-inline float DgVec2Dot(DgVec2 a, DgVec2 b) {
+float DgVec2Dot(DgVec2 a, DgVec2 b) {
 	return (a.x * b.x) + (a.y * b.y);
 }
 
-inline float DgVec2RotDot(DgVec2 a, DgVec2 b) {
+float DgVec2RotDot(DgVec2 a, DgVec2 b) {
 	/**
 	 * Dot product combined with a 0.25 turn rotation. This will tell what "side"
 	 * of vector a that b is on.
@@ -129,7 +129,7 @@ inline float DgVec2RotDot(DgVec2 a, DgVec2 b) {
 	return (a.x * b.y) - (a.y * b.x);
 }
 
-inline DgVec2 DgVec2Normalise(DgVec2 a) {
+DgVec2 DgVec2Normalise(DgVec2 a) {
 	DgVec2 c;
 	
 	float m = 1 / DgVec2Magnitude(a);
@@ -140,7 +140,7 @@ inline DgVec2 DgVec2Normalise(DgVec2 a) {
 	return c;
 }
 
-inline DgVec2 DgVec2FromString(const char * const s) {
+DgVec2 DgVec2FromString(const char * const s) {
 	DgVec2 c = (DgVec2) {0.0f, 0.0f};
 	
 	// Return zero vector on null string
@@ -158,7 +158,7 @@ inline DgVec2 DgVec2FromString(const char * const s) {
 	return c;
 }
 
-inline DgBary3 DgVec2Bary3(DgVec2 p1, DgVec2 p2, DgVec2 p3, DgVec2 point) {
+DgBary3 DgVec2Bary3(DgVec2 p1, DgVec2 p2, DgVec2 p3, DgVec2 point) {
 	/**
 	 * Compute the barycentric coordinates of a point, where:
 	 *     point = u * p1 + v * p2 + w * p3
@@ -203,7 +203,7 @@ inline DgBary3 DgVec2Bary3(DgVec2 p1, DgVec2 p2, DgVec2 p3, DgVec2 point) {
  * DgVec3 
  */
 
-inline DgVec3 DgVec3Add(DgVec3 a, DgVec3 b) {
+DgVec3 DgVec3Add(DgVec3 a, DgVec3 b) {
 	DgVec3 c;
 	
 	c.x = a.x + b.x;
@@ -213,7 +213,7 @@ inline DgVec3 DgVec3Add(DgVec3 a, DgVec3 b) {
 	return c;
 }
 
-inline DgVec3 DgVec3Subtract(DgVec3 a, DgVec3 b) {
+DgVec3 DgVec3Subtract(DgVec3 a, DgVec3 b) {
 	DgVec3 c;
 	
 	c.x = a.x - b.x;
@@ -223,7 +223,7 @@ inline DgVec3 DgVec3Subtract(DgVec3 a, DgVec3 b) {
 	return c;
 }
 
-inline DgVec3 DgVec3Multiply(DgVec3 a, DgVec3 b) {
+DgVec3 DgVec3Multiply(DgVec3 a, DgVec3 b) {
 	DgVec3 c;
 	
 	c.x = a.x * b.x;
@@ -233,7 +233,7 @@ inline DgVec3 DgVec3Multiply(DgVec3 a, DgVec3 b) {
 	return c;
 }
 
-inline DgVec3 DgVec3Scale(float a, DgVec3 b) {
+DgVec3 DgVec3Scale(float a, DgVec3 b) {
 	DgVec3 c;
 	
 	c.x = b.x * a;
@@ -243,7 +243,7 @@ inline DgVec3 DgVec3Scale(float a, DgVec3 b) {
 	return c;
 }
 
-inline float DgVec3Magnitude(DgVec3 a) {
+float DgVec3Magnitude(DgVec3 a) {
 	if (a.x == 0.0f && a.y == 0.0f && a.z == 0.0f) {
 		return 0.0f;
 	}
@@ -251,11 +251,11 @@ inline float DgVec3Magnitude(DgVec3 a) {
 	return (float) sqrt((a.x * a.x) + (a.y * a.y) + (a.z * a.z));
 }
 
-inline float DgVec3Dot(DgVec3 a, DgVec3 b) {
+float DgVec3Dot(DgVec3 a, DgVec3 b) {
 	return (a.x * b.x) + (a.y * b.y) + (a.z * b.z);
 }
 
-inline DgVec3 DgVec3Cross(DgVec3 a, DgVec3 b) {
+DgVec3 DgVec3Cross(DgVec3 a, DgVec3 b) {
 	DgVec3 c;
 	
 	c.x = (a.y * b.z) + (a.z * b.y);
@@ -265,7 +265,7 @@ inline DgVec3 DgVec3Cross(DgVec3 a, DgVec3 b) {
 	return c;
 }
 
-inline DgVec3 DgVec3Normalise(DgVec3 a) {
+DgVec3 DgVec3Normalise(DgVec3 a) {
 	DgVec3 c;
 	
 	float m = DgVec3Magnitude(a);
@@ -281,7 +281,7 @@ inline DgVec3 DgVec3Normalise(DgVec3 a) {
 	return c;
 }
 
-inline DgVec3 DgVec3Negate(DgVec3 a) {
+DgVec3 DgVec3Negate(DgVec3 a) {
 	DgVec3 c;
 	
 	c.x = -a.x;
@@ -291,7 +291,7 @@ inline DgVec3 DgVec3Negate(DgVec3 a) {
 	return c;
 }
 
-inline DgVec3 DgVec3FromString(const char * const s) {
+DgVec3 DgVec3FromString(const char * const s) {
 	DgVec3 c = (DgVec3) {0.0f, 0.0f, 0.0f};
 	
 	// Return zero vector on null string
@@ -312,7 +312,7 @@ inline DgVec3 DgVec3FromString(const char * const s) {
 	return c;
 }
 
-inline DgVec3 DgVec3Rotate(DgVec3 base, DgVec3 rot) {
+DgVec3 DgVec3Rotate(DgVec3 base, DgVec3 rot) {
 	/**
 	 * Rotate the base vector by the given rotation vector.
 	 * 
@@ -339,7 +339,7 @@ inline DgVec3 DgVec3Rotate(DgVec3 base, DgVec3 rot) {
 	return base;
 }
 
-inline DgVec3 DgVec3Lerp(float t, DgVec3 a, DgVec3 b) {
+DgVec3 DgVec3Lerp(float t, DgVec3 a, DgVec3 b) {
 	/**
 	 * Linearly interpolate two 3D vectors.
 	 */
@@ -351,7 +351,7 @@ inline DgVec3 DgVec3Lerp(float t, DgVec3 a, DgVec3 b) {
  * DgVec4
  */
 
-inline DgVec4 DgVec4Add(DgVec4 a, DgVec4 b) {
+DgVec4 DgVec4Add(DgVec4 a, DgVec4 b) {
 	DgVec4 c;
 	
 	c.x = a.x + b.x;
@@ -362,7 +362,7 @@ inline DgVec4 DgVec4Add(DgVec4 a, DgVec4 b) {
 	return c;
 }
 
-inline DgVec4 DgVec4Subtract(DgVec4 a, DgVec4 b) {
+DgVec4 DgVec4Subtract(DgVec4 a, DgVec4 b) {
 	DgVec4 c;
 	
 	c.x = a.x - b.x;
@@ -373,7 +373,7 @@ inline DgVec4 DgVec4Subtract(DgVec4 a, DgVec4 b) {
 	return c;
 }
 
-inline DgVec4 DgVec4Multiply(DgVec4 a, DgVec4 b) {
+DgVec4 DgVec4Multiply(DgVec4 a, DgVec4 b) {
 	DgVec4 c;
 	
 	c.x = a.x * b.x;
@@ -384,7 +384,7 @@ inline DgVec4 DgVec4Multiply(DgVec4 a, DgVec4 b) {
 	return c;
 }
 
-inline DgVec4 DgVec4Scale(float a, DgVec4 b) {
+DgVec4 DgVec4Scale(float a, DgVec4 b) {
 	DgVec4 c;
 	
 	c.x = a * b.x;
@@ -395,15 +395,15 @@ inline DgVec4 DgVec4Scale(float a, DgVec4 b) {
 	return c;
 }
 
-inline float DgVec4Magnitude(DgVec4 a) {
+float DgVec4Magnitude(DgVec4 a) {
 	return sqrt((a.x * a.x) + (a.y * a.y) + (a.z * a.z) + (a.w * a.w));
 }
 
-inline float DgVec4Dot(DgVec4 a, DgVec4 b) {
+float DgVec4Dot(DgVec4 a, DgVec4 b) {
 	return (a.x * b.x) + (a.y + b.y) + (a.z * b.z) + (a.w * b.w);
 }
 
-inline DgVec4 DgVec4Normalise(DgVec4 a) {
+DgVec4 DgVec4Normalise(DgVec4 a) {
 	DgVec4 c;
 	
 	float m = 1 / DgVec4Magnitude(a);
@@ -416,7 +416,7 @@ inline DgVec4 DgVec4Normalise(DgVec4 a) {
 	return c;
 }
 
-inline DgVec4 DgVec4Bary3Evaluate(float u, DgVec4 *a, float v, DgVec4 *b, float w, DgVec4 *c) {
+DgVec4 DgVec4Bary3Evaluate(float u, DgVec4 *a, float v, DgVec4 *b, float w, DgVec4 *c) {
 	/**
 	 * Evaluate the point given the barycentric coordinates.
 	 * 
@@ -444,7 +444,7 @@ inline DgVec4 DgVec4Bary3Evaluate(float u, DgVec4 *a, float v, DgVec4 *b, float 
  * DgMat4
  */
 
-inline DgVec4 DgMat4ByVec4Multiply(DgMat4 a, DgVec4 b) {
+DgVec4 DgMat4ByVec4Multiply(DgMat4 a, DgVec4 b) {
 	DgVec4 c;
 	
 	c.x = (b.x * a.ax) + (b.x * a.ay) + (b.x * a.az) + (b.x * a.aw);
@@ -455,7 +455,7 @@ inline DgVec4 DgMat4ByVec4Multiply(DgMat4 a, DgVec4 b) {
 	return c;
 }
 
-inline DgMat4 DgMat4ByMat4Multiply(DgMat4 a, DgMat4 b) {
+DgMat4 DgMat4ByMat4Multiply(DgMat4 a, DgMat4 b) {
 	DgMat4 c;
 	
 	c.ax = (a.ax * b.ax) + (a.ay * b.bx) + (a.az * b.cx) + (a.aw * b.dx);
@@ -481,7 +481,7 @@ inline DgMat4 DgMat4ByMat4Multiply(DgMat4 a, DgMat4 b) {
 	return c;
 }
 
-inline DgMat4 DgMat4Translate(DgMat4 a, DgVec3 b) {
+DgMat4 DgMat4Translate(DgMat4 a, DgVec3 b) {
 	DgMat4 c = DgMat4New(1.0f);
 	
 	c.aw = b.x;
@@ -493,7 +493,7 @@ inline DgMat4 DgMat4Translate(DgMat4 a, DgVec3 b) {
 	return a;
 }
 
-inline DgMat4 DgMat4Scale(DgMat4 a, DgVec3 b) {
+DgMat4 DgMat4Scale(DgMat4 a, DgVec3 b) {
 	DgMat4 c = DgMat4New(1.0f);
 	
 	c.ax = b.x;
@@ -505,7 +505,7 @@ inline DgMat4 DgMat4Scale(DgMat4 a, DgVec3 b) {
 	return a;
 }
 
-inline DgMat4 DgMat4Rotate(DgMat4 a, DgVec3 b, float angle) {
+DgMat4 DgMat4Rotate(DgMat4 a, DgVec3 b, float angle) {
 	/**
 	 * a = (the matrix that rotation will be applied to)
 	 * b = (the axis that will be rotated upon)
@@ -530,7 +530,7 @@ inline DgMat4 DgMat4Rotate(DgMat4 a, DgVec3 b, float angle) {
 	return a;
 }
 
-inline DgMat4 DgMat4New(float a) {
+DgMat4 DgMat4New(float a) {
 	DgMat4 c;
 	
 	c.ax = a; c.ay = 0.0f; c.az = 0.0f; c.aw = 0.0f;
@@ -570,7 +570,7 @@ DgMat4 DgTransfromBasicCamera(DgVec3 trans, DgVec3 rot) {
 	return DgMat4ByMat4Multiply(DgMat4ByMat4Multiply(rot_x, DgMat4ByMat4Multiply(rot_y, rot_z)), pos);
 }
 
-inline float DgFloatMin3(float a, float b, float c) {
+float DgFloatMin3(float a, float b, float c) {
 	/**
 	 * Get the minium value from three values.
 	 */
@@ -583,7 +583,7 @@ inline float DgFloatMin3(float a, float b, float c) {
 	return m;
 }
 
-inline float DgFloatMax3(float a, float b, float c) {
+float DgFloatMax3(float a, float b, float c) {
 	/**
 	 * Get the maximum value from three values.
 	 */

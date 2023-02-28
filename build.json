@@ -1,5 +1,6 @@
 {
 	"linux": {
+		"title": "Linux (clang, native)",
 		"prebuild": [
 			"rm -r ./test/util",
 			"cp -r ./src ./test/util"
@@ -11,7 +12,21 @@
 		"defines": ["DG_NO_LUA"],
 		"output": "temp/melon-test-linux-native.elf"
 	},
+	"windows-clang": {
+		"title": "Windows (clang, native bare)",
+		"prebuild": [
+			"rd test\\util /s /q",
+			"xcopy .\\src test\\util /e /i"
+		],
+		"compiler": "clang",
+		"folders": ["test"],
+		"includes": ["test"],
+		"links": ["user32", "gdi32", "Ws2_32"],
+		"defines": ["DG_NO_LUA", "DG_NO_SDL", "DG_USE_WINDOWS_API", "MELON_NO_POSIX"],
+		"output": "temp/melon-test-windows-x86-64.exe"
+	},
 	"windows-arm64": {
+		"title": "Windows (clang, arm64-only native posix)",
 		"prebuild": [
 			"rd test\\util /s /q",
 			"xcopy .\\src test\\util /e /i"

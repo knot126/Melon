@@ -12,7 +12,9 @@
  * Thread abstraction
  */
 
-#include <pthread.h>
+#ifndef _WIN32
+	#include <pthread.h>
+#endif
 
 #include "thread.h"
 

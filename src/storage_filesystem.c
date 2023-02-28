@@ -13,8 +13,13 @@
  */
 
 #include <stdio.h>
-#include <dirent.h>
-#include <sys/stat.h>
+#ifndef MELON_NO_POSIX
+	#include <dirent.h>
+	#include <sys/stat.h>
+#elif DG_USE_WINDOWS_API
+	#include <direct.h>
+	#define mkdir(path) _mkdir(path)
+#endif
 
 #include "alloc.h"
 #include "string.h"
