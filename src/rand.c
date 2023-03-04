@@ -20,16 +20,28 @@
 
 #include "rand.h"
 
-#if 1
-	#define extra
-#else
-	#define extra static
-#endif
+uint32_t DgRand_LCG_UInt32(uint32_t a, uint32_t s, uint32_t b, uint32_t m) {
+	/**
+	 * Get the next number in the "random" seqence for an LCG random number
+	 * generator.
+	 * 
+	 * @param a Linear part
+	 * @param s Current number in seqence
+	 * @param b Constant part
+	 * @param m Modular part
+	 * @return Next number in seqence
+	 */
+	
+	return ((a * s) + b) % m;
+}
 
-extra uint32_t DgRandXORShiftU32(uint32_t n) {
+uint32_t DgRand_XORShift_UInt32(uint32_t n) {
 	/**
 	 * Generate a random number based on a given seed using the XOR-Shift 
 	 * method of generating a random number.
+	 * 
+	 * @param n Previous number in seqence (seed/current state)
+	 * @return Next number in seqence (next seed/state)
 	 */
 	
 	n ^= n << 13;
@@ -37,6 +49,10 @@ extra uint32_t DgRandXORShiftU32(uint32_t n) {
 	n ^= n << 5;
 	
 	return n;
+}
+
+uint32_t DgRandXORShiftU32(uint32_t n) {
+	return DgRand_XORShift_UInt32(n);
 }
 
 static uint32_t DgRandXORShiftSU32(void) {
@@ -53,7 +69,7 @@ static uint32_t DgRandXORShiftSU32(void) {
 	return last;
 }
 
-extra float DgRandXORShiftF32(void) {
+float DgRandXORShiftF32(void) {
 	return ((float) DgRandXORShiftSU32()) / 4294967295.0f;
 }
 
