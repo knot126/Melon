@@ -251,18 +251,36 @@ int32_t DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
 	// Invalidate the rectange so we can draw to it.
 	InvalidateRect(this->window_handle, NULL, FALSE);
 	
+	// Find the correct bitmap
+	bitmap = bitmap ? bitmap : this->bitmap;
+	
+	// If there is no bitmap, be an asre about it
+	if (!bitmap) {
+		DgLog(DG_LOG_FATAL, "No bitmap for DgWindowUpdate!!");
+		return 1;
+	}
+	
 	while (PeekMessage(&message, this->window_handle, 0, 0, PM_NOREMOVE) == 1) {
 		// Any extra handles for the message
 		if (message.message == WM_PAINT) {
-			PAINTSTRUCT painter;
+			PAINTSTRUCT ps;
+			HDC hdc = BeginPaint(this->window_handle, &ps);
 			
-			HDC device_context = BeginPaint(this->window_handle, &painter);
-			HDC bitmap_context = CreateCompatibleDC(bitmap_context);
+			int width = bitmap->width;
+			int height = bitmap->height;
 			
+			BITMAPINFOHEADER psHeaderGlobal = {0};
+			psHeaderGlobal.biSize = sizeof(BITMAPINFOHEADER);
+			psHeaderGlobal.biWidth = width;
+			psHeaderGlobal.biHeight = height;
+			psHeaderGlobal.biPlanes = 1;
+			psHeaderGlobal.biBitCount = 24;
 			
+			BITMAPINFOHEADER* psHeader = &psHeaderGlobal;
 			
-			// DeleteDC(context);
-			EndPaint(this->window_handle, &painter);
+			SetDIBitsToDevice(hdc, 0, 0, width, height, 0, 0, 0, height, (void *) bitmap->src, (BITMAPINFO *) psHeader, DIB_RGB_COLORS);
+			
+			EndPaint(this->window_handle, &ps);
 			break;
 		}
 		

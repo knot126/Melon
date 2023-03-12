@@ -112,7 +112,7 @@ DgError DgSalsa20BlockHash(const DgSalsa20Block *in, DgSalsa20Block *out) {
 	
 	// Add in to out
 	for (size_t i = 0; i < 16; i++) {
-		out->asU32[i] += in[i];
+		out->asU32[i] += in->asU32[i];
 	}
 	
 	return DG_ERROR_SUCCESSFUL;
@@ -121,15 +121,15 @@ DgError DgSalsa20BlockHash(const DgSalsa20Block *in, DgSalsa20Block *out) {
 #undef S20_QUARTER_ROUND
 #undef S20_GRID
 
-DgError DgSalsa20BlockEncrypt(size_t key_length, const uint8_t *key, size_t data_length, uint8_t *data) {
-	/**
-	 * Encrypt data using Salsa20
-	 */
-	
-	DgSalsa20BlockHash a, b;
-	
-	DgSalsa20BlockEncryptInit(&a, key);
-}
+// DgError DgSalsa20BlockEncrypt(size_t key_length, const uint8_t *key, size_t data_length, uint8_t *data) {
+// 	/**
+// 	 * Encrypt data using Salsa20
+// 	 */
+// 	
+// 	DgSalsa20BlockHash a, b;
+// 	
+// 	DgSalsa20BlockEncryptInit(&a, key);
+// }
 
 #undef ROTL
 #undef ROTR
