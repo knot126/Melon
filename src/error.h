@@ -48,3 +48,4 @@ typedef struct DgErrorCallback {
 } DgErrorCallback;
 
 bool DgErrorFatal(DgError error);
+const char *DgErrorString(const DgError error);

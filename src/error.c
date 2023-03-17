@@ -23,3 +23,28 @@ bool DgErrorFatal(DgError error) {
 	
 	return (error != DG_ERROR_SUCCESSFUL);
 }
+
+const char *DgErrorString(const DgError error) {
+	const char *s;
+	
+	switch (error) {
+		case DG_ERROR_SUCCESSFUL       : s = "Success"; break;
+		case DG_ERROR_OUT_OF_MEMORY    : s = "Out of memory"; break;
+		case DG_ERROR_ALLOCATION_FAILED: s = "Allocation failed"; break;
+		case DG_ERROR_FILE_NOT_FOUND   : s = "File not found"; break;
+		case DG_ERROR_NOT_FOUND        : s = "Not found"; break;
+		case DG_ERROR_NOT_INITIALISED  : s = "Not initialised"; break;
+		case DG_ERROR_ALREADY_EXISTS   : s = "Already exists"; break;
+		case DG_ERROR_READ_ONLY        : s = "Read only"; break;
+		case DG_ERROR_NOT_SAFE         : s = "Not safe"; break;
+		case DG_ERROR_NO_CLIENT        : s = "No client"; break;
+		case DG_ERROR_REJECTED         : s = "Rejected"; break;
+		case DG_ERROR_FORBIDDEN        : s = "Forbidden"; break;
+		case DG_ERROR_NOT_IMPLEMENTED  : s = "Not implemented"; break;
+		case DG_ERROR_NOT_SUPPORTED    : s = "Not supported"; break;
+		case DG_ERROR_FAILED           : s = "Failed"; break;
+		default: s = "Unknown type of error"; break;
+	}
+	
+	return s;
+}

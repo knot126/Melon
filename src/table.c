@@ -199,6 +199,31 @@ DgError DgTableRemove(DgTable * restrict this, DgValue * const restrict key) {
 	return DG_ERROR_NOT_IMPLEMENTED;
 }
 
+DgError DgTableAt(DgTable * restrict this, size_t index, DgValue * const restrict key, DgValue * const restrict value) {
+	/**
+	 * Get the value at the given index.
+	 * 
+	 * @param this Table object
+	 * @param index The index to get
+	 * @param key The key for the index (or NULL to ignore)
+	 * @param value The value for the index (or NULL to ignore)
+	 */
+	
+	if (index >= this->length) {
+		return DG_ERROR_NOT_FOUND;
+	}
+	
+	if (key) {
+		key[0] = this->key[index];
+	}
+	
+	if (value) {
+		value[0] = this->value[index];
+	}
+	
+	return DG_ERROR_SUCCESSFUL;
+}
+
 /**
  * VALUES
  */
@@ -382,7 +407,7 @@ DgError DgValueFloat64(DgValue * restrict value, double data) {
 	return DG_ERROR_SUCCESSFUL;
 }
 
-DgError DgValueString(DgValue * restrict value, char * restrict data) {
+DgError DgValueString(DgValue * restrict value, const char * restrict data) {
 	/**
 	 * Create a regular string value.
 	 * 
@@ -435,6 +460,21 @@ DgError DgValuePointer(DgValue * restrict value, void *data) {
 	
 	value->data.asPointer = data;
 	value->type = DG_TABLE_TYPE_POINTER;
+	
+	return DG_ERROR_SUCCESSFUL;
+}
+
+DgError DgValueTable(DgValue * restrict value, DgTable *data) {
+	/**
+	 * Create a pointer value.
+	 * 
+	 * @param value Value object
+	 * @param data Data value to set to
+	 * @return Error code
+	 */
+	
+	value->data.asTable = data;
+	value->type = DG_TABLE_TYPE_TABLE;
 	
 	return DG_ERROR_SUCCESSFUL;
 }

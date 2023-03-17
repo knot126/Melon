@@ -40,7 +40,7 @@ enum {
 	DG_TABLE_TYPE_TABLE = 11,
 	DG_TABLE_TYPE_STRING = 12,
 	DG_TABLE_TYPE_STATIC_STRING = 13,
-	//DG_TABLE_TYPE_BYTES = 14,
+	DG_TABLE_TYPE_DATA = 14,
 	DG_TABLE_TYPE_FLOAT32 = 15,
 	DG_TABLE_TYPE_FLOAT64 = 16,
 	DG_TABLE_TYPE_BOOL = 17,
@@ -107,6 +107,7 @@ DgError DgTableFree(DgTable *this);
 DgError DgTableSet(DgTable * restrict this, DgValue * restrict key, DgValue * restrict value);
 DgError DgTableGet(DgTable * restrict this, DgValue * restrict key, DgValue * restrict value);
 DgError DgTableRemove(DgTable * restrict this, DgValue * const restrict key);
+DgError DgTableAt(DgTable * restrict this, size_t index, DgValue * const restrict key, DgValue * const restrict value);
 
 // Array functions
 // ...
@@ -124,9 +125,10 @@ DgError DgValueInt64(DgValue * restrict value, int64_t data);
 DgError DgValueUInt64(DgValue * restrict value, uint64_t data);
 DgError DgValueFloat32(DgValue * restrict value, float data);
 DgError DgValueFloat64(DgValue * restrict value, double data);
-DgError DgValueString(DgValue * restrict value, char * restrict data);
+DgError DgValueString(DgValue * restrict value, const char * restrict data);
 DgError DgValueStaticString(DgValue * restrict value, const char * restrict data);
 DgError DgValuePointer(DgValue * restrict value, void *data);
+DgError DgValueTable(DgValue * restrict value, DgTable *data);
 DgError DgValueFree(DgValue * restrict this);
 
 bool DgValueEqual(const DgValue * const restrict value1, const DgValue * const restrict value2);
