@@ -535,6 +535,7 @@ char *DgStringEncodeBase64(size_t length, uint8_t *input) {
 		output[j + 0] = gBase64EncodeTable[a];
 		output[j + 1] = gBase64EncodeTable[b];
 		
+		// Per the RFC, we don't include any chars we don't need
 		if (leftover >= 1) {
 			output[j + 2] = gBase64EncodeTable[c];
 			
