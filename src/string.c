@@ -479,7 +479,7 @@ const char gBase64EncodeTable[] = {
 	'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '_',
 };
 
-char *DgStringEncodeBase64(size_t length, uint8_t *input) {
+char *DgStringEncodeBase64(size_t length, const uint8_t *input) {
 	/**
 	 * Encode a piece of data to base64.
 	 * 
@@ -499,6 +499,10 @@ char *DgStringEncodeBase64(size_t length, uint8_t *input) {
 	size_t output_length = ((length / 3) * 4) + ((leftover == 1) ? 3 : 0) + ((leftover == 2) ? 5 : 0) + 1;
 	
 	char *output = DgMemoryAllocate(output_length);
+	
+	if (!output) {
+		return NULL;
+	}
 	
 	// The main loop, as suggested by RFC 4648
 	size_t i = 0, j = 0;
@@ -553,6 +557,48 @@ char *DgStringEncodeBase64(size_t length, uint8_t *input) {
 		}
 	}
 	
+	output[output_length - 1] = '\0';
+	
+	return output;
+}
+
+const char gStringEncodeBase16Table[] = {
+	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f',
+};
+
+char *DgStringEncodeBase16(size_t length, const uint8_t *input) {
+	/**
+	 * Encode the given data to a hex string.
+	 * 
+	 * @note Base64 is more efficent, so unless you need some human readability,
+	 * please consider using that instead.
+	 * 
+	 * @param length Length of the data to convert to hex
+	 * @param input Input data pointer
+	 * @return Base16 string
+	 */
+	
+	// Thankfully this is a lot simpler than base64, becuase 4-bits fit evenly
+	// into 8-bits.
+	size_t output_length = 2 * length + 1;
+	
+	// Try to allocate the memory
+	char *output = DgMemoryAllocate(output_length);
+	
+	if (!output) {
+		return NULL;
+	}
+	
+	// Encode it!
+	for (size_t i = 0; i < length; i++) {
+		// Higher four bits
+		output[(2 * i) + 0] = gStringEncodeBase16Table[input[i] >> 4];
+		
+		// Lower four bits
+		output[(2 * i) + 1] = gStringEncodeBase16Table[input[i] & 0b1111];
+	}
+	
+	// Place the NUL byte
 	output[output_length - 1] = '\0';
 	
 	return output;

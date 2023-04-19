@@ -20,13 +20,23 @@ void TestString(void) {
 	DgLog(DG_LOG_INFO, "Up to 13 chars: %s", DgStringDuplicateUntil("Test string that is very long string!", 13));
 	DgLog(DG_LOG_INFO, "Up to 13 chars: %s", DgStringDuplicateUntil("Hewwo! :3", 13));
 	
-	// TEST 4
-	char *a = DgStringEncodeBase64(13, "Hello, world!");
+	// Encoding functions
+	char *a;
+	
+	a = DgStringEncodeBase64(13, "Hello, world!");
 	DgLog(DG_LOG_INFO, "Base64 test 1: %s", a);
 	DgFree(a);
 	
 	a = DgStringEncodeBase64(14, "Hello, world!!");
 	DgLog(DG_LOG_INFO, "Base64 test 2: %s", a);
+	DgFree(a);
+	
+	a = DgStringEncodeBase16(13, "Hello, world!");
+	DgLog(DG_LOG_INFO, "Base16 test 1: %s", a);
+	DgFree(a);
+	
+	a = DgStringEncodeBase16(14, "Hello, world!!");
+	DgLog(DG_LOG_INFO, "Base16 test 2: %s", a);
 	DgFree(a);
 	
 	DgLog(DG_LOG_SUCCESS, "TestString()");

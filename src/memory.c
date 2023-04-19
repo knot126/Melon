@@ -36,9 +36,18 @@ uint64_t DgBitsRead(void *base, size_t bits, size_t count) {
 	/**
 	 * Read up to 64 bits.
 	 * 
+	 * @note The bits will be read in the order:
+	 * 
+	 * ```
+	 * 01234567 01234567 01234567 01234567
+	 *    ^^^^^ ^^^^^^^^ ^^^^               is read into the int as:
+	 * xxxxxxxx xxxxxxx3 45670123 45670123
+	 * ```
+	 * 
 	 * @param base Base byte where the bits start
 	 * @param bits Bit-level offset to start at
-	 * @param 
+	 * @param count Number of bits to read, up to 64
+	 * @return The read bits, as if it were a `count`-bit integer cast to a u64
 	 */
 	
 	uint64_t result = 0;
