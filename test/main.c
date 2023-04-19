@@ -20,6 +20,15 @@ void TestString(void) {
 	DgLog(DG_LOG_INFO, "Up to 13 chars: %s", DgStringDuplicateUntil("Test string that is very long string!", 13));
 	DgLog(DG_LOG_INFO, "Up to 13 chars: %s", DgStringDuplicateUntil("Hewwo! :3", 13));
 	
+	// TEST 4
+	char *a = DgStringEncodeBase64(13, "Hello, world!");
+	DgLog(DG_LOG_INFO, "Base64 test 1: %s", a);
+	DgFree(a);
+	
+	a = DgStringEncodeBase64(14, "Hello, world!!");
+	DgLog(DG_LOG_INFO, "Base64 test 2: %s", a);
+	DgFree(a);
+	
 	DgLog(DG_LOG_SUCCESS, "TestString()");
 }
 
@@ -77,11 +86,6 @@ void TestStorage(void) {
 	DgFileAppend(NULL, "fs://hello.txt", sizeof(sample) - 1, sample);
 	
 	DgLog(DG_LOG_SUCCESS, "TestStorage() - 3");
-	
-	// TEST 4
-	char *a = DgStringEncodeBase64(13, "Hello, world!");
-	
-	DgLog(DG_LOG_INFO, "Base64 test: %s", a);
 }
 
 int main(const int argc, const char *argv[]) {
