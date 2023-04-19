@@ -491,7 +491,12 @@ char *DgStringEncodeBase64(size_t length, uint8_t *input) {
 	 */
 	
 	size_t leftover = length % 3;
-	size_t output_length = ((length / 3) * 4) + (leftover ? (4 + leftover) : 0) + 1;
+	
+	// Per the RFC, we need to account for the following:
+	// leftover == 0  ->  +0 (no ='s)
+	// leftover == 1  ->  +2 + leftover (for ='s, leftover = 1)
+	// leftover == 2  ->  +3 + leftover (for ='s, leftover = 2)
+	size_t output_length = ((length / 3) * 4) + ((leftover == 1) ? 3 : 0) + ((leftover == 2) ? 5 : 0) + 1;
 	
 	char *output = DgMemoryAllocate(output_length);
 	
@@ -529,8 +534,14 @@ char *DgStringEncodeBase64(size_t length, uint8_t *input) {
 		
 		output[j + 0] = gBase64EncodeTable[a];
 		output[j + 1] = gBase64EncodeTable[b];
-		output[j + 2] = gBase64EncodeTable[c];
-		output[j + 3] = gBase64EncodeTable[d];
+		
+		if (leftover >= 1) {
+			output[j + 2] = gBase64EncodeTable[c];
+			
+			if (leftover >= 2) {
+				output[j + 3] = gBase64EncodeTable[d];
+			}
+		}
 		
 		// We will always have to write this equal
 		output[output_length - 2] = '=';
