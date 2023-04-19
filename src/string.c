@@ -471,3 +471,45 @@ int64_t DgStringFindFirst(const char * const string, const char * const what) {
 	
 	return DgStringFind(string, what, 0);
 }
+
+const char gBase64EncodeTable[] = {
+	'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q',
+	'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
+	'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y',
+	'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '_',
+};
+
+char *DgStringEncodeBase64(size_t length, uint8_t *input) {
+	/**
+	 * Encode a piece of data to base64.
+	 * 
+	 * @note The output will be dynamically allocated and must be freed.
+	 * 
+	 * @param length The length of the data to encode
+	 * @param input The input data
+	 * @return Output string
+	 */
+	
+	size_t leftover = length % 3;
+	size_t output_length = ((length / 3) * 4) + 1;
+	
+	char *output = DgMemoryAllocate(output_length);
+	
+	for (size_t i = 0, j = 0; i < length; i += 3, j += 4) {
+		uint32_t inter = (input[i] << 16) | (input[i + 1] << 8) | (input[i + 2]);
+		
+		uint8_t a = (inter >> 18) & 0b111111;
+		uint8_t b = (inter >> 12) & 0b111111;
+		uint8_t c = (inter >> 6 ) & 0b111111;
+		uint8_t d = (inter >> 0 ) & 0b111111;
+		
+		output[j + 0] = gBase64EncodeTable[a];
+		output[j + 1] = gBase64EncodeTable[b];
+		output[j + 2] = gBase64EncodeTable[c];
+		output[j + 3] = gBase64EncodeTable[d];
+	}
+	
+	output[output_length - 1] = '\0';
+	
+	return output;
+}

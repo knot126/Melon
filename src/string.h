@@ -29,6 +29,7 @@ bool DgStringStartsWith(const char * restrict base, const char * restrict what);
 size_t DgStringLength(const char * const string);
 char *DgStringSlice(const char *base, size_t start, size_t end);
 int64_t DgStringFind(const char * const string, const char * const what, const size_t which);
+char *DgStringEncodeBase64(size_t length, uint8_t *input);
 
 #if defined(DG_MELON_OLD_STRING_FUNCTIONS)
 	char *DgStrcad(const char * const src1, const char * const src2);

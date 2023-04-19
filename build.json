@@ -31,7 +31,7 @@
 			"rd test\\util /s /q",
 			"xcopy .\\src test\\util /e /i"
 		],
-		"compiler": "C:/Users/User/bin/llvm-mingw-20220323-ucrt-aarch64/llvm-mingw-20220323-ucrt-aarch64/bin/clang.exe",
+		"compiler": "..\\llvm-mingw-20230320-ucrt-aarch64\\bin\\aarch64-w64-mingw32-clang.exe",
 		"folders": ["test"],
 		"includes": ["test"],
 		"links": ["gdi32", "Ws2_32"],
