@@ -491,13 +491,37 @@ char *DgStringEncodeBase64(size_t length, uint8_t *input) {
 	 */
 	
 	size_t leftover = length % 3;
-	size_t output_length = ((length / 3) * 4) + 1;
+	size_t output_length = ((length / 3) * 4) + (leftover ? (4 + leftover) : 0) + 1;
 	
 	char *output = DgMemoryAllocate(output_length);
 	
-	for (size_t i = 0, j = 0; i < length; i += 3, j += 4) {
+	// The main loop, as suggested by RFC 4648
+	size_t i = 0, j = 0;
+	
+	for (; i < length; i += 3, j += 4) {
+		// Convert to a 24-bit integer, concat the bytes in big endian
 		uint32_t inter = (input[i] << 16) | (input[i + 1] << 8) | (input[i + 2]);
 		
+		// Split them into 6-bit integers
+		uint8_t a = (inter >> 18) & 0b111111;
+		uint8_t b = (inter >> 12) & 0b111111;
+		uint8_t c = (inter >> 6 ) & 0b111111;
+		uint8_t d = (inter >> 0 ) & 0b111111;
+		
+		// Index the base64 alphabet
+		output[j + 0] = gBase64EncodeTable[a];
+		output[j + 1] = gBase64EncodeTable[b];
+		output[j + 2] = gBase64EncodeTable[c];
+		output[j + 3] = gBase64EncodeTable[d];
+	}
+	
+	// If we have leftover items, we need to take care of them...
+	if (leftover) {
+		// There will ALWAYS be a first item if we are here, and maybe a second
+		// but this only handles two special cases.
+		uint32_t inter = (input[i] << 16) | (((leftover == 2) ? input[i + 1] : 0) << 8);
+		
+		// This part is normal
 		uint8_t a = (inter >> 18) & 0b111111;
 		uint8_t b = (inter >> 12) & 0b111111;
 		uint8_t c = (inter >> 6 ) & 0b111111;
@@ -507,6 +531,14 @@ char *DgStringEncodeBase64(size_t length, uint8_t *input) {
 		output[j + 1] = gBase64EncodeTable[b];
 		output[j + 2] = gBase64EncodeTable[c];
 		output[j + 3] = gBase64EncodeTable[d];
+		
+		// We will always have to write this equal
+		output[output_length - 2] = '=';
+		
+		// If we have two leftover bytes, then we write a second equals
+		if (leftover == 2) {
+			output[output_length - 3] = '=';
+		}
 	}
 	
 	output[output_length - 1] = '\0';
