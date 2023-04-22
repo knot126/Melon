@@ -18,6 +18,11 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
+typedef enum DgBase32Type {
+	DG_BASE32_TYPE_RFC = 0,
+	DG_BASE32_TYPE_HEX = 1,
+} DgBase32Type;
+
 char *DgStringConcatinate(const char * const string1, const char * const string2);
 char *DgStringConcatinateL(const char * const string1, const char * const string2);
 char *DgStringConcatinateR(const char * const string1, const char * const string2);

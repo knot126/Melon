@@ -98,11 +98,16 @@ void TestStorage(void) {
 	DgLog(DG_LOG_SUCCESS, "TestStorage() - 3");
 }
 
+void TestMemory(void) {
+	DgLog(DG_LOG_VERBOSE, "Allocated 0x%x bytes of memory over lifetime", DgMemoryAllocatedCount());
+}
+
 int main(const int argc, const char *argv[]) {
 	DgLog(DG_LOG_INFO, "Hello, world!");
 	
 	TestString();
 	TestStorage();
+	TestMemory();
 	
 	return 0;
 }

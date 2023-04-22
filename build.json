@@ -35,7 +35,7 @@
 		"folders": ["test"],
 		"includes": ["test"],
 		"links": ["gdi32", "Ws2_32"],
-		"defines": ["DG_NO_LUA", "DG_NO_SDL", "DG_USE_WINDOWS_API"],
+		"defines": ["DG_NO_LUA", "DG_NO_SDL", "DG_USE_WINDOWS_API", "MELON_MEMORY_WATCH_FUNCTIONS"],
 		"output": "temp/melon-test-windows-arm64.exe"
 	}
 }

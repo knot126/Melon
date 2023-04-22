@@ -18,6 +18,7 @@
 #include <stdbool.h>
 
 #include "alloc.h"
+#include "memory.h"
 #include "log.h"
 
 #include "string.h"
@@ -488,6 +489,8 @@ char *DgStringEncodeBase64(size_t length, const uint8_t *input) {
 	 * @param length The length of the data to encode
 	 * @param input The input data
 	 * @return Output string
+	 * 
+	 * @see https://datatracker.ietf.org/doc/html/rfc4648.html
 	 */
 	
 	size_t leftover = length % 3;
@@ -560,6 +563,39 @@ char *DgStringEncodeBase64(size_t length, const uint8_t *input) {
 	output[output_length - 1] = '\0';
 	
 	return output;
+}
+
+const char gStringEncodeBase32TableRfc[] = {
+	'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q',
+	'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '2', '3', '4', '5', '6', '7',
+};
+
+const char gStringEncodeBase32TableHex[] = {
+	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
+};
+
+char *DgStringEncodeBase32(DgBase32Type type, size_t length, const uint8_t *input) {
+	/**
+	 * Encode bytes to base32 or base32hex
+	 * 
+	 * @note You should really use either Base64 for compactness or Base16 for
+	 * readability. This functions are only implemented for fun. :)
+	 * 
+	 * @param type The type of Base32 encoding (RFC 4648 or Hex)
+	 * @param length The length of the data to encode
+	 * @param input The data to encode
+	 * @return Base32 encoded string
+	 */
+	
+	char *alphabet = (type == DG_BASE32_TYPE_RFC) ? gStringEncodeBase32TableRfc : gStringEncodeBase32TableHex;
+	
+	size_t leftover = length % 5;
+	
+	for (size_t i = 0; i < length; i++) {
+		// unfinsihed
+	}
+	
+	return NULL;
 }
 
 const char gStringEncodeBase16Table[] = {
