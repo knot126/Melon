@@ -587,13 +587,15 @@ char *DgStringEncodeBase32(DgBase32Type type, size_t length, const uint8_t *inpu
 	 * @return Base32 encoded string
 	 */
 	
-	char *alphabet = (type == DG_BASE32_TYPE_RFC) ? gStringEncodeBase32TableRfc : gStringEncodeBase32TableHex;
+#if 0
+	const char *alphabet = (type == DG_BASE32_TYPE_RFC) ? gStringEncodeBase32TableRfc : gStringEncodeBase32TableHex;
 	
 	size_t leftover = length % 5;
 	
 	for (size_t i = 0; i < length; i++) {
 		// unfinsihed
 	}
+#endif
 	
 	return NULL;
 }

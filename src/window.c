@@ -211,7 +211,7 @@ uint32_t DgWindowInit(DgWindow *this, const char *title, DgVec2I size) {
 		0,
 		DG_WINDOW_CLASS_NAME,
 		title,
-		WS_OVERLAPPEDWINDOW,
+		WS_POPUP, // HACK when using WS_OVERLAPPEDWINDOW windows needs extra size added to the window
 		CW_USEDEFAULT, CW_USEDEFAULT,
 		size.x, size.y,
 		NULL,
