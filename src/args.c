@@ -9,9 +9,7 @@
  * 
  * =============================================================================
  * 
- * Command-Line Argument Parsing
- * 
- * @todo Make it not global state because it has no reason to be this way.
+ * Command line argument parsing
  */ 
 
 #include <stdbool.h>

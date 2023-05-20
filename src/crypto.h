@@ -9,14 +9,9 @@
  * 
  * =============================================================================
  * 
- * Symmetric encryption ciphers
+ * Cryptography wrappers
  */
 
 #pragma once
 
-typedef struct DgSalsa20Block {
-	union {
-		uint32_t asU32[16];
-		uint8_t asU8[4 * 16];
-	};
-} DgSalsa20Block;
+#include "crypto_symmetric.h"
