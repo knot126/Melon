@@ -26,6 +26,7 @@ enum {
 	DG_BITMAP_DRAWING_PERSPECTIVE = (1 << 2),
 	DG_BITMAP_DRAWING_NEGATE_Z = (1 << 3),
 	DG_BITMAP_NO_CORRECT_COORDINATES = (1 << 4),
+	DG_BITMAP_UNFUCK_RGB = (1 << 5), /// @fucking-stupid
 	DG_BITMAP_EXTERNAL_SOURCE = (1 << 15),
 };
 
@@ -100,7 +101,8 @@ void DgBitmapDrawPixel(DgBitmap *this, uint16_t x, uint16_t y, DgColour colour);
 void DgBitmapGetPixel(DgBitmap * restrict this, uint16_t x, uint16_t y, DgColour * restrict colour);
 void DgBitmapDrawLine(DgBitmap * restrict this, DgVec2 pa, DgVec2 pb, DgColour * restrict colour);
 void DgBitmapDrawQuadraticBezier(DgBitmap * restrict this, DgVec2 p0, DgVec2 p1, DgVec2 p2, DgColour * restrict colour);
-void DgBitmapDrawPoint(DgBitmap *this, float x, float y, float r, DgColour colour);
+void DgBitmapDrawPoint(DgBitmap * restrict this, float x, float y, float r, DgColour colour);
+void DgBitmapDrawPoint2(DgBitmap * restrict this, DgVec2 pos, float r, DgColour *colour);
 void DgBitmapDrawConvexPolygon(DgBitmap * restrict this, size_t points_count, DgVec2 * restrict points, DgColour * restrict colour);
 void DgBitmapDrawTriangles(DgBitmap * restrict this, size_t count, DgBitmapTriangle * restrict triangles);
 void DgBitmapDrawTrianglesIndexed(DgBitmap * restrict this, size_t count, DgBitmapIndex * restrict indexes, DgBitmapVertex * restrict vertexes);

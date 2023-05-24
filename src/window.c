@@ -309,6 +309,8 @@ DgError DgWindowAssocaiteBitmap(DgWindow * restrict this, DgBitmap * restrict bi
 	
 	this->bitmap = bitmap;
 	
+	DgBitmapSetFlags(this->bitmap, DgBitmapGetFlags(this->bitmap) | DG_BITMAP_UNFUCK_RGB);
+	
 	return DG_ERROR_SUCCESSFUL;
 }
 

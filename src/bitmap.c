@@ -201,6 +201,14 @@ void DgBitmapDrawPixel(DgBitmap *this, uint16_t x, uint16_t y, DgColour colour) 
 		}
 	}
 	
+	// I don't know why I should have to implement this but of course windows
+	// does fucking BGR colour.
+	if (this->chan >= 3 && (this->flags & DG_BITMAP_UNFUCK_RGB)) {
+		uint8_t t = this->src[pixel_offset + 0];
+		this->src[pixel_offset + 0] = this->src[pixel_offset + 2];
+		this->src[pixel_offset + 2] = t;
+	}
+	
 	#undef DG_BITMAP_BLEND
 }
 
@@ -454,6 +462,10 @@ void DgBitmapDrawPoint(DgBitmap * restrict this, float x, float y, float r, DgCo
 			}
 		}
 	}
+}
+
+void DgBitmapDrawPoint2(DgBitmap * restrict this, DgVec2 pos, float r, DgColour *colour) {
+	DgBitmapDrawPoint(this, pos.x, pos.y, r, *colour);
 }
 
 static bool DgBitmapIsInLineSame(DgVec2 *a, DgVec2 *b, DgVec2 *c, DgVec2 *d) {
