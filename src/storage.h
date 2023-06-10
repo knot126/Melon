@@ -14,6 +14,8 @@
 
 #pragma once
 
+#include <inttypes.h>
+
 #include "error.h"
 
 // String type for the path
@@ -164,3 +166,6 @@ DgError DgStreamSeek(DgStream *context, DgStorageSeekBase base, int64_t offset);
 
 // Extra functions
 size_t DgStreamLength(DgStream *context);
+
+// Even more functions!
+#include "storage_generated.h"

@@ -21,21 +21,21 @@
 		"compiler": "clang",
 		"folders": ["test"],
 		"includes": ["test"],
-		"links": ["user32", "gdi32", "Ws2_32"],
-		"defines": ["DG_NO_LUA", "DG_NO_SDL", "DG_USE_WINDOWS_API", "MELON_NO_POSIX"],
-		"output": "temp/melon-test-windows-x86-64.exe"
+		"links": ["user32", "gdi32", "Ws2_32", "bcrypt"],
+		"defines": ["DG_NO_LUA", "DG_NO_SDL", "DG_USE_WINDOWS_API", "MELON_CRYPTOGRAPHY_RANDOM"],
+		"output": "temp/melon-test-windows.exe"
 	},
-	"windows-arm64": {
-		"title": "Windows (clang, arm64-only native posix)",
+	"windows-clang-noposix": {
+		"title": "Windows (clang, native bare)",
 		"prebuild": [
 			"rd test\\util /s /q",
 			"xcopy .\\src test\\util /e /i"
 		],
-		"compiler": "..\\llvm-mingw-20230320-ucrt-aarch64\\bin\\aarch64-w64-mingw32-clang.exe",
+		"compiler": "clang",
 		"folders": ["test"],
 		"includes": ["test"],
-		"links": ["gdi32", "Ws2_32"],
-		"defines": ["DG_NO_LUA", "DG_NO_SDL", "DG_USE_WINDOWS_API", "MELON_MEMORY_WATCH_FUNCTIONS"],
-		"output": "temp/melon-test-windows-arm64.exe"
+		"links": ["user32", "gdi32", "Ws2_32", "bcrypt"],
+		"defines": ["DG_NO_LUA", "DG_NO_SDL", "DG_USE_WINDOWS_API", "MELON_CRYPTOGRAPHY_RANDOM", "MELON_NO_POSIX"],
+		"output": "temp/melon-test-windows.exe"
 	}
 }

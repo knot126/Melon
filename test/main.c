@@ -5,6 +5,11 @@
 #include "util/storage_filesystem.h"
 #include "util/file.h"
 #include "util/alloc.h"
+#include "util/crypto.h"
+
+#ifndef MELON_CRYPTOGRAPHY_RANDOM
+#error MELON_CRYPTOGRAPHY_RANDOM not defined
+#endif
 
 void TestString(void) {
 	DgLog(DG_LOG_INFO, "TestString()");
@@ -98,8 +103,27 @@ void TestStorage(void) {
 	DgLog(DG_LOG_SUCCESS, "TestStorage() - 3");
 }
 
+void TestCryptoRandom(void) {
+	char rand_bytes[16];
+	
+	for (size_t i = 0; i < 5; i++) {
+		DgError error = DgRandom(16, rand_bytes);
+		
+		if (error) {
+			DgLog(DG_LOG_ERROR, "DgRandom: %08x", error);
+			return;
+		}
+		
+		const char *asBase16 = DgStringEncodeBase16(16, rand_bytes);
+		DgLog(DG_LOG_INFO, "Secure random bytes as base16: %s", asBase16);
+		DgFree(asBase16);
+	}
+	
+	DgLog(DG_LOG_SUCCESS, "TestCryptoRandom");
+}
+
 void TestMemory(void) {
-	DgLog(DG_LOG_VERBOSE, "Allocated 0x%x bytes of memory over lifetime", DgMemoryAllocatedCount());
+	//DgLog(DG_LOG_VERBOSE, "Allocated 0x%x bytes of memory over lifetime", DgMemoryAllocatedCount());
 }
 
 int main(const int argc, const char *argv[]) {
@@ -108,6 +132,7 @@ int main(const int argc, const char *argv[]) {
 	TestString();
 	TestStorage();
 	TestMemory();
+	TestCryptoRandom();
 	
 	return 0;
 }

@@ -9,10 +9,13 @@
  * 
  * =============================================================================
  * 
- * Cryptography wrappers
+ * Truly random numbers
  */
 
 #pragma once
 
-#include "crypto_random.h"
-#include "crypto_symmetric.h"
+#include "error.h"
+
+#ifdef MELON_CRYPTOGRAPHY_RANDOM
+DgError DgRandom(size_t size, void *buffer);
+#endif

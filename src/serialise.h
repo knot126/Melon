@@ -9,10 +9,9 @@
  * 
  * =============================================================================
  * 
- * Cryptography wrappers
+ * Serialisation for tables (custom binary format)
  */
 
 #pragma once
 
-#include "crypto_random.h"
-#include "crypto_symmetric.h"
+
