@@ -475,6 +475,55 @@ int64_t DgStringFindFirst(const char * const string, const char * const what) {
 	return DgStringFind(string, what, 0);
 }
 
+/*
+DgError DgStringDecodeUTF8(const size_t remaining_length, const void *data, size_t *out_char_length, int32_t *out) {
+	/**
+	 * Decode a UTF-8 representation of a codepoint.
+	 * 
+	 * @param remaining_length The remaining length of the string that is being decoded
+	 * @param data The data where the codepoint is
+	 * @param out Where to put the resulting codepoint
+	 * @return Error encoutered during decoding
+	 *
+	
+	// Handle 7-bit characters (ASCII)
+	if (data[0] < 0x80) {
+		return data[0];
+	}
+	
+	// Read the number of bits that are in this character, including this bit.
+	// This is encoded by the number of upper bits that are 1.
+	int32_t char_length;
+	
+	for (char_length = 0; char_length < 7; char_length++) {
+		// Check if the `char_length`th bit (from start to end) is zero
+		if ((data[0] & (1 << (7 - char_length))) == 0) {
+			break;
+		}
+	}
+	
+	// If char_length is zero (e.g. 7-bit character) to last bit is 0 then
+	// something went horridly wrong
+	if (char_length == 0) {
+		return DG_ERROR_FAILED;
+	}
+	
+	// If bit 1 is zero then we started in the middle of a character.
+	if (char_length == 1) {
+		return DG_ERROR_ENCODING_INVALID;
+	}
+	
+	// Check if the number of bytes left in the string is enough for this
+	// character.
+	if (char_length > remaining_length) {
+		return DG_ERROR_NOT_SAFE;
+	}
+	
+	// We can assign
+	
+	int32_t codepoint;
+}*/
+
 const char gBase64EncodeTable[] = {
 	'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q',
 	'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
