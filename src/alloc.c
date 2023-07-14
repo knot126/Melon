@@ -88,7 +88,8 @@ void *DgMemoryReallocate(void* block, size_t size) {
 	 * Reallocate a block of memory
 	 * 
 	 * @note Same as DgRealloc but block == NULL and size == 0 cases are handled
-	 * so legacy C enviornments still have the modern behaviour.
+	 * in a sane way. I'm not sure what the C standard people were smoking for
+	 * C23, but it must have given them brain damage.
 	 * 
 	 * @param block Block of memory to reallocate, or NULL if allocating new memory
 	 * @param size Size of the reallocated memory block
@@ -102,8 +103,9 @@ void *DgMemoryReallocate(void* block, size_t size) {
 	else if (block == NULL) {
 		return DgMemoryAllocate(size);
 	}
-	
-	return DgRealloc(block, size);
+	else {
+		return DgRealloc(block, size);
+	}
 }
 
 #ifdef MELON_MEMORY_WATCH_FUNCTIONS
