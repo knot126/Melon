@@ -19,7 +19,9 @@
 
 #include "alloc.h"
 
+#if MELON_MEMORY_WATCH_FUNCTIONS
 size_t gCurrentMemoryAllocated;
+#endif
 
 void *DgAlloc(size_t size) {
 	/**
@@ -29,7 +31,9 @@ void *DgAlloc(size_t size) {
 	 * @return Pointer to the allocated memory, or NULL if failed
 	 */
 	
+#if MELON_MEMORY_WATCH_FUNCTIONS
 	gCurrentMemoryAllocated += size;
+#endif
 	
 	return malloc(size);
 }

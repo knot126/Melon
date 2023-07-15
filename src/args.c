@@ -25,15 +25,16 @@ void DgArgParse(DgArgs * restrict this, const size_t argc, char ** const restric
 	/**
 	 * Parse the given argumets into the given arguments structure.
 	 * 
-	 * This supports:
+	 * @note This supports:
 	 *     -k ('-' {single letter})
 	 *     --key ('--' {key name})
 	 *     --key value ('--' {key name} ' ' {key value})
 	 * 
+	 * @todo Support for '--key=value' (note: '--key' 'value' works)
+	 * 
+	 * @param this Arguments object
 	 * @param argc Number of arguments to parse
 	 * @param argv Array of arguments
-	 * 
-	 * @todo Support for '--key=value' (note: '--key' 'value' works)
 	 */
 	
 	memset(this, 0, sizeof *this);
@@ -79,6 +80,8 @@ void DgArgParse(DgArgs * restrict this, const size_t argc, char ** const restric
 void DgArgFree(DgArgs * restrict this) {
 	/**
 	 * Free the command line arguments list.
+	 * 
+	 * @param this Arguments object
 	 */
 	
 	if (this->pairs) {
@@ -100,6 +103,7 @@ bool DgArgGetFlag(DgArgs * restrict this, const char * const restrict flag) {
 	/**
 	 * Return true if a flag exsists, false otherwise.
 	 * 
+	 * @param this Arguments object
 	 * @param flag Name of the argument to check for
 	 * @return If the flags exists or not
 	 */
@@ -118,6 +122,7 @@ const char *DgArgGetValue(DgArgs * restrict this, const char * const restrict fl
 	 * Return pointer to a string value if the flag exsits and has a value, 
 	 * otherwise returns NULL.
 	 * 
+	 * @param this Arguments object
 	 * @param flag Name of the argument to check for
 	 * @return String of the argument content
 	 */
@@ -136,6 +141,7 @@ const char *DgArgGetValue2(DgArgs * restrict this, const char * const restrict f
 	 * The the value of flag, otherwise return a fallback, even if the argument
 	 * exsits.
 	 * 
+	 * @param this Arguments object
 	 * @param flag Name of the argument to look for
 	 * @param fallback Fallback value to return if not found
 	 * @return String of argument content
@@ -158,6 +164,8 @@ const char *DgArgGetValue2(DgArgs * restrict this, const char * const restrict f
 void DgArgPrint(DgArgs * restrict this) {
 	/**
 	 * Print loaded arguments
+	 * 
+	 * @param this Arguments object
 	 */
 	
 	for (size_t i = 0; i < this->pairs_count; i++) {
