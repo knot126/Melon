@@ -4,3 +4,4 @@ temp/
 tmp/
 *.o
 *.output
+hello.txt

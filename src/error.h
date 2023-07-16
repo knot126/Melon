@@ -49,3 +49,5 @@ typedef struct DgErrorCallback {
 
 bool DgErrorFatal(DgError error);
 const char *DgErrorString(const DgError error);
+DgError DgLogError_(const DgError error, const char * const path, const int line);
+#define DgLogError(error) DgLogError_(error, __FILE__, __LINE__);

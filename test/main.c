@@ -6,6 +6,7 @@
 #include "util/file.h"
 #include "util/alloc.h"
 #include "util/crypto.h"
+#include "util/error.h"
 
 #ifndef MELON_CRYPTOGRAPHY_RANDOM
 #error MELON_CRYPTOGRAPHY_RANDOM not defined
@@ -122,6 +123,10 @@ void TestCryptoRandom(void) {
 	DgLog(DG_LOG_SUCCESS, "TestCryptoRandom");
 }
 
+void TestError(void) {
+	DgLogError(DG_ERROR_FAILED);
+}
+
 void TestMemory(void) {
 	//DgLog(DG_LOG_VERBOSE, "Allocated 0x%x bytes of memory over lifetime", DgMemoryAllocatedCount());
 }
@@ -133,6 +138,7 @@ int main(const int argc, const char *argv[]) {
 	TestStorage();
 	TestMemory();
 	TestCryptoRandom();
+	TestError();
 	
 	return 0;
 }

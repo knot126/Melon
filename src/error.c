@@ -13,6 +13,7 @@
  */
 
 #include <stdbool.h>
+#include "log.h"
 
 #include "error.h"
 
@@ -47,4 +48,21 @@ const char *DgErrorString(const DgError error) {
 	}
 	
 	return s;
+}
+
+DgError DgLogError_(const DgError error, const char * const path, const int line) {
+	/**
+	 * If there was an error, log it.
+	 * 
+	 * @param error Error code
+	 * @param path File path
+	 * @param line Line number
+	 * @return Error code
+	 */
+	
+	if (error) {
+		DgLog(DG_LOG_ERROR, "%s line %d [0x%x] %s", path, line, error, DgErrorString(error));
+	}
+	
+	return error;
 }
