@@ -21,7 +21,7 @@
 
 #include "args.h"
 
-void DgArgParse(DgArgs * restrict this, const size_t argc, char ** const restrict argv) {
+DgError DgArgParse(DgArgs * restrict this, const size_t argc, char ** const restrict argv) {
 	/**
 	 * Parse the given argumets into the given arguments structure.
 	 * 
@@ -62,7 +62,7 @@ void DgArgParse(DgArgs * restrict this, const size_t argc, char ** const restric
 		
 		if (!this->pairs) {
 			DgLog(DG_LOG_ERROR, "Memory allocation error whilst parsing command line arguments.");
-			return;
+			return DG_ERROR_ALLOCATION_FAILED;
 		}
 		
 		// skip the initial dashes for an argument
@@ -75,6 +75,8 @@ void DgArgParse(DgArgs * restrict this, const size_t argc, char ** const restric
 		// strdup(NULL) is undefined behaviour, so we need to do a test.
 		this->pairs[this->pairs_count - 1].value = (value) ? DgStringDuplicate(value) : NULL;
 	}
+	
+	return DG_ERROR_SUCCESS;
 }
 
 void DgArgFree(DgArgs * restrict this) {
