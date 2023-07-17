@@ -511,7 +511,9 @@ char *DgStringSlice(const char *base, size_t start, size_t end) {
 	
 	size_t size = end - start;
 	
-	return NULL;
+	char *result = DgStringDuplicateUntil(base + start, size);
+	
+	return result;
 }
 
 int64_t DgStringFind(const char * const string, const char * const what, size_t which) {
