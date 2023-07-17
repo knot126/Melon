@@ -24,6 +24,8 @@ uint32_t DgHashStringU32_DJB2(const char * str) {
 	 *     start with current = 5381
 	 *     hashiter(current, next) = (current * 33) + next
 	 * 
+	 * @see http://www.cse.yorku.ca/~oz/hash.html
+	 * 
 	 * @param str String to hash
 	 * @return Hash value
 	 */
@@ -40,6 +42,10 @@ uint32_t DgHashStringU32_DJB2(const char * str) {
 uint32_t DgHashStringU32(const char * str) {
 	/**
 	 * Get a 32-bit hash of a string using the preferred fast algorithm.
+	 * 
+	 * @deprecated Any new code should use DgStringSeminise for hashing. If you
+	 * need to use the specific hashing algorithm that was used for this
+	 * function, use DgHashStringU32_DJB2.
 	 * 
 	 * @param str String to hash
 	 * @return Hashed value

@@ -298,6 +298,67 @@ char *DgStringConcatinate(const char * const string1, const char * const string2
 	return result;
 }
 
+char *DgStringConcatinateL(const char * const string1, const char * const string2) {
+	/**
+	 * Concatinate string1 and string2 and then free string1
+	 * 
+	 * @warning You need to free the string returned by this function.
+	 * 
+	 * @note If the concatenation fails, the left string will still be freed.
+	 * 
+	 * @param string1 First string
+	 * @param string2 Second string
+	 * @return Resulting string (or NULL if failed)
+	 */
+	
+	char *result = DgStringConcatinate(string1, string2);
+	
+	DgFree((void *) string1);
+	
+	return result;
+}
+
+char *DgStringConcatinateR(const char * const string1, const char * const string2) {
+	/**
+	 * Concatinate string1 and string2 and then free string2
+	 * 
+	 * @warning You need to free the string returned by this function.
+	 * 
+	 * @note If the concatenation fails, the left string will still be freed.
+	 * 
+	 * @param string1 First string
+	 * @param string2 Second string
+	 * @return Resulting string (or NULL if failed)
+	 */
+	
+	char *result = DgStringConcatinate(string1, string2);
+	
+	DgFree((void *) string2);
+	
+	return result;
+}
+
+char *DgStringConcatinateLR(const char * const string1, const char * const string2) {
+	/**
+	 * Concatinate string1 and string2 and then free both strings
+	 * 
+	 * @warning You need to free the string returned by this function.
+	 * 
+	 * @note If the concatenation fails, the left string will still be freed.
+	 * 
+	 * @param string1 First string
+	 * @param string2 Second string
+	 * @return Resulting string (or NULL if failed)
+	 */
+	
+	char *result = DgStringConcatinate(string1, string2);
+	
+	DgFree((void *) string1);
+	DgFree((void *) string2);
+	
+	return result;
+}
+
 size_t DgStringLength(const char * const string) {
 	/**
 	 * Return the length of the given string
@@ -314,18 +375,29 @@ size_t DgStringLength(const char * const string) {
 }
 
 char *DgStringDuplicate(const char * const string) {
-	/*
+	/**
 	 * Duplicate a string
+	 * 
+	 * @param string String to duplicate
+	 * @return Dupilcated string (or NULL if failure or string was NULL)
 	 */
 	
+	// If string is NULL then just return NULL
+	if (!string) {
+		return NULL;
+	}
+	
+	// Length of memory to allocate
 	size_t length = DgStringLength(string) + 1;
 	
+	// Allocate string memory
 	char *result = DgAlloc(length);
 	
 	if (!result) {
 		return NULL;
 	}
 	
+	// Copy string data
 	for (size_t i = 0; i < length; i++) {
 		result[i] = string[i];
 	}
@@ -437,6 +509,8 @@ char *DgStringSlice(const char *base, size_t start, size_t end) {
 	 * @return Allocated substring
 	 */
 	
+	size_t size = end - start;
+	
 	return NULL;
 }
 
@@ -473,6 +547,32 @@ int64_t DgStringFindFirst(const char * const string, const char * const what) {
 	 */
 	
 	return DgStringFind(string, what, 0);
+}
+
+uint32_t DgStringSeminise(const char *string) {
+	/**
+	 * Take the "sem" (our word for small, non-cryptographic hash) of a string.
+	 * 
+	 * @note The algorithm used is DJB2 (xor version), but it can change.
+	 * 
+	 * @note DJB2 (Xor version) algorithm: hash[i] = (33 * hash[i - 1]) ^ string[i]
+	 * 
+	 * @see http://www.cse.yorku.ca/~oz/hash.html
+	 * 
+	 * @param string The string to seminise
+	 * @return Sem of the string
+	 */
+	
+	uint32_t hash = 5381;
+	size_t i = 0;
+	
+	while (string[i] != '\0') {
+		//     33 * hash            ^ string[i];
+		hash = ((hash << 5) + hash) ^ string[i];
+		i++;
+	}
+	
+	return hash;
 }
 
 const char gBase64EncodeTable[] = {

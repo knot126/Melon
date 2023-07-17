@@ -145,7 +145,7 @@ def main():
 	print(f"\033[32m[Linking binary]\033[0m")
 	
 	output = config.get("output", "application")
-	status = os.system(f"{compiler} -o {output} -std=c2x {output_files} {include}")
+	status = os.system(f"{compiler} -o {output} -std=c23 {output_files} {include}")
 	
 	if (status):
 		print(f"\033[31m[Failed to link binary]\033[0m")
