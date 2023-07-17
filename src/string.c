@@ -501,6 +501,8 @@ char *DgStringSlice(const char *base, size_t start, size_t end) {
 	/**
 	 * Allocate a slice of a string given a string.
 	 * 
+	 * @note Unusually, bounds *will* be checked on input indexes.
+	 * 
 	 * @warning You need to free the string returned when you are done with it.
 	 * 
 	 * @param base The base string
@@ -509,8 +511,17 @@ char *DgStringSlice(const char *base, size_t start, size_t end) {
 	 * @return Allocated substring
 	 */
 	
+	// Check that everything is okay
+	size_t length = DgStringLength(base);
+	
+	if (start > length || end > length) {
+		return NULL;
+	}
+	
+	// Find size of slice
 	size_t size = end - start;
 	
+	// Small hack :3
 	char *result = DgStringDuplicateUntil(base + start, size);
 	
 	return result;
