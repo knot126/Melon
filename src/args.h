@@ -14,6 +14,8 @@
 
 #pragma once
 
+#include <stdbool.h>
+
 typedef struct DgArgPair {
 	char *key;
 	char *value;

@@ -482,18 +482,20 @@ const char gBase64EncodeTable[] = {
 	'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '_',
 };
 
-char *DgStringEncodeBase64(size_t length, const uint8_t *input) {
+char *DgStringEncodeBase64(size_t length, const void *input_) {
 	/**
 	 * Encode a piece of data to base64.
 	 * 
 	 * @note The output will be dynamically allocated and must be freed.
 	 * 
 	 * @param length The length of the data to encode
-	 * @param input The input data
+	 * @param input_ The input data
 	 * @return Output string
 	 * 
 	 * @see https://datatracker.ietf.org/doc/html/rfc4648.html
 	 */
+	
+	const uint8_t *input = (const uint8_t *) input_;
 	
 	size_t leftover = length % 3;
 	
@@ -576,7 +578,7 @@ const char gStringEncodeBase32TableHex[] = {
 	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
 };
 
-char *DgStringEncodeBase32(DgBase32Type type, size_t length, const uint8_t *input) {
+char *DgStringEncodeBase32(DgBase32Type type, size_t length, const void *input_) {
 	/**
 	 * Encode bytes to base32 or base32hex
 	 * 
@@ -590,6 +592,8 @@ char *DgStringEncodeBase32(DgBase32Type type, size_t length, const uint8_t *inpu
 	 */
 	
 #if 0
+	const uint8_t *input = (const uint8_t *) input_;
+	
 	const char *alphabet = (type == DG_BASE32_TYPE_RFC) ? gStringEncodeBase32TableRfc : gStringEncodeBase32TableHex;
 	
 	size_t leftover = length % 5;
@@ -606,7 +610,7 @@ const char gStringEncodeBase16Table[] = {
 	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f',
 };
 
-char *DgStringEncodeBase16(size_t length, const uint8_t *input) {
+char *DgStringEncodeBase16(size_t length, const void *input_) {
 	/**
 	 * Encode the given data to a hex string.
 	 * 
@@ -614,9 +618,11 @@ char *DgStringEncodeBase16(size_t length, const uint8_t *input) {
 	 * please consider using that instead.
 	 * 
 	 * @param length Length of the data to convert to hex
-	 * @param input Input data pointer
+	 * @param input_ Input data pointer
 	 * @return Base16 string
 	 */
+	
+	const uint8_t *input = (const uint8_t *) input_;
 	
 	// Thankfully this is a lot simpler than base64, becuase 4-bits fit evenly
 	// into 8-bits.

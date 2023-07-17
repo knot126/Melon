@@ -1,12 +1,6 @@
-#include "util/log.h"
-#include "util/string.h"
-#include "util/storage.h"
+#include "util/melon.h"
 #include "util/storage_void.h"
 #include "util/storage_filesystem.h"
-#include "util/file.h"
-#include "util/alloc.h"
-#include "util/crypto.h"
-#include "util/error.h"
 
 #ifndef MELON_CRYPTOGRAPHY_RANDOM
 #error MELON_CRYPTOGRAPHY_RANDOM not defined
@@ -95,7 +89,7 @@ void TestStorage(void) {
 	// TEST 3
 	DgLog(DG_LOG_INFO, "Real filesystem test...");
 	
-	DgLog(DG_LOG_INFO, "%x", DgStorageAddPool(NULL, DgFilesystemCreatePool("fs", ".")));
+	DgLogError(DgStorageAddPool(NULL, DgFilesystemCreatePool("fs", ".")));
 	
 	char sample[] = "This is my lovely document! It's very nice!\n\n";
 	
