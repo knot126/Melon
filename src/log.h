@@ -16,8 +16,11 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <inttypes.h>
 
-typedef enum DgLogLevel {
+typedef int32_t DgLogLevel;
+
+enum {
 	DG_LOG_VERBOSE = -1,
 	DG_LOG_SUCCESS = 0,
 	DG_LOG_INFO = 1,
@@ -25,6 +28,7 @@ typedef enum DgLogLevel {
 	DG_LOG_DEPRECATION = 3,
 	DG_LOG_ERROR = 4,
 	DG_LOG_FATAL = 5,
-} DgLogLevel;
+};
 
 void DgLog(const DgLogLevel level, const char * const format, ...);
+void DgSetMinLogLevel(DgLogLevel level);

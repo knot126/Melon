@@ -677,4 +677,4 @@ size_t DgStreamLength(DgStream *context) {
 
 // Some extra storage functions that are automatically generated and for which
 // there are too many of to put in this file directly.
-#include "storage_generated.c_template"
+#include "storage_generated.part"
