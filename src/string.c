@@ -268,10 +268,30 @@ char *DgStringConcatinate(const char * const string1, const char * const string2
 	 * 
 	 * @warning You need to free the string returned by this function.
 	 * 
+	 * @note The result is defined if one or both strings are NULL:
+	 * 
+	 *   DgStringConcatinate(string, NULL) = NULL
+	 *   DgStringConcatinate(NULL, NULL) = NULL
+	 * 
+	 * I considered making concat(str, NULL) == dup(str), but consider the
+	 * following case:
+	 * 
+	 *   concat(concat("a", "b"), concat("c", "d"))
+	 *          ^^ works ^^^^^^^  ^^ fails ^^^^^^^
+	 *   ^^ works ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	 * 
+	 * That would mean you get the string "ab" when you were expecting "abcd"!
+	 * That's a harder error to find, and it's not something you could
+	 * reasonably expect someone to test for, so instead we always return NULL.
+	 * 
 	 * @param string1 First string
 	 * @param string2 Second string
 	 * @return Resulting string (or NULL if failed)
 	 */
+	
+	if (!string1 || !string2) {
+		return NULL;
+	}
 	
 	size_t length1 = DgStringLength(string1);
 	size_t length2 = DgStringLength(string2);
@@ -324,7 +344,7 @@ char *DgStringConcatinateR(const char * const string1, const char * const string
 	 * 
 	 * @warning You need to free the string returned by this function.
 	 * 
-	 * @note If the concatenation fails, the left string will still be freed.
+	 * @note If the concatenation fails, the right string will still be freed.
 	 * 
 	 * @param string1 First string
 	 * @param string2 Second string
@@ -344,7 +364,7 @@ char *DgStringConcatinateLR(const char * const string1, const char * const strin
 	 * 
 	 * @warning You need to free the string returned by this function.
 	 * 
-	 * @note If the concatenation fails, the left string will still be freed.
+	 * @note If the concatenation fails, the strings will still be freed.
 	 * 
 	 * @param string1 First string
 	 * @param string2 Second string
@@ -363,6 +383,8 @@ size_t DgStringLength(const char * const string) {
 	/**
 	 * Return the length of the given string
 	 * 
+	 * @note This function currently causes undefined behaviour when passed NULL.
+	 * 
 	 * @param string String to check length of
 	 * @return Length of string
 	 */
@@ -376,7 +398,9 @@ size_t DgStringLength(const char * const string) {
 
 char *DgStringDuplicate(const char * const string) {
 	/**
-	 * Duplicate a string
+	 * Make a copy of a string in a new section of memory
+	 * 
+	 * @note If string is NULL, this will return NULL
 	 * 
 	 * @param string String to duplicate
 	 * @return Dupilcated string (or NULL if failure or string was NULL)
@@ -411,10 +435,17 @@ char *DgStringDuplicateUntil(const char * const string, size_t length) {
 	 * 
 	 * @warning You need to free the string returned by this function.
 	 * 
+	 * @note If string is NULL, then this function will simply return NULL.
+	 * 
 	 * @param string String to duplicate
 	 * @param length Number of characters to duplicate
 	 * @return Duplicated string
 	 */
+	
+	// If the base string isn't then don't.
+	if (!string) {
+		return NULL;
+	}
 	
 	size_t string_length = DgStringLength(string);
 	
@@ -441,12 +472,26 @@ char *DgStringDuplicateUntil(const char * const string, size_t length) {
 
 bool DgStringEqual(const char * const string1, const char * const string2) {
 	/**
-	 * Check if the two strings are equal
+	 * Check if the two strings are equal.
+	 * 
+	 * @note If either string is a NULL pointer, only the values of the pointers
+	 * are checked for equality. This results in:
+	 * 
+	 *   DgStringEqual(valid_string, NULL) == false
+	 *   DgStringEqual(NULL, NULL) == true
+	 * 
+	 * Which is probably the most logical behaviour. This could change in the
+	 * future if there is a good reason to change it.
 	 * 
 	 * @param string1 First string
 	 * @param string2 Second string
 	 * @return If (string1 == string2)
 	 */
+	
+	// If one string is NULL, then it's only true if both are NULL.
+	if (!string1 || !string2) {
+		return string1 == string2;
+	}
 	
 	for (size_t i = 0;; i++) {
 		// Check the current character
@@ -688,7 +733,8 @@ const char gStringEncodeBase32TableRfc[] = {
 };
 
 const char gStringEncodeBase32TableHex[] = {
-	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
+	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g',
+	'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
 };
 
 char *DgStringEncodeBase32(DgBase32Type type, size_t length, const void *input_) {
