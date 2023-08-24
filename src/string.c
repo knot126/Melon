@@ -474,24 +474,12 @@ bool DgStringEqual(const char * const string1, const char * const string2) {
 	/**
 	 * Check if the two strings are equal.
 	 * 
-	 * @note If either string is a NULL pointer, only the values of the pointers
-	 * are checked for equality. This results in:
-	 * 
-	 *   DgStringEqual(valid_string, NULL) == false
-	 *   DgStringEqual(NULL, NULL) == true
-	 * 
-	 * Which is probably the most logical behaviour. This could change in the
-	 * future if there is a good reason to change it.
+	 * @todo Define behaviour when !string1 or !string2
 	 * 
 	 * @param string1 First string
 	 * @param string2 Second string
 	 * @return If (string1 == string2)
 	 */
-	
-	// If one string is NULL, then it's only true if both are NULL.
-	if (!string1 || !string2) {
-		return string1 == string2;
-	}
 	
 	for (size_t i = 0;; i++) {
 		// Check the current character
