@@ -16,7 +16,7 @@
 #include <string.h>
 
 #include "alloc.h"
-#include "str.h"
+#include "string.h"
 #include "log.h"
 
 #include "args.h"

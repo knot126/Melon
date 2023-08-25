@@ -16,7 +16,7 @@
 #include <stdarg.h>
 #include <string.h>
 
-#include "str.h"
+#include "string.h"
 
 #include "log.h"
 

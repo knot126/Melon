@@ -1,9 +1,11 @@
 #!/usr/bin/python
 
 import sys
-import os
+import os, os.path
 import shutil
 import json
+import hashlib
+import pathlib
 
 def load_build_config(profile = "default"):
 	"""
@@ -48,6 +50,23 @@ def create_folder(d, mode = 0o755):
 	except FileExistsError:
 		print(f"\033[33mWarning: Tried to created file \"{d}\" when it already exsists.\033[0m")
 
+def hash_data(data):
+	"""
+	Find the hash of the given data using a good hashing function
+	"""
+	
+	if (type(data) == str):
+		data = data.encode('utf-8')
+	
+	return hashlib.shake_256(data).hexdigest(20)
+
+def hash_file(path):
+	"""
+	Get the hash of a file
+	"""
+	
+	return hash_data(pathlib.Path(path).read_text())
+
 def align_string(base, count = 8):
 	"""
 	Create an aligned string
@@ -82,20 +101,24 @@ def main():
 		os.system(cmd)
 	
 	# Create some dirs
-	shutil.rmtree("temp", ignore_errors = True)
+	# Caching requires that the temp folder is not cleared
 	create_folder("temp", mode = 0o755)
+	create_folder("temp/outputs", mode = 0o755)
 	
 	# Enumerate files to build
-	files, outline = [], []
+	print(f"\033[36m[Enumerate and hash files]\033[m")
+	
+	files = []
 	
 	for folder in config.get("folders", ["src"]):
-		create_folder("temp/" + folder)
-		files_a, outline_a = list_files_in_folder(folder)
-		files += files_a
-		outline += outline_a
+		filename, outline_a = list_files_in_folder(folder)
+		files += filename
 	
-	for folder in outline:
-		create_folder("temp/" + folder, mode = 0o755)
+	# Enumerate the hashes of those files
+	hashes = {}
+	
+	for filename in files:
+		hashes[filename] = hash_file(filename)
 	
 	# Set up include dirs
 	include = ""
@@ -103,7 +126,7 @@ def main():
 	for incl in config["includes"]:
 		include += f"-I\"{incl}\" "
 	
-	print(f"\033[35m[Include dirs: {include}]\033[0m")
+	print(f"\033[35m[Includes: {include}]\033[0m")
 	
 	# Set up defines
 	defines = ""
@@ -117,14 +140,27 @@ def main():
 	compiler = config.get("compiler", "cc")
 	item = 1
 	
-	for f in files:
-		progress = align_string(f"{item}/{len(files)}", count = 2 * len(str(len(files))) + 1)
-		print(f"\033[36m[{progress} Building item: \"{f}\"]\033[0m")
-		status = os.system(f"{compiler} -c {defines} -o temp/{f}.output -Wall -Wextra -Wno-missing-braces -Wno-unused-parameter {f} {include}")
+	for k in hashes:
+		progress = align_string(
+			f"{item}/{len(hashes)}",
+			count = 2 * len(str(len(hashes))) + 1
+		)
 		
-		if (status):
-			print(f"\033[31m[Failed to build \"{f}\"]\033[0m")
-			sys.exit(status)
+		infile = k
+		outfile = f"temp/outputs/{hashes[k]}.out"
+		
+		# If the output is already built, then we skip it
+		if (os.path.exists(outfile)):
+			print(f"\033[36m[{progress} Skipping item: \"{infile}\"]\033[0m")
+		# Otherwise, we need to build it!
+		else:
+			print(f"\033[36m[{progress} Building item: \"{infile}\"]\033[0m")
+			
+			status = os.system(f"{compiler} -c {defines} -o {outfile} -Wall -Wextra -Wno-missing-braces -Wno-unused-parameter {infile} {include}")
+			
+			if (status):
+				print(f"\033[31m[Failed to build \"{infile}\"]\033[0m")
+				sys.exit(status)
 		
 		item += 1
 	
@@ -136,16 +172,19 @@ def main():
 		include += f"-l{incl} "
 	
 	# output files
-	output_files = ""
+	object_files = ""
 	
-	for f in files:
-		output_files += f"temp/{f}.output "
+	for k in hashes:
+		object_files += f"temp/outputs/{hashes[k]}.out "
+	
+	# Final binary name
+	executable_ext = {"posix": ".bin", "nt": ".exe"}.get(os.name, ".executable")
+	executable_name = config.get("output", "app") + executable_ext
 	
 	# Link!
 	print(f"\033[32m[Linking binary]\033[0m")
 	
-	output = config.get("output", "application")
-	status = os.system(f"{compiler} -o {output} -std=c23 {output_files} {include}")
+	status = os.system(f"{compiler} -o {executable_name} -std=c23 {object_files} {include}")
 	
 	if (status):
 		print(f"\033[31m[Failed to link binary]\033[0m")
