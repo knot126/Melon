@@ -67,6 +67,18 @@ def hash_file(path):
 	
 	return hash_data(pathlib.Path(path).read_text())
 
+def hash_command_output(cmd):
+	"""
+	Use os.popen to read the output of a command and then hash it
+	"""
+	
+	s = os.popen(cmd)
+	d = s.read()
+	h = hash_data(d)
+	s.close()
+	
+	return h
+
 def align_string(base, count = 8):
 	"""
 	Create an aligned string
@@ -100,25 +112,12 @@ def main():
 		print(f"\033[35m[Run command: {cmd}]\033[m")
 		os.system(cmd)
 	
-	# Create some dirs
-	# Caching requires that the temp folder is not cleared
+	# Create the dirs we need if they don't exist
 	create_folder("temp", mode = 0o755)
 	create_folder("temp/outputs", mode = 0o755)
 	
-	# Enumerate files to build
-	print(f"\033[36m[Enumerate and hash files]\033[m")
-	
-	files = []
-	
-	for folder in config.get("folders", ["src"]):
-		filename, outline_a = list_files_in_folder(folder)
-		files += filename
-	
-	# Enumerate the hashes of those files
-	hashes = {}
-	
-	for filename in files:
-		hashes[filename] = hash_file(filename)
+	# I don't know where else to put this stuff (includes and defines) so im
+	# just putting them here.
 	
 	# Set up include dirs
 	include = ""
@@ -136,8 +135,30 @@ def main():
 	
 	print(f"\033[35m[Defines: {defines}]\033[0m")
 	
-	# Build files
+	# Get compiler info (TODO: hope we can make this somewhat automatic soon)
 	compiler = config.get("compiler", "cc")
+	
+	# Enumerate files to build
+	print(f"\033[36m[Enumerate and hash files]\033[m")
+	
+	files = []
+	
+	for folder in config.get("folders", ["src"]):
+		filename, outline_a = list_files_in_folder(folder)
+		files += filename
+	
+	# Enumerate the hashes of those files
+	# ===================================
+	# A clever trick we can use to make sure we don't have to deal with "what if
+	# the header file changes" crap: just preprocess the file *before* taking the
+	# hash. If the header changes, that will be reflected by a different file
+	# hash!
+	hashes = {}
+	
+	for filename in files:
+		hashes[filename] = hash_command_output(f"{compiler} -E {filename} -Wno-everything {defines} {include}")
+	
+	# Build changed files
 	item = 1
 	
 	for k in hashes:
