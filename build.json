@@ -10,7 +10,7 @@
 		"includes": ["test"],
 		"links": ["m", "pthread", "SDL2"],
 		"defines": ["DG_NO_LUA"],
-		"output": "temp/melon-test-linux-native.elf"
+		"output": "melon-test-linux-native"
 	},
 	"windows-clang": {
 		"title": "Windows (clang, native bare)",
@@ -23,7 +23,7 @@
 		"includes": ["test"],
 		"links": ["user32", "gdi32", "Ws2_32", "bcrypt"],
 		"defines": ["DG_NO_LUA", "DG_NO_SDL", "DG_USE_WINDOWS_API", "MELON_CRYPTOGRAPHY_RANDOM"],
-		"output": "temp/melon-test-windows.exe"
+		"output": "melon-test-windows"
 	},
 	"windows-clang-noposix": {
 		"title": "Windows (clang, native bare)",
@@ -36,6 +36,6 @@
 		"includes": ["test"],
 		"links": ["user32", "gdi32", "Ws2_32", "bcrypt"],
 		"defines": ["DG_NO_LUA", "DG_NO_SDL", "DG_USE_WINDOWS_API", "MELON_CRYPTOGRAPHY_RANDOM", "MELON_NO_POSIX"],
-		"output": "temp/melon-test-windows.exe"
+		"output": "melon-test-windows"
 	}
 }

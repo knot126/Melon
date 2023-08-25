@@ -115,6 +115,7 @@ def main():
 	# Create the dirs we need if they don't exist
 	create_folder("temp", mode = 0o755)
 	create_folder("temp/outputs", mode = 0o755)
+	create_folder("temp/runes", mode = 0o755)
 	
 	# I don't know where else to put this stuff (includes and defines) so im
 	# just putting them here.
@@ -144,8 +145,8 @@ def main():
 	files = []
 	
 	for folder in config.get("folders", ["src"]):
-		filename, outline_a = list_files_in_folder(folder)
-		files += filename
+		filenames, outline = list_files_in_folder(folder)
+		files += filenames
 	
 	# Enumerate the hashes of those files
 	# ===================================
@@ -200,15 +201,21 @@ def main():
 	
 	# Final binary name
 	executable_ext = {"posix": ".bin", "nt": ".exe"}.get(os.name, ".executable")
-	executable_name = config.get("output", "app") + executable_ext
+	executable_name = config.get("output", "app")
 	
 	# Link!
 	print(f"\033[32m[Linking binary]\033[0m")
 	
-	status = os.system(f"{compiler} -o {executable_name} -std=c23 {object_files} {include}")
+	link_cmd = f"{compiler} -o temp/{executable_name}{executable_ext} -std=c23 {object_files} {include}"
+	status = os.system(link_cmd)
 	
 	if (status):
 		print(f"\033[31m[Failed to link binary]\033[0m")
+	
+	# Save to rune files
+	# Disabled since it doesn't work right now
+	# rune_count = len(list_files_in_folder("temp/runes")[0])
+	# pathlib.Path(f"temp/runes/{executable_name}{rune_count}.rune").write_text(link_cmd)
 	
 	return status
 
