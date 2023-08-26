@@ -678,3 +678,15 @@ size_t DgStreamLength(DgStream *context) {
 // Some extra storage functions that are automatically generated and for which
 // there are too many of to put in this file directly.
 #include "storage_generated.part"
+
+DgError DgStreamWriteString(DgStream * restrict context, const char * restrict data) {
+	/**
+	 * Write a Float64 to a stream.
+	 * 
+	 * @param context Stream object
+	 * @param data The Float64 to write
+	 * @return Error code
+	 */
+	
+	return DgStreamWrite(context, DgStringLength(data) + 1, data);
+}

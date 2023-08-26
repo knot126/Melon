@@ -20,7 +20,8 @@
 
 #include "error.h"
 
-typedef uint16_t DgTableType;
+typedef uint16_t DgValueType;
+typedef DgValueType DgTableType;
 
 /**
  * Type IDs
@@ -40,13 +41,13 @@ enum {
 	DG_TABLE_TYPE_TABLE = 11,
 	DG_TABLE_TYPE_STRING = 12,
 	DG_TABLE_TYPE_STATIC_STRING = 13,
-	DG_TABLE_TYPE_DATA = 14,
+	DG_TABLE_TYPE_DATA = 14, // coming soon
 	DG_TABLE_TYPE_FLOAT32 = 15,
 	DG_TABLE_TYPE_FLOAT64 = 16,
 	DG_TABLE_TYPE_BOOL = 17,
 };
 
-struct DgTableArrayHeader;
+struct DgValueArray;
 struct DgTable;
 
 /**
@@ -62,7 +63,7 @@ typedef union DgValueData {
 	int64_t asInt64;
 	uint64_t asUInt64;
 	void *asPointer;
-	struct DgTableArrayHeader *asArray;
+	struct DgValueArray *asArray;
 	struct DgTable *asTable;
 	char *asString;
 	const char *asStaticString;
@@ -84,11 +85,14 @@ typedef struct DgValue {
 
 /**
  * Header part of the array memory block
+ * 
+ * TODO This needs to be implemented
  */
-typedef struct DgTableArrayHeader {
-	size_t header_size; // Number of padding bytes to skip to get to start of array data
-	size_t length;      // Number of elements in array
-} DgTableArrayHeader;
+typedef struct DgValueArray {
+	DgValue *items;
+	size_t length;
+	size_t allocated;
+} DgValueArray;
 
 /**
  * Actual type for the table
@@ -108,6 +112,7 @@ DgError DgTableSet(DgTable * restrict this, DgValue * restrict key, DgValue * re
 DgError DgTableGet(DgTable * restrict this, DgValue * restrict key, DgValue * restrict value);
 DgError DgTableRemove(DgTable * restrict this, DgValue * const restrict key);
 DgError DgTableAt(DgTable * restrict this, size_t index, DgValue * const restrict key, DgValue * const restrict value);
+size_t DgTableLength(DgTable * restrict this);
 
 // Array functions
 // ...

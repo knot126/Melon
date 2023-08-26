@@ -82,6 +82,7 @@ static DgError DgTablePreallocMore(DgTable *this) {
 		this->value = DgMemoryReallocate(this->value, sizeof *this->value * this->allocated);
 		
 		if (this->key == NULL || this->value == NULL) {
+			// TODO Memory leak!
 			return DG_ERROR_ALLOCATION_FAILED;
 		}
 	}
@@ -222,6 +223,17 @@ DgError DgTableAt(DgTable * restrict this, size_t index, DgValue * const restric
 	}
 	
 	return DG_ERROR_SUCCESSFUL;
+}
+
+size_t DgTableLength(DgTable * restrict this) {
+	/**
+	 * Get the length of the table
+	 * 
+	 * @param this Table to find the length of
+	 * @return Length of the table
+	 */
+	
+	return this->length;
 }
 
 /**

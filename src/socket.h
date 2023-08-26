@@ -14,6 +14,9 @@
 
 #pragma once
 
+#include <inttypes.h>
+#include <stdlib.h>
+
 #ifdef __linux__
 	#include <sys/socket.h>
 #elif defined(_WIN32)
@@ -27,3 +30,11 @@ typedef struct DgSocket {
 	SOCKET handle;
 #endif
 } DgSocket;
+
+typedef struct DgSocketIPv4Address {
+	char host[4];
+	uint16_t port;
+} DgSocketIPv4Address;
+
+typedef struct sockaddr_in Dg_sockaddr_in;
+typedef struct in_addr Dg_in_addr;
