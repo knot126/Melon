@@ -157,9 +157,12 @@ def main():
 	hashes = {}
 	
 	for filename in files:
-		hashes[filename] = hash_command_output(f"{compiler} -E {filename} -Wno-everything {defines} {include}")
+		print(f"\033[36m[Process file: \"{filename}\"]\033[m")
+		hashes[filename] = hash_command_output(f"{compiler} -E {filename} {defines} {include}")
 	
 	# Build changed files
+	print(f"\033[36m[Build items]\033[m")
+	
 	item = 1
 	
 	for k in hashes:
