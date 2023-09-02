@@ -14,7 +14,9 @@
 
 #include <inttypes.h>
 
-uint32_t DgHashStringU32_DJB2(const char * str) {
+#include "checksum.h"
+
+uint32_t DgChecksumStringU32_DJB2(const char * str) {
 	/**
 	 * Hash a string using the DJB2 hash function. This is probably better than
 	 * what I wrote above but maybe what I wrote above is faster by a little
@@ -39,17 +41,17 @@ uint32_t DgHashStringU32_DJB2(const char * str) {
 	return hash;
 }
 
-uint32_t DgHashStringU32(const char * str) {
+uint32_t DgChecksumStringU32(const char * str) {
 	/**
 	 * Get a 32-bit hash of a string using the preferred fast algorithm.
 	 * 
 	 * @deprecated Any new code should use DgStringSeminise for hashing. If you
 	 * need to use the specific hashing algorithm that was used for this
-	 * function, use DgHashStringU32_DJB2.
+	 * function, use DgChecksumStringU32_DJB2.
 	 * 
 	 * @param str String to hash
 	 * @return Hashed value
 	 */
 	
-	return DgHashStringU32_DJB2(str);
+	return DgChecksumStringU32_DJB2(str);
 }

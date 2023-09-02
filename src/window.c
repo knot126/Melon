@@ -24,7 +24,6 @@
 #include "maths.h"
 #include "bitmap.h"
 #include "error.h"
-#include "rand.h" // TODO temp
 
 #include "window.h"
 

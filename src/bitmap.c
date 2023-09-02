@@ -18,7 +18,6 @@
 #include <string.h>
 #include <math.h>
 
-#include "rand.h"
 #include "alloc.h"
 #include "maths.h"
 #include "log.h"

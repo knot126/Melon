@@ -9,7 +9,7 @@
  * 
  * =============================================================================
  * 
- * Random Numbers and Strings
+ * Pseudorandom Numbers and Strings
  */
 
 #include <math.h>
@@ -18,9 +18,9 @@
 
 #include "time.h"
 
-#include "rand.h"
+#include "pseudorandom.h"
 
-uint32_t DgRand_LCG_UInt32(uint32_t a, uint32_t s, uint32_t b, uint32_t m) {
+uint32_t DgPseudorandom_LCG_UInt32(uint32_t a, uint32_t s, uint32_t b, uint32_t m) {
 	/**
 	 * Get the next number in the "random" seqence for an LCG random number
 	 * generator.
@@ -35,7 +35,7 @@ uint32_t DgRand_LCG_UInt32(uint32_t a, uint32_t s, uint32_t b, uint32_t m) {
 	return ((a * s) + b) % m;
 }
 
-uint32_t DgRand_XORShift_UInt32(uint32_t n) {
+uint32_t DgPseudorandom_XORShift_UInt32(uint32_t n) {
 	/**
 	 * Generate a random number based on a given seed using the XOR-Shift 
 	 * method of generating a random number.
@@ -51,11 +51,11 @@ uint32_t DgRand_XORShift_UInt32(uint32_t n) {
 	return n;
 }
 
-uint32_t DgRandXORShiftU32(uint32_t n) {
-	return DgRand_XORShift_UInt32(n);
+uint32_t DgPseudorandomXORShiftU32(uint32_t n) {
+	return DgPseudorandom_XORShift_UInt32(n);
 }
 
-static uint32_t DgRandXORShiftSU32(void) {
+static uint32_t DgPseudorandomXORShiftSU32(void) {
 	/**
 	 * A pesudostateless version of the XOR-shift function. It should be 
 	 * semi-threadsafe, since it will add a (most likely) unique value to make
@@ -64,25 +64,23 @@ static uint32_t DgRandXORShiftSU32(void) {
 	
 	static uint32_t last;
 	
-	last = DgRandXORShiftU32(last + DgNsecTime());
+	last = DgPseudorandomXORShiftU32(last + DgNsecTime());
 	
 	return last;
 }
 
-float DgRandXORShiftF32(void) {
-	return ((float) DgRandXORShiftSU32()) / 4294967295.0f;
+float DgPseudorandomXORShiftF32(void) {
+	return ((float) DgPseudorandomXORShiftSU32()) / 4294967295.0f;
 }
 
-uint32_t DgRandInt(void) {
-	return DgRandXORShiftSU32();
+uint32_t DgPseudorandomInt(void) {
+	return DgPseudorandomXORShiftSU32();
 }
 
-float DgRandFloat(void) {
-	return DgRandXORShiftF32();
+float DgPseudorandomFloat(void) {
+	return DgPseudorandomXORShiftF32();
 }
 
-bool DgRandBool(void) {
-	return (DgRandXORShiftSU32() % 2) == 1;
+bool DgPseudorandomBool(void) {
+	return (DgPseudorandomXORShiftSU32() % 2) == 1;
 }
-
-#undef extra

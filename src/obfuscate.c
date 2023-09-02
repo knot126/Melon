@@ -17,7 +17,7 @@
  */
 
 #include "string.h"
-#include "rand.h"
+#include "pseudorandom.h"
 
 #include "obfuscate.h"
 
@@ -151,7 +151,7 @@ void DgObfuscate_SEA1(const char * restrict key, size_t length, uint8_t * restri
 	
 	// Encrypt the data
 	for (size_t i = 0; i < length; i++) {
-		random_states[i % key_length] = DgRandXORShiftU32(random_states[i % key_length]);
+		random_states[i % key_length] = DgPseudorandomXORShiftU32(random_states[i % key_length]);
 		data[i] ^= (char)((random_states[i % key_length]) & 0xff);
 	}
 }
@@ -193,7 +193,7 @@ void DgObfuscate_SEA2(const char * restrict key, size_t length, uint8_t * restri
 	
 	// Encrypt the data
 	for (size_t i = 0; i < length; i++) {
-		random_states[i % key_length] = DgRandXORShiftU32(random_states[i % key_length]) + (length + i);
+		random_states[i % key_length] = DgPseudorandomXORShiftU32(random_states[i % key_length]) + (length + i);
 		
 		data[i] ^= (char)((random_states[i % key_length]) & 0xff);
 	}

@@ -9,7 +9,7 @@
  * 
  * =============================================================================
  * 
- * Random Numbers and Strings
+ * Pseudorandom Numbers and Strings
  */
 
 #pragma once
@@ -17,17 +17,9 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
-uint32_t DgRandXORShiftU32(uint32_t n);
-float DgRandXORShiftF32(void);
+uint32_t DgPseudorandomXORShiftU32(uint32_t n);
+float DgPseudorandomXORShiftF32(void);
 
-uint32_t DgRandInt(void);
-float DgRandFloat(void);
-bool DgRandBool(void);
-
-#if !defined(DG_NO_LUA)
-
-#include "script.h"
-
-void DgRegisterRandFuncs(DgScript *script);
-
-#endif
+uint32_t DgPseudorandomInt(void);
+float DgPseudorandomFloat(void);
+bool DgPseudorandomBool(void);

@@ -16,5 +16,5 @@
 
 #include <inttypes.h>
 
-uint32_t DgHashStringU32_DJB2(const char * str);
-uint32_t DgHashStringU32(const char * str);
+uint32_t DgChecksumStringU32_DJB2(const char * str);
+uint32_t DgChecksumStringU32(const char * str);

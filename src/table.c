@@ -13,7 +13,7 @@
  */
 
 #include "alloc.h"
-#include "hash.h"
+#include "checksum.h"
 #include "error.h"
 #include "string.h"
 #include "log.h"
@@ -437,7 +437,7 @@ DgError DgValueString(DgValue * restrict value, const char * restrict data) {
 		return DG_ERROR_ALLOCATION_FAILED;
 	}
 	
-	value->metadata = DgHashStringU32(value->data.asString);
+	value->metadata = DgChecksumStringU32(value->data.asString);
 	value->type = DG_TABLE_TYPE_STRING;
 	
 	return DG_ERROR_SUCCESSFUL;
@@ -455,7 +455,7 @@ DgError DgValueStaticString(DgValue * restrict value, const char * restrict data
 	 */
 	
 	value->data.asStaticString = data;
-	value->metadata = DgHashStringU32(value->data.asStaticString);
+	value->metadata = DgChecksumStringU32(value->data.asStaticString);
 	value->type = DG_TABLE_TYPE_STATIC_STRING;
 	
 	return DG_ERROR_SUCCESSFUL;
