@@ -50,7 +50,7 @@ DgError DgSerialiseWriteValue(DgStream * restrict stream, const DgValue * restri
 	}
 	
 	// Write the value
-	switch (value->type) {
+	switch (type) {
 		case DG_TABLE_TYPE_NIL:
 			break;
 		case DG_TABLE_TYPE_BOOL:

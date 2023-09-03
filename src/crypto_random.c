@@ -84,6 +84,8 @@ DgError DgRandom(size_t size, void *buffer) {
 	return (status == STATUS_SUCCESS) ? (DG_ERROR_SUCCESS) : (DG_ERROR_FAILED);
 #else
 	DgLog(DG_LOG_FATAL, "High quality random number generator is not available on this platform.");
+	
+	return DG_ERROR_NOT_IMPLEMENTED;
 #endif
 }
 #endif

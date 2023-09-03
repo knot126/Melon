@@ -121,6 +121,37 @@ void TestError(void) {
 	DgLogError(DG_ERROR_FAILED);
 }
 
+void TestTableAndSerialise(void) {
+	DgTable table;
+	
+	DgTableInit(&table);
+	
+	DgValue key, value;
+	
+	DgValueStaticString(&key, "int64_test");
+	DgValueInt64(&value, 324776765645);
+	DgTableSet(&table, &key, &value);
+	
+	DgValueStaticString(&key, "uint32_test");
+	DgValueUInt32(&value, 5001811);
+	DgTableSet(&table, &key, &value);
+	
+	DgValueStaticString(&key, "nil_test");
+	DgValueNil(&value);
+	DgTableSet(&table, &key, &value);
+	
+	DgValueStaticString(&key, "ptr_test");
+	DgValuePointer(&value, &table);
+	DgTableSet(&table, &key, &value);
+	
+	DgValue table_val;
+	DgValueTable(&table_val, &table);
+	
+	DgSerialiseWrite(NULL, "fs://ser_test.dat", &table_val);
+	
+	DgValueFree(&table_val);
+}
+
 void TestMemory(void) {
 	//DgLog(DG_LOG_VERBOSE, "Allocated 0x%x bytes of memory over lifetime", DgMemoryAllocatedCount());
 }
@@ -132,6 +163,7 @@ int main(const int argc, const char *argv[]) {
 	TestStorage();
 	TestMemory();
 	TestCryptoRandom();
+	TestTableAndSerialise();
 	TestError();
 	
 	return 0;
