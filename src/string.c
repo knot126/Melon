@@ -481,6 +481,14 @@ bool DgStringEqual(const char * const string1, const char * const string2) {
 	 * @return If (string1 == string2)
 	 */
 	
+	if (!string1 || !string2) {
+#ifndef DG_STRING_NULL_ALIKE_NAN
+		return string1 == string2;
+#else
+		return false;
+#endif
+	}
+	
 	for (size_t i = 0;; i++) {
 		// Check the current character
 		if (string1[i] == string2[i]) {
