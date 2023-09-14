@@ -60,12 +60,71 @@ def hash_data(data):
 	
 	return hashlib.shake_256(data).hexdigest(20)
 
-def hash_file(path):
+def preprocess_file(filename, includes, seen = None):
 	"""
-	Get the hash of a file
+	Preprocess file and return text
 	"""
 	
-	return hash_data(pathlib.Path(path).read_text())
+	if (not seen):
+		seen = set()
+	
+	filename = filename.replace("\\", "/")
+	
+	# Has seen?
+	if (filename in seen):
+		print(f"file already seen: {filename}")
+		return ""
+	
+	# Exists?
+	if (not os.path.exists(filename)):
+		print(f"no such file: {filename}")
+		return ""
+	
+	# We should assert our own path too
+	awuwuueu = "/".join(filename.split("/")[:-1])
+	if (awuwuueu not in includes):
+		includes.append(awuwuueu)
+	
+	data = ""
+	
+	f = open(filename, "r")
+	
+	while (True):
+		line = f.readline()
+		
+		if (not line):
+			break
+		
+		s = line.split()
+		
+		match (s[0] if len(s) >= 1 else "\n"):
+			case "#include":
+				basepath = s[1][1:-1]
+				
+				print(f"process include: {basepath}")
+				
+				for cand in includes:
+					got = preprocess_file(cand + "/" + basepath, includes, seen)
+					data += got
+					if (got):
+						print(f"got include: {basepath}")
+						break
+			
+			case "#pragma":
+				if (s[1] == "once"):
+					seen.add(filename)
+			
+			case _:
+				data += line
+	
+	return data
+
+def hash_preprocessed_file(filename, includes):
+	"""
+	hash of a preprocessed file
+	"""
+	
+	return hash_data(preprocess_file(filename, includes))
 
 def hash_command_output(cmd):
 	"""
@@ -156,9 +215,15 @@ def main():
 	# hash!
 	hashes = {}
 	
-	for filename in files:
-		print(f"\033[36m[Process file: \"{filename}\"]\033[m")
-		hashes[filename] = hash_command_output(f"{compiler} -E {filename} {defines} {include}")
+	if (os.name != "nt"):
+		for filename in files:
+			print(f"\033[36m[Process file: \"{filename}\"]\033[m")
+			hashes[filename] = hash_command_output(f"{compiler} -E {filename} {defines} {include}")
+	else:
+		# NT has show Popen so fuck that
+		for filename in files:
+			print(f"\033[36m[Process file: \"{filename}\"]\033[m")
+			hashes[filename] = hash_preprocessed_file(filename, config["includes"])
 	
 	# Build changed files
 	print(f"\033[36m[Build items]\033[m")

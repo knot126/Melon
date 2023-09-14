@@ -112,6 +112,21 @@ void *DgMemoryReallocate(void* block, size_t size) {
 	}
 }
 
+void *DgMemoryCopy(size_t length, const void *from, void *to) {
+	/**
+	 * Move `length` bytes of memory upstream or downstream in `from` to `to`.
+	 * 
+	 * @note This is like memmove, not memcpy
+	 * 
+	 * @param length Amount of memory to move
+	 * @param from Where to copy from
+	 * @param to Where to put the copied memory
+	 * @return `to` or NULL if failed
+	 */
+	
+	return memmove(to, from, length);
+}
+
 #ifdef MELON_MEMORY_WATCH_FUNCTIONS
 size_t DgMemoryAllocatedCount(void) {
 	/**

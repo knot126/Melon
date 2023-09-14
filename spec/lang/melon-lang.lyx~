@@ -859,6 +859,11 @@ This is the data which I wish to encrypt
 
 \begin_layout Verbatim
 
+        nonce,
+\end_layout
+
+\begin_layout Verbatim
+
         key,
 \end_layout
 
@@ -957,8 +962,9 @@ n
 }
 \end_layout
 
-\begin_layout Verbatim
+\begin_layout Section
 
+Specification
 \end_layout
 
 \end_body

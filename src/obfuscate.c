@@ -49,6 +49,20 @@ void DgObfuscate_Rot13(size_t length, uint8_t * restrict data) {
 	}
 }
 
+void DgObfuscate_Substitution(const uint8_t * const restrict table, size_t length, uint8_t * restrict data) {
+	/**
+	 * Obfuscate the data by using a substitution table.
+	 * 
+	 * @param table The substitution table to use
+	 * @param length Length of the data
+	 * @param data Data to obfuscate
+	 */
+	
+	while (length--) {
+		data[length] = table[data[length]];
+	}
+}
+
 void DgObfuscate_Polyalphabetic(const char * restrict key, char static_shift, size_t size, uint8_t * restrict data) {
 	/**
 	 * Obfuscate data using a polyalphabetic cipher. You can also have an extra

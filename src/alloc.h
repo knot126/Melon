@@ -24,6 +24,8 @@ void *DgMemoryAllocate(size_t size);
 void DgMemoryFree(void *block);
 void *DgMemoryReallocate(void *block, size_t size);
 
+void *DgMemoryCopy(size_t length, const void *from, void *to);
+
 #ifdef MELON_MEMORY_WATCH_FUNCTIONS
 size_t DgMemoryAllocatedCount(void);
 #endif

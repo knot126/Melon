@@ -207,6 +207,10 @@ Hybrid and full automatic free
 Better core library via Melon
 \end_layout
 
+\begin_layout Subsection
+Examples of changes
+\end_layout
+
 \begin_layout Subsubsection
 Functions in structures
 \end_layout
@@ -962,8 +966,9 @@ n
 }
 \end_layout
 
-\begin_layout Verbatim
+\begin_layout Section
 
+Specification
 \end_layout
 
 \end_body
