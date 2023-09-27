@@ -147,7 +147,7 @@ void TestTableAndSerialise(void) {
 	DgValue table_val;
 	DgValueTable(&table_val, &table);
 	
-	DgSerialiseWrite(NULL, "fs://ser_test.dat", &table_val);
+	DgSerialiseWrite(NULL, "fs://test/ser_test.dat", &table_val);
 	
 	DgValueFree(&table_val);
 }
