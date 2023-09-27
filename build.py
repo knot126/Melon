@@ -72,12 +72,12 @@ def preprocess_file(filename, includes, seen = None):
 	
 	# Has seen?
 	if (filename in seen):
-		print(f"file already seen: {filename}")
+		# print(f"file already seen: {filename}")
 		return ""
 	
 	# Exists?
 	if (not os.path.exists(filename)):
-		print(f"no such file: {filename}")
+		# print(f"no such file: {filename}")
 		return ""
 	
 	# We should assert our own path too
@@ -101,13 +101,13 @@ def preprocess_file(filename, includes, seen = None):
 			case "#include":
 				basepath = s[1][1:-1]
 				
-				print(f"process include: {basepath}")
+				# print(f"process include: {basepath}")
 				
 				for cand in includes:
 					got = preprocess_file(cand + "/" + basepath, includes, seen)
 					data += got
 					if (got):
-						print(f"got include: {basepath}")
+						# print(f"got include: {basepath}")
 						break
 			
 			case "#pragma":
