@@ -3,7 +3,7 @@
 		"title": "Linux (clang, native)",
 		"prebuild": [
 			"rm -r ./test/util",
-			"cp -r ./src ./test/util"
+			"cp -r ./source ./test/util"
 		],
 		"compiler": "clang",
 		"folders": ["test"],
@@ -16,7 +16,7 @@
 		"title": "Windows (clang, native bare)",
 		"prebuild": [
 			"rd test\\util /s /q",
-			"xcopy .\\src test\\util /e /i"
+			"xcopy .\\source test\\util /e /i"
 		],
 		"compiler": "clang",
 		"folders": ["test"],
@@ -29,7 +29,7 @@
 		"title": "Windows (clang, native bare)",
 		"prebuild": [
 			"rd test\\util /s /q",
-			"xcopy .\\src test\\util /e /i"
+			"xcopy .\\source test\\util /e /i"
 		],
 		"compiler": "clang",
 		"folders": ["test"],
