@@ -27,6 +27,7 @@ void DgBytesInit(DgBytes *this);
 void DgBytesFree(DgBytes *this);
 DgByte DgBytesAt_(DgBytes *this, size_t index, const char *debug_file, size_t debug_line);
 void DgBytesSet_(DgBytes *this, size_t index, DgByte byte, const char *debug_file, size_t debug_line);
+size_t DgBytesLength(DgBytes *this);
 
 #define DgBytesAt(THIS, INDEX) DgBytesAt_(THIS, INDEX, __FILE__, __LINE__)
 #define DgBytesSet(THIS, INDEX, VALUE) DgBytesSet_(THIS, INDEX, VALUE, __FILE__, __LINE__)

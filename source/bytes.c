@@ -74,3 +74,14 @@ void DgBytesSet_(DgBytes *this, size_t index, DgByte byte, const char *debug_fil
 	
 	this->data[index] = byte;
 }
+
+size_t DgBytesLength(DgBytes *this) {
+	/**
+	 * Get the length of the byte array
+	 * 
+	 * @param this Bytes object
+	 * @return Length of the bytes object
+	 */
+	
+	return this->length;
+}
