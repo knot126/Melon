@@ -27,7 +27,7 @@
 	a += b; d ^= a; ROTL(d, 8); \
 	c += d; b ^= c; ROTL(b, 7);
 
-static void DgCryptoSymmetric_ChaCha20_Block(const size_t rounds, const uint8_t * restrict key, const uint8_t * restrict counter, const uint8_t * restrict nonce, uint32_t * restrict out) {
+static void DgCryptoSymmetric_ChaCha20_Block(const uint32_t * const restrict in, uint32_t * const restrict out, const size_t rounds) {
 	/**
 	 * Internal stream generation for ChaCha20
 	 * 
@@ -41,10 +41,10 @@ static void DgCryptoSymmetric_ChaCha20_Block(const size_t rounds, const uint8_t 
 	 */
 	
 	// Copy the shit into place for ChaCha
-	DgMemoryCopy(16, "expand 32-byte k", &out[0]);
-	DgMemoryCopy(32, key, &out[4]);
-	DgMemoryCopy(8, counter, &out[12]);
-	DgMemoryCopy(8, nonce, &out[14]);
+	// DgMemoryCopy(16, "expand 32-byte k", &out[0]);
+	// DgMemoryCopy(32, key, &out[4]);
+	// DgMemoryCopy(8, counter, &out[12]);
+	// DgMemoryCopy(8, nonce, &out[14]);
 	
 	// Do the rounds
 	for (size_t i = 0; i < rounds; i++) {
@@ -61,7 +61,14 @@ static void DgCryptoSymmetric_ChaCha20_Block(const size_t rounds, const uint8_t 
 			QR(out[3], out[4], out[9], out[14]);
 		}
 	}
+	
+	// This seems to be here to make the operations non-reversible
+	for (size_t i = 0; i < 16; i++) {
+		out[i] += in[i];
+	}
 }
+
+#undef QR
 
 #undef ROTL
 #undef ROTR
