@@ -2,6 +2,7 @@
 #include "args.h"
 #include "array.h"
 #include "bitmap.h"
+#include "bytes.h"
 #include "crypto.h"
 #include "draw.h"
 #include "error.h"
