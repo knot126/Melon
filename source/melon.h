@@ -11,6 +11,7 @@
 #include "flags.h"
 #include "checksum.h"
 #include "library.h"
+#include "libmelon.h"
 #include "log.h"
 #include "maths.h"
 #include "memory.h"

@@ -1,6 +1,5 @@
 {
 	"linux": {
-		"title": "Linux (clang, native)",
 		"prebuild": [
 			"rm -r ./test/util",
 			"cp -r ./source ./test/util"
@@ -13,7 +12,6 @@
 		"output": "melon-test-linux-native"
 	},
 	"windows-clang": {
-		"title": "Windows (clang, native bare)",
 		"prebuild": [
 			"rd test\\util /s /q",
 			"xcopy .\\source test\\util /e /i"
@@ -25,17 +23,4 @@
 		"defines": ["DG_NO_LUA", "DG_NO_SDL", "DG_USE_WINDOWS_API", "MELON_CRYPTOGRAPHY_RANDOM"],
 		"output": "melon-test-windows"
 	},
-	"windows-clang-noposix": {
-		"title": "Windows (clang, native bare)",
-		"prebuild": [
-			"rd test\\util /s /q",
-			"xcopy .\\source test\\util /e /i"
-		],
-		"compiler": "clang",
-		"folders": ["test"],
-		"includes": ["test"],
-		"links": ["user32", "gdi32", "Ws2_32", "bcrypt"],
-		"defines": ["DG_NO_LUA", "DG_NO_SDL", "DG_USE_WINDOWS_API", "MELON_CRYPTOGRAPHY_RANDOM", "MELON_NO_POSIX"],
-		"output": "melon-test-windows"
-	}
 }
