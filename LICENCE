@@ -1,13 +1,17 @@
-MIT License (Modified for Machine Learning, Government Use, and International Law)
+Melon Software Licence
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, subject to the following conditions:
+Section 1. Rights and Conditions
 
-1. The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated source code and documentation files (the "Software"), to use, copy, modify, merge, publish, distribute, sublicense and/or sell copies of the Software, with or without attribution the original authors, subject to the terms in Section 2 and the following conditions:
  
-2. The Software may not be used for training or development of any machine learning models, including but not limited to artificial neural networks, deep learning, and reinforcement learning.
+1.1. The Software and its source code may not be used for training or development of any machine learning models, including but not limited to artificial neural networks, deep learning, and reinforcement learning without written consent of the original authors.
  
-3. The Software may not be used by or for any government agency, department, or project, whether local, state, national, or international. This includes any use by employees, contractors, or other agents of such organizations.
+1.2. To the extent permitted by law, the Software may not be used by or for any government agency, department, or project, whether local, state, national, or international. This includes any use by employees, contractors, or other agents of such organizations.
 
-4. The Software may not be used in the design, development, or manufacture of weapons of any kind, nor in any way that supports or contributes to any act that constitutes a war crime under international law, including but not limited to acts of genocide, torture, rape, or forced displacement of civilian populations.
+1.3. The Software may not be used in the design, development, or manufacture of weapons of any kind, nor in any way that supports or contributes to any act that constitutes a war crime under international law, including but not limited to acts of genocide, torture, rape, or forced displacement of civilian populations.
+
+1.4. The Software shall not be used, distributed, or sublicensed for any commercial purpose if its monthly profit exceeds 30 000 000 SEK and written consent for use of the Software has not been obtained. The user of the Software shall promptly notify the authors in writing of any such profit threshold breach and seek the necessary consent before further use, distribution, or sublicensing of the Software for commercial gain.
+
+Section 2. Warranty Statement
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
