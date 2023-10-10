@@ -21,5 +21,5 @@ DgMelonVersion DgMelonGetVersion(void) {
 	 * @return Running melon version
 	 */
 	
-	return DG_MELON_VERSION(2023, 9, 27);
+	return DG_MELON_VERSION(2023, 10, 10);
 }

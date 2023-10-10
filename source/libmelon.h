@@ -16,7 +16,7 @@
 
 #include <inttypes.h>
 
-#define DG_MELON_VERSION(y, m, d) (y << 16) | (m << 8) | (d)
+#define DG_MELON_VERSION(y, m, d) (y << 11) | (m << 5) | (d)
 
 typedef uint32_t DgMelonVersion;
 
