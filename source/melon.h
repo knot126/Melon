@@ -16,7 +16,6 @@
 #include "memory.h"
 #include "obfuscate.h"
 #include "pseudorandom.h"
-#include "script.h"
 #include "serialise.h"
 #include "socket.h"
 #include "storage.h"
