@@ -22,5 +22,5 @@
 		"links": ["user32", "gdi32", "Ws2_32", "bcrypt"],
 		"defines": ["DG_NO_LUA", "DG_NO_SDL", "DG_USE_WINDOWS_API", "MELON_CRYPTOGRAPHY_RANDOM"],
 		"output": "melon-test-windows"
-	},
+	}
 }

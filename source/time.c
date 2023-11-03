@@ -17,7 +17,7 @@
 
 #include "time.h"
 
-struct timespec st;
+static struct timespec st;
 
 void DgInitTime(void) {
 	timespec_get(&st, TIME_UTC);

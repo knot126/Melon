@@ -20,9 +20,19 @@
 
 #include "log.h"
 
-enum { DG_LOG_BUFFER_SIZE = 512 };
+enum { DG_LOG_BUFFER_SIZE = 1024 };
 
-DgLogLevel gMinLogLevel = DG_LOG_VERBOSE;
+static DgLogLevel gMinLogLevel = DG_LOG_VERBOSE;
+
+void DgLogRaw(const char * const buffer) {
+	/**
+	 * Write the given raw C string to the console.
+	 * 
+	 * @param buffer Buffer to write
+	 */
+	
+	fprintf(stderr, "%s", buffer);
+}
 
 static void DgLogPushMessage(const DgLogLevel level, const char * const buf) {
 	/**
@@ -32,55 +42,40 @@ static void DgLogPushMessage(const DgLogLevel level, const char * const buf) {
 	 * @param buf String to print out
 	 */
 	
-	// Firstly, write to console
+	const char *prefix = "";
+	
+	// Find the right prefix
 	switch (level) {
-		case DG_LOG_SUCCESS:
-			printf("\033[1;32mSUCCESS: \033[0m");
-			break;
-		
-		case DG_LOG_INFO:
-			printf("\033[1;34mINFO: \033[0m");
-			break;
-		
-		case DG_LOG_WARNING:
-			printf("\033[1;33mWARNING: \033[0m");
-			break;
-		
-		case DG_LOG_DEPRECATION:
-			printf("\033[1;38;5;67mDEPRECATION: \033[0m");
-			break;
-		
-		case DG_LOG_ERROR:
-			printf("\033[1;31mERROR: \033[0m");
-			break;
-			
-		case DG_LOG_FATAL:
-			printf("\033[1;38;5;168mFATAL: ");
-			break;
-		
-		case DG_LOG_VERBOSE:
-			printf("\033[38;2;192;192;192m");
-			break;
+		case DG_LOG_SUCCESS: prefix = "\033[1;32mSUCCESS: \033[0m"; break;
+		case DG_LOG_INFO: prefix = "\033[1;34mINFO: \033[0m"; break;
+		case DG_LOG_WARNING: prefix = "\033[1;33mWARNING: \033[0m"; break;
+		case DG_LOG_DEPRECATION: prefix = "\033[1;38;5;67mDEPRECATION: \033[0m"; break;
+		case DG_LOG_ERROR: prefix = "\033[1;31mERROR: \033[0m"; break;
+		case DG_LOG_FATAL: prefix = "\033[1;38;5;168mFATAL: "; break;
+		case DG_LOG_VERBOSE: prefix = "\033[38;2;192;192;192m"; break;
 	}
 	
-	printf("%s", buf);
+	// Print prefix and then error message
+	DgLogRaw(prefix);
+	DgLogRaw(buf);
 	
 	switch (level) {
 		case DG_LOG_FATAL:
 		case DG_LOG_VERBOSE:
-			printf("\033[0m");
+			DgLogRaw("\033[0m");
 			break;
 		
 		default:
 			break;
 	}
 	
-	printf("\n");
+	DgLogRaw("\n");
 }
 
 void DgLog(const DgLogLevel level, const char * const format, ...) {
 	/**
-	 * Log a message given a format paramter, arguments and the level.
+	 * Put a message into the log given the log level, base string and items
+	 * to format. This function uses C-style string formatting.
 	 * 
 	 * @param level Level to log at
 	 * @param format Basic format string, the same as in printf()
@@ -120,10 +115,20 @@ void DgLog(const DgLogLevel level, const char * const format, ...) {
 
 void DgSetMinLogLevel(DgLogLevel level) {
 	/**
-	 * Set the minium log level for logs to show in the console.
+	 * Set the minimum log level for logs to show in the console.
 	 * 
 	 * @param level Minimum level for logs to show at
 	 */
 	
 	gMinLogLevel = level;
+}
+
+DgLogLevel DgGetMinLogLevel(void) {
+	/**
+	 * Get the current minimum log level.
+	 * 
+	 * @return Current log level
+	 */
+	
+	return gMinLogLevel;
 }

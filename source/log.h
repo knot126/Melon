@@ -30,5 +30,7 @@ enum {
 	DG_LOG_FATAL = 5,
 };
 
+void DgLogRaw(const char * const buffer);
 void DgLog(const DgLogLevel level, const char * const format, ...);
 void DgSetMinLogLevel(DgLogLevel level);
+DgLogLevel DgGetMinLogLevel(void);

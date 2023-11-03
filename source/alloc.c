@@ -19,10 +19,6 @@
 
 #include "alloc.h"
 
-#if MELON_MEMORY_WATCH_FUNCTIONS
-size_t gCurrentMemoryAllocated;
-#endif
-
 void *DgAlloc(size_t size) {
 	/**
 	 * Allocate some memory, or return NULL on failure.
@@ -30,10 +26,6 @@ void *DgAlloc(size_t size) {
 	 * @param size Size of the memory block to alloate
 	 * @return Pointer to the allocated memory, or NULL if failed
 	 */
-	
-#if MELON_MEMORY_WATCH_FUNCTIONS
-	gCurrentMemoryAllocated += size;
-#endif
 	
 	return malloc(size);
 }
@@ -126,15 +118,3 @@ void *DgMemoryCopy(size_t length, const void *from, void *to) {
 	
 	return memmove(to, from, length);
 }
-
-#ifdef MELON_MEMORY_WATCH_FUNCTIONS
-size_t DgMemoryAllocatedCount(void) {
-	/**
-	 * Return the amount of memory currently in use by the app.
-	 * 
-	 * @return Amount of memory allocated by the app.
-	 */
-	
-	return gCurrentMemoryAllocated;
-}
-#endif

@@ -31,7 +31,7 @@
 
 #include <SDL2/SDL.h>
 
-uint32_t gWindowCount_ = 0;
+static uint32_t gWindowCount_ = 0;
 
 uint32_t DgWindowInit(DgWindow *this, const char *title, DgVec2I size) {
 	/**

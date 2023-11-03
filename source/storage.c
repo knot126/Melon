@@ -25,7 +25,7 @@
  * Default storage config
  */
 
-DgStorage *gGlobalStorageConfig_;
+static DgStorage *gGlobalStorageConfig_;
 
 void DgStorageSetDefault(DgStorage *this) {
 	/**
