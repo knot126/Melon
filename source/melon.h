@@ -4,7 +4,6 @@
 #include "bitmap.h"
 #include "bytes.h"
 #include "crypto.h"
-#include "draw.h"
 #include "error.h"
 #include "file.h"
 #include "fixed.h"
