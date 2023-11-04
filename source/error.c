@@ -38,6 +38,7 @@ const char *DgErrorString(const DgError error) {
 		case DG_ERROR_ALREADY_EXISTS   : s = "Already exists"; break;
 		case DG_ERROR_READ_ONLY        : s = "Read only"; break;
 		case DG_ERROR_NOT_SAFE         : s = "Not safe"; break;
+		case DG_ERROR_OUT_OF_RANGE     : s = "Out of range"; break;
 		case DG_ERROR_NO_CLIENT        : s = "No client"; break;
 		case DG_ERROR_REJECTED         : s = "Rejected"; break;
 		case DG_ERROR_FORBIDDEN        : s = "Forbidden"; break;

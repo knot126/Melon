@@ -34,6 +34,7 @@ enum {
 	DG_ERROR_READ_ONLY = -0x24,
 	DG_ERROR_NOT_SAFE = -0x25, // Not safe to preform the operation (e.g. NULL)
 	DG_ERROR_WRITE_FAILED = -0x26,
+	DG_ERROR_OUT_OF_RANGE = -0x27,
 	
 	DG_ERROR_NO_CLIENT = -0x30,
 	DG_ERROR_REJECTED = -0x31,

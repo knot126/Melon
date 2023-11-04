@@ -9,11 +9,12 @@
  * 
  * =============================================================================
  * 
- * Cryptography wrappers
+ * Cryptographic hashing
  */
 
 #pragma once
 
-#include "crypto_random.h"
-#include "crypto_symmetric.h"
-#include "crypto_hash.h"
+typedef struct DgCryptoCubeHasher {
+	uint32_t state[32];
+	uint32_t initial, roundsperblock, bytesperblock, finishing, outputlen;
+} DgCryptoCubeHasher;
