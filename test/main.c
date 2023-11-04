@@ -6,6 +6,8 @@
 #error MELON_CRYPTOGRAPHY_RANDOM not defined
 #endif
 
+DgError DgCryptoCubeHasher_Test(void);
+
 void TestString(void) {
 	DgLog(DG_LOG_INFO, "TestString()");
 	
@@ -165,6 +167,7 @@ int main(const int argc, const char *argv[]) {
 	TestCryptoRandom();
 	TestTableAndSerialise();
 	TestError();
+	DgCryptoCubeHasher_Test();
 	
 	return 0;
 }
