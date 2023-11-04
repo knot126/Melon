@@ -195,7 +195,7 @@ DgError DgCryptoCubeHasherFinalise(DgCryptoCubeHasher *this, size_t * const leng
 	 */
 	
 	// Xor 1 (I believe (?) this helps prevents length extension attacks)
-	this->state[0b11111] ^= 1;
+	// this->state[0b11111] ^= 1;
 	
 	// Preform the final f rounds
 	for (size_t x = 0; x < this->finishing; x++) {
