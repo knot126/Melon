@@ -162,17 +162,17 @@ DgError DgCryptoCubeHasherNextBlock(DgCryptoCubeHasher *this, size_t length, uin
 	
 	// Copy the input block into the state
 	if (block) {
-		DgMemoryCopy(length, block, (void *) &to_xor);
+		DgMemoryCopy(length, block, (void *) to_xor);
 	}
 	
 	// Append padding if needed
 	if (length < this->bytesperblock) {
-		((uint8_t *)(&to_xor))[length] = 0x80;
+		((uint8_t *)(to_xor))[length] = 0x80;
 	}
 	
 	// XOR the blocks
 	for (size_t i = 0; i < 32; i++) {
-		this->state[i] = to_xor[i];
+		this->state[i] ^= to_xor[i];
 	}
 	
 	// Transform the blocks
@@ -204,9 +204,6 @@ DgError DgCryptoCubeHasherFinalise(DgCryptoCubeHasher *this, size_t * const leng
 		DgCryptoCubeHashRound(this->state);
 	}
 	
-	// HACK memleak
-	// DgLog(DG_LOG_VERBOSE, "%s", DgStringEncodeBase16(32 * 4, this->state));
-	
 	// Output the hash (if possible)
 	if (length && hash) {
 		length[0] = this->outputlen / 8;
@@ -229,6 +226,8 @@ DgError DgCryptoCubeHasher_Test(void) {
 		DgLog(DG_LOG_ERROR, "Invalid parameters for cubehash!");
 		return DG_ERROR_FAILED;
 	}
+	
+	DgCryptoCubeHasherNextBlock(&hasher, 0, NULL);
 	
 	DgCryptoCubeHasherFinalise(&hasher, &length, &hashdata);
 	
