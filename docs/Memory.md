@@ -36,3 +36,7 @@ Note that if:
 * `size` is nonzero and `block` is `NULL`, then `DgMemoryAllocate` is called with the size
 
 This can be used to easily create a resizeable array using only `DgMemoryReallocate`.
+
+## Old variants
+
+`DgAlloc`, `DgFree` and `DgRealloc` are older functions and might be removed one day. If you want to use them, look how to use them in the source.
