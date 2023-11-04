@@ -15,9 +15,10 @@
 #pragma once
 
 #include <stdlib.h>
+#include "error.h"
 
 void *DgAlloc(size_t size);
-void DgFree(void *block);
+DgError DgFree(void *block);
 void *DgRealloc(void *block, size_t size);
 
 void *DgMemoryAllocate(size_t size);

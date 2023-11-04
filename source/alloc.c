@@ -17,6 +17,8 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include "error.h"
+
 #include "alloc.h"
 
 void *DgAlloc(size_t size) {
@@ -63,7 +65,7 @@ void *DgMemoryAllocate(size_t size) {
 	return DgAlloc(size);
 }
 
-void DgMemoryFree(void *block) {
+DgError DgMemoryFree(void *block) {
 	/**
 	 * Free a block of memory
 	 * 
@@ -73,10 +75,12 @@ void DgMemoryFree(void *block) {
 	 */
 	
 	if (block == NULL) {
-		return;
+		return DG_ERROR_NOT_SAFE;
 	}
 	
 	DgFree(block);
+	
+	return DG_ERROR_SUCCESS;
 }
 
 void *DgMemoryReallocate(void* block, size_t size) {

@@ -9,7 +9,7 @@
 		"includes": ["test"],
 		"links": ["m", "pthread", "SDL2"],
 		"defines": [],
-		"output": "melon-test-linux-native"
+		"output": "melon-test-linux"
 	},
 	"windows-clang": {
 		"prebuild": [
