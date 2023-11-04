@@ -149,7 +149,7 @@ DgError DgCryptoCubeHasherNextBlock(DgCryptoCubeHasher *this, size_t length, uin
 	 * 
 	 * @param this Streaming hasher instance
 	 * @param length Length of input block
-	 * @param block Input block data
+	 * @param block Input block data (can be NULL if no data is in the block)
 	 * @return Error if any
 	 */
 	
@@ -161,7 +161,9 @@ DgError DgCryptoCubeHasherNextBlock(DgCryptoCubeHasher *this, size_t length, uin
 	uint32_t to_xor[32] = { 0 };
 	
 	// Copy the input block into the state
-	DgMemoryCopy(length, block, (void *) &to_xor);
+	if (block) {
+		DgMemoryCopy(length, block, (void *) &to_xor);
+	}
 	
 	// Append padding if needed
 	if (length < this->bytesperblock) {
@@ -195,7 +197,7 @@ DgError DgCryptoCubeHasherFinalise(DgCryptoCubeHasher *this, size_t * const leng
 	 */
 	
 	// Xor 1 (I believe (?) this helps prevents length extension attacks)
-	// this->state[0b11111] ^= 1;
+	this->state[0b11111] ^= 1;
 	
 	// Preform the final f rounds
 	for (size_t x = 0; x < this->finishing; x++) {
