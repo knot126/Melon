@@ -18,11 +18,11 @@
 #include "error.h"
 
 void *DgAlloc(size_t size);
-DgError DgFree(void *block);
+void DgFree(void *block);
 void *DgRealloc(void *block, size_t size);
 
 void *DgMemoryAllocate(size_t size);
-void DgMemoryFree(void *block);
+DgError DgMemoryFree(void *block);
 void *DgMemoryReallocate(void *block, size_t size);
 
 void *DgMemoryCopy(size_t length, const void *from, void *to);
