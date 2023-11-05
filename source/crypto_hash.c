@@ -136,9 +136,6 @@ DgError DgCryptoCubeHasherInit(DgCryptoCubeHasher *this, uint32_t i, uint32_t r,
 		DgCryptoCubeHashRound(this->state);
 	}
 	
-	/// @see https://github.com/parabirb/cubehash/blob/main/test.js
-	// DgLog(DG_LOG_VERBOSE, "IV: %s", DgStringEncodeBase16(32 * 4, this->state));
-	
 	return DG_ERROR_SUCCESS;
 }
 
@@ -146,6 +143,8 @@ DgError DgCryptoCubeHasherNextBlock(DgCryptoCubeHasher *this, size_t length, uin
 	/**
 	 * Process a message block no longer than this->bytesperblock, padding if
 	 * that is needed.
+	 * 
+	 * @note If block is NULL then it's assumed to be length count of zeros.
 	 * 
 	 * @param this Streaming hasher instance
 	 * @param length Length of input block
@@ -208,6 +207,11 @@ DgError DgCryptoCubeHasherFinalise(DgCryptoCubeHasher *this, size_t * const leng
 	if (length && hash) {
 		length[0] = this->outputlen / 8;
 		hash[0] = DgMemoryAllocate(length[0]);
+		
+		if (!hash[0]) {
+			return DG_ERROR_ALLOCATION_FAILED;
+		}
+		
 		DgMemoryCopy(length[0], this->state, hash[0]);
 	}
 	
@@ -215,6 +219,10 @@ DgError DgCryptoCubeHasherFinalise(DgCryptoCubeHasher *this, size_t * const leng
 }
 
 DgError DgCryptoCubeHasher_Test(void) {
+	/**
+	 * @see https://github.com/parabirb/cubehash/blob/main/test.js
+	 */
+	
 	DgCryptoCubeHasher hasher;
 	size_t length;
 	uint8_t *hashdata;
@@ -240,4 +248,57 @@ DgError DgCryptoCubeHasher_Test(void) {
 	DgMemoryFree((void *) hex);
 	
 	return DG_ERROR_SUCCESS;
+}
+
+uint8_t *DgCryptoCubeHashBytes(const size_t length, const uint8_t *block, uint32_t i, uint32_t r, uint32_t b, uint32_t f, uint32_t h) {
+	/**
+	 * Hash the message `block` that is `length` bytes long and return the hash
+	 * data.
+	 * 
+	 * @param length Length of the message
+	 * @param block Message data
+	 * @param i Number of initial rounds
+	 * @param r Number of rounds per message block
+	 * @param b Number of bytes per message block
+	 * @param f Number of rounds in finalisation stage
+	 * @param h Length of the output hash in bits
+	 * @return 
+	 */
+	
+	DgCryptoCubeHasher hasher;
+	
+	// Initialise the cubehash hasher while given params
+	DgError error = DgCryptoCubeHasherInit(&hasher, i, r, b, f, h);
+	
+	if (error) {
+		return NULL;
+	}
+	
+	// Feed blocks while we can
+	size_t remaining = length, usable;
+	
+	while (remaining) {
+		usable = (remaining < b) ? remaining : b;
+		DgCryptoCubeHasherNextBlock(&hasher, usable, &block[length - remaining]);
+		remaining -= usable;
+	}
+	
+	// We need to append an extra empty block if the message aligns properly
+	// since DgCryptoCubeHasherNextBlock won't append a 1 bit followed by zeros
+	// for us in that case
+	if ((length % b) == 0) {
+		DgCryptoCubeHasherNextBlock(&hasher, 0, NULL);
+	}
+	
+	// Finalise the hash
+	uint8_t *outhash;
+	size_t outlen;
+	
+	error = DgCryptoCubeHasherFinalise(&hasher, &outlen, &outhash);
+	
+	if (error) {
+		return NULL;
+	}
+	
+	return outhash;
 }
