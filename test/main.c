@@ -7,6 +7,7 @@
 #endif
 
 DgError DgCryptoCubeHasher_Test(void);
+void DgCryptoCubeHashBytes_Test(void);
 
 void TestString(void) {
 	DgLog(DG_LOG_INFO, "TestString()");
@@ -168,6 +169,7 @@ int main(const int argc, const char *argv[]) {
 	TestTableAndSerialise();
 	TestError();
 	DgCryptoCubeHasher_Test();
+	DgCryptoCubeHashBytes_Test();
 	
 	return 0;
 }

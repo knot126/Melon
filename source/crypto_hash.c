@@ -139,7 +139,7 @@ DgError DgCryptoCubeHasherInit(DgCryptoCubeHasher *this, uint32_t i, uint32_t r,
 	return DG_ERROR_SUCCESS;
 }
 
-DgError DgCryptoCubeHasherNextBlock(DgCryptoCubeHasher *this, size_t length, uint8_t *block) {
+DgError DgCryptoCubeHasherNextBlock(DgCryptoCubeHasher *this, size_t length, const uint8_t *block) {
 	/**
 	 * Process a message block no longer than this->bytesperblock, padding if
 	 * that is needed.
@@ -262,7 +262,7 @@ uint8_t *DgCryptoCubeHashBytes(const size_t length, const uint8_t *block, uint32
 	 * @param b Number of bytes per message block
 	 * @param f Number of rounds in finalisation stage
 	 * @param h Length of the output hash in bits
-	 * @return 
+	 * @return Hash
 	 */
 	
 	DgCryptoCubeHasher hasher;
@@ -301,4 +301,73 @@ uint8_t *DgCryptoCubeHashBytes(const size_t length, const uint8_t *block, uint32
 	}
 	
 	return outhash;
+}
+
+void DgCryptoCubeHashBytes_Test(void) {
+	uint8_t *hash = DgCryptoCubeHashBytes(5, "Hello", 80, 8, 1, 80, 512);
+	
+	if (!hash) {
+		DgLog(DG_LOG_ERROR, "Failed to get CubeHash-80+8/1+80-512 hash for string 'Hello'");
+		return;
+	}
+	
+	const char *enchash = DgStringEncodeBase16(512/8, hash);
+	
+	DgLog(DG_LOG_INFO, "Cubehash of 'Hello': %s", enchash);
+	
+	DgMemoryFree(enchash);
+	DgMemoryFree(hash);
+}
+
+uint8_t *DgCryptoCubeHash512(const size_t length, const uint8_t *input) {
+	/**
+	 * Calculate the CubeHash80+8/1+80-512 (initial submission version) hash and
+	 * return it.
+	 * 
+	 * @param length Length of the data to hash
+	 * @param input Data to hash
+	 * @return Hash of the data or NULL if failed
+	 */
+	
+	return DgCryptoCubeHashBytes(length, input, 80, 8, 1, 80, 512);
+}
+
+uint8_t *DgCryptoCubeHash384(const size_t length, const uint8_t *input) {
+	/**
+	 * Calculate the CubeHash80+8/1+80-384 (initial submission version) hash and
+	 * return it.
+	 * 
+	 * @param length Length of the data to hash
+	 * @param input Data to hash
+	 * @return Hash of the data or NULL if failed
+	 */
+	
+	return DgCryptoCubeHashBytes(length, input, 80, 8, 1, 80, 384);
+}
+
+uint8_t *DgCryptoCubeHash256(const size_t length, const uint8_t *input) {
+	/**
+	 * Calculate the CubeHash80+8/1+80-256 (initial submission version) hash and
+	 * return it.
+	 * 
+	 * @param length Length of the data to hash
+	 * @param input Data to hash
+	 * @return Hash of the data or NULL if failed
+	 */
+	
+	return DgCryptoCubeHashBytes(length, input, 80, 8, 1, 80, 256);
+}
+
+uint8_t *DgCryptoCubeHash160(const size_t length, const uint8_t *input) {
+	/**
+	 * Calculate the CubeHash20+6/32+20-160 of a value. Not secure so it's not
+	 * normally exposed in the API but should be good enough if you dont care
+	 * about collisions.
+	 * 
+	 * @param length Length of the data to hash
+	 * @param input Data to hash
+	 * @return Hash of the data or NULL if failed
+	 */
+	
+	return DgCryptoCubeHashBytes(length, input, 20, 6, 32, 20, 160);
 }
