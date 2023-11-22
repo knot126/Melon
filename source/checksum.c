@@ -41,6 +41,24 @@ uint32_t DgChecksumStringU32_DJB2(const char * str) {
 	return hash;
 }
 
+uint32_t DgChecksumU32_DJB2(size_t length, const char *data) {
+	/**
+	 * Compute the 32-bit DJB2 checksum of the `length`-byte `data` value.
+	 * 
+	 * @param length Length of the data to hash
+	 * @param data Data to hash
+	 */
+	
+	uint32_t hash = 5381;
+	size_t i = length;
+	
+	while (i--) {
+		hash = ((hash << 5) + hash) + data[i];
+	}
+	
+	return hash;
+}
+
 uint32_t DgChecksumStringU32(const char * str) {
 	/**
 	 * Get a 32-bit hash of a string using the preferred fast algorithm.
