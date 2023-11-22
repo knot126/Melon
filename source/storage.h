@@ -15,6 +15,7 @@
 #pragma once
 
 #include <inttypes.h>
+#include <stdlib.h>
 
 #include "error.h"
 

@@ -42,13 +42,7 @@ static void DgSocketIPv4AddressToSockaddrin(Dg_sockaddr_in *inet_socket_addr, Dg
 	 * Must already be zeroed
 	 */
 	
-	inet_socket_addr->sin_family = AF_INET;
-	inet_socket_addr->sin_port = address->port;
 	// TODO Microsoft's documentation lied! Fuckers!
-	// inet_socket_addr->sin_addr.s_b1 = address->host[0];
-	// inet_socket_addr->sin_addr.s_b2 = address->host[1];
-	// inet_socket_addr->sin_addr.s_b3 = address->host[2];
-	// inet_socket_addr->sin_addr.s_b4 = address->host[3];
 }
 
 DgError DgSocketSetAddress(DgSocket *this, DgSocketIPv4Address *address) {
@@ -56,16 +50,7 @@ DgError DgSocketSetAddress(DgSocket *this, DgSocketIPv4Address *address) {
 	 * Set the socket's address (e.g. call bind())
 	 */
 	
-	Dg_sockaddr_in inet_socket_addr = {};
-	DgSocketIPv4AddressToSockaddrin(&inet_socket_addr, address);
-	
-	int status = bind(this->handle, (struct sockaddr *) &inet_socket_addr, sizeof inet_socket_addr);
-	
-	if (status) {
-		return DG_ERROR_FAILED;
-	}
-	
-	return DG_ERROR_SUCCESS;
+	return DG_ERROR_NOT_IMPLEMENTED;
 }
 
 DgError DgSocketSend(DgSocket *this, size_t size, void *data) {

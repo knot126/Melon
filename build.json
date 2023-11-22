@@ -8,7 +8,7 @@
 		"folders": ["test"],
 		"includes": ["test"],
 		"links": ["m", "pthread", "SDL2"],
-		"defines": [],
+		"defines": ["MELON_CRYPTOGRAPHY_RANDOM"],
 		"output": "melon-test-linux"
 	},
 	"windows-clang": {

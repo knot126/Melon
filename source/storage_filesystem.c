@@ -16,6 +16,9 @@
 #ifndef MELON_NO_POSIX
 	#include <dirent.h>
 	#include <sys/stat.h>
+	#ifdef __linux__
+		#define mkdir(path) mkdir(path, 0777)
+	#endif
 #elif DG_USE_WINDOWS_API
 	#include <direct.h>
 	#define mkdir(path) _mkdir(path)
