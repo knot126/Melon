@@ -9,7 +9,7 @@
  * 
  * =============================================================================
  * 
- * Cryptographic hashing
+ * Implementation of DJB's CubeHash
  */
 
 #include "error.h"
@@ -17,7 +17,7 @@
 #include "string.h"
 #include "log.h"
 
-#include "crypto_hash.h"
+#include "crypto_hash_cubehash.h"
 
 #define ROTL(x, n) ((x << n) | (x >> (32 - n)))
 #define SWAP(T, X, Y) \
