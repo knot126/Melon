@@ -205,7 +205,7 @@ static DgError DgFilesystem_Type(DgStorage *storage, DgStoragePool *pool, DgStor
 	 * @return Error code
 	 */
 	
-	DgLog(DG_LOG_ERROR, "DgFilesystem_Type()", path);
+	DgLog(DG_LOG_ERROR, "DgFilesystem_Type() is not implemented", path);
 	
 	return DG_ERROR_NOT_IMPLEMENTED;
 }
@@ -250,7 +250,7 @@ static DgError DgFilesystem_Open(DgStorage *storage, DgStoragePool *pool, DgStre
 		return DG_ERROR_NOT_SUPPORTED;
 	}
 	
-	DgLog(DG_LOG_VERBOSE, "Opening file %s in mode %s", path, mode);
+	// DgLog(DG_LOG_VERBOSE, "Opening file %s in mode %s", path, mode);
 	
 	context->context = (void *) fopen(path, mode);
 	
