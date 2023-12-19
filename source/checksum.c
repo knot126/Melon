@@ -12,7 +12,7 @@
  * Hashing Strings and Data
  */ 
 
-#include <inttypes.h>
+#include "common.h"
 
 #include "checksum.h"
 
