@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2021 - 2023 Knot126
+ * Copyright (C) 2021 - 2024 Knot126
  * 
  * It is against the licence terms of this software to use it or it's source code
  * as input for training a machine learning model, or in the development of a
@@ -14,9 +14,8 @@
 
 #pragma once
 
-#include <stdbool.h>
-#include <inttypes.h>
-
+#include "common.h"
+#include "error.h"
 #include "maths.h"
 
 enum {
@@ -91,7 +90,7 @@ typedef struct DgBitmap {
 	DgBitmapFlags flags;
 } DgBitmap;
 
-bool DgBitmapInit(DgBitmap *bitmap, const uint16_t width, const uint16_t height, const uint16_t chan);
+DgError DgBitmapInit(DgBitmap *bitmap, DgVec2I size, const uint16_t chan);
 void DgBitmapFree(DgBitmap *bitmap);
 void DgBitmapSetSource(DgBitmap * restrict this, uint8_t * restrict source, DgVec2I size, uint16_t channels);
 void DgBitmapSetFlags(DgBitmap *this, DgBitmapFlags flags);

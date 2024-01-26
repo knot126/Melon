@@ -22,38 +22,39 @@
 #include "maths.h"
 #include "log.h"
 #include "storage.h"
+#include "error.h"
 
 #include "bitmap.h"
 
-bool DgBitmapInit(DgBitmap *bitmap, const uint16_t width, const uint16_t height, const uint16_t chan) {
+DgError DgBitmapInit(DgBitmap *bitmap, DgVec2I size, const uint16_t chan) {
 	/**
 	 * Initialise a bitmap that has already been allocated. Returns 1 on success
 	 * or 0 on failure to allocate memory.
 	 * 
 	 * @param bitmap Bitmap to initialise
-	 * @param width Width of the bitmap
-	 * @param height Height of the bitmap
+	 * @param size Width and height of the bitmap
 	 * @param chan Number of channels in the new bitmap
-	 * @return False on success, true on failure
+	 * @return DG_ERROR_ALLOCATION_FAILED when the bitmap fails to allocate
+	 *         DG_ERROR_SUCCESS when the bitmap is created successfully
 	 * 
 	 * @todo Inconsistent naming, use DgBitmapInit
 	 */
 	
 	memset(bitmap, 0, sizeof *bitmap);
 	
-	bitmap->width = width;
-	bitmap->height = height;
+	bitmap->width = size.x;
+	bitmap->height = size.y;
 	bitmap->chan = chan;
 	
-	size_t alloc_sz = width * height * chan;
+	size_t alloc_sz = size.x * size.y * chan;
 	
 	bitmap->src = DgAlloc(alloc_sz * sizeof *bitmap->src);
 	
 	if (!bitmap->src) {
-		return true;
+		return DG_ERROR_ALLOCATION_FAILED;
 	}
 	
-	return false;
+	return DG_ERROR_SUCCESS;
 }
 
 void DgBitmapFree(DgBitmap *bitmap) {

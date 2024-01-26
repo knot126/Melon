@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2021 - 2023 Knot126
+ * Copyright (C) 2021 - 2024 Knot126
  * 
  * It is against the licence terms of this software to use it or it's source code
  * as input for training a machine learning model, or in the development of a
@@ -27,13 +27,13 @@
 
 #include "window.h"
 
-#if !defined(DG_NO_SDL)
+#if defined(DG_USE_SDL2)
 
 #include <SDL2/SDL.h>
 
 static uint32_t gWindowCount_ = 0;
 
-uint32_t DgWindowInit(DgWindow *this, const char *title, DgVec2I size) {
+DgError DgWindowInit(DgWindow *this, const char *title, DgVec2I size) {
 	/**
 	 * Initialise and create a window
 	 * 
@@ -50,8 +50,9 @@ uint32_t DgWindowInit(DgWindow *this, const char *title, DgVec2I size) {
 	this->window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, size.x, size.y, 0);
 	this->surface = SDL_GetWindowSurface(this->window);
 	this->size = size;
+	this->should_close = false;
 	
-	return 0;
+	return DG_ERROR_SUCCESSFUL;
 }
 
 void DgWindowFree(DgWindow *this) {
@@ -68,7 +69,7 @@ void DgWindowFree(DgWindow *this) {
 	}
 }
 
-int32_t DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
+DgWindowStatus DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
 	/**
 	 * Display new changes to a window.
 	 * 
@@ -81,7 +82,9 @@ int32_t DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
 	 * @warning The currently active bitmap must be 24-bits.
 	 * 
 	 * @param this Window object
-	 * @return Zero on success, less than zero on failure, one on should exit
+	 * @return DG_WINDOW_CONTINUE if this window draw succeeded
+	 *         DG_WINDOW_DRAW_FAILED if drawing to the window failed
+	 *         DG_WINDOW_SHOULD_CLOSE if the window is expected to close
 	 */
 	
 	// Check up on events
@@ -90,7 +93,8 @@ int32_t DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
 	while (SDL_PollEvent(&event)) {
 		switch (event.type) {
 			case SDL_QUIT: {
-				return 1;
+				this->should_close = true;
+				return DG_WINDOW_SHOULD_CLOSE;
 				break;
 			}
 		}
@@ -107,7 +111,7 @@ int32_t DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
 		}
 	}
 	
-	return SDL_UpdateWindowSurface(this->window) ? 1 : 0;
+	return SDL_UpdateWindowSurface(this->window) ? DG_WINDOW_DRAW_FAILED : DG_WINDOW_CONTINUE;
 }
 
 DgError DgWindowAssocaiteBitmap(DgWindow * restrict this, DgBitmap * restrict bitmap) {
@@ -185,7 +189,7 @@ static LRESULT CALLBACK DgWindow_NTProcessWindowEvent(HWND window_handle, UINT m
 	return DefWindowProc(window_handle, message, wparam, lparam);
 }
 
-uint32_t DgWindowInit(DgWindow *this, const char *title, DgVec2I size) {
+DgError DgWindowInit(DgWindow *this, const char *title, DgVec2I size) {
 	/**
 	 * Create a window (Windows NT)
 	 * 
@@ -203,7 +207,7 @@ uint32_t DgWindowInit(DgWindow *this, const char *title, DgVec2I size) {
 	// Register the class
 	if (RegisterClass(&this->window_class) == 0) {
 		DgLog(DG_LOG_VERBOSE, "RegisterClass: error code = %d", GetLastError());
-		return 1;
+		return DG_ERROR_FAILED;
 	}
 	
 	this->window_handle = CreateWindowEx(
@@ -221,20 +225,20 @@ uint32_t DgWindowInit(DgWindow *this, const char *title, DgVec2I size) {
 	
 	if (this->window_handle == NULL) {
 		DgLog(DG_LOG_VERBOSE, "CreateWindowEx: error code = %d", GetLastError());
-		return 1;
+		return DG_ERROR_FAILED;
 	}
 	
 	// Pop up the window
 	ShowWindow(this->window_handle, SW_SHOW);
 	
-	return 0;
+	return DG_ERROR_SUCCESS;
 }
 
 void DgWindowFree(DgWindow *this) {
 	return;
 }
 
-int32_t DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
+DgWindowStatus DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
 	/**
 	 * Update the window contents with to use the given bitmap (or NULL if using
 	 * the assocaited bitmap).
