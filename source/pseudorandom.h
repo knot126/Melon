@@ -23,3 +23,8 @@ float DgPseudorandomXORShiftF32(void);
 uint32_t DgPseudorandomInt(void);
 float DgPseudorandomFloat(void);
 bool DgPseudorandomBool(void);
+
+// Shorthands
+#define DgPrandInt DgPseudorandomInt
+#define DgPrandFloat DgPseudorandomFloat
+#define DgPrandBool DgPseudorandomBool
