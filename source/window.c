@@ -244,6 +244,29 @@ bool DgWindowGetMouseDown(DgWindow * restrict this) {
 #endif
 }
 
+DgVec2I DgWindowGetSize(DgWindow * restrict this) {
+	/**
+	 * Get the current size of the window.
+	 * 
+	 * @param this Window object
+	 * @return Window size in pixels
+	 */
+	
+	return this->size;
+}
+
+bool DgWindowShouldClose(DgWindow * restrict this) {
+	/**
+	 * Return if the window should close
+	 * 
+	 * @param this Window object
+	 * @return true if the window should close, false if the window should keep
+	 * running
+	 */
+	
+	return this->should_close;
+}
+
 #elif defined(DG_USE_WINDOWS_API)
 
 #include <windows.h>

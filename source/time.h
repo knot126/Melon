@@ -22,3 +22,5 @@ double DgTime(void);
 double DgRealTime(void);
 
 uint32_t DgNsecTime(void);
+
+void DgSleep(double length);

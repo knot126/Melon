@@ -14,6 +14,9 @@
 
 #include <time.h>
 #include <inttypes.h>
+#ifdef __linux__
+#include <unistd.h>
+#endif
 
 #include "time.h"
 
@@ -73,3 +76,19 @@ double DgTimeUntilEveryoneDies(void) {
 	
 	return 1710402698.0 - DgTime();
 }
+
+#ifdef __linux__
+void DgSleep(double length) {
+	/**
+	 * Sleep the thread for `length` seconds.
+	 * 
+	 * @param length Length of the sleep
+	 */
+	
+	if (length < 0.0) {
+		return;
+	}
+	
+	usleep((useconds_t) (1000000 * length));
+}
+#endif
