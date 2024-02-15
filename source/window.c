@@ -27,11 +27,16 @@
 
 #include "window.h"
 
-#if defined(DG_USE_SDL2)
+#if defined(DG_USE_SDL2) || defined(DG_USE_X11)
 
+#ifdef DG_USE_SDL2
 #include <SDL2/SDL.h>
 
 static uint32_t gWindowCount_ = 0;
+#elifdef DG_USE_X11
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#endif
 
 DgError DgWindowInit(DgWindow *this, const char *title, DgVec2I size) {
 	/**
@@ -41,6 +46,7 @@ DgError DgWindowInit(DgWindow *this, const char *title, DgVec2I size) {
 	 * @return Zero on success, non-zero on failure
 	 */
 	
+#ifdef DG_USE_SDL2
 	gWindowCount_++;
 	
 	if (!SDL_WasInit(0)) {
@@ -49,6 +55,34 @@ DgError DgWindowInit(DgWindow *this, const char *title, DgVec2I size) {
 	
 	this->window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, size.x, size.y, 0);
 	this->surface = SDL_GetWindowSurface(this->window);
+#elifdef DG_USE_X11
+	this->display = XOpenDisplay(NULL);
+	
+	if (!this->display) {
+		return DG_ERROR_FAILED;
+	}
+	
+	int screen = DefaultScreen(this->display);
+	Window root = RootWindow(this->display, screen);
+	Visual *visual = DefaultVisual(this->display, screen);
+	Colormap colourmap = XCreateColormap(this->display, root, visual, AllocNone);
+	
+	XSetWindowAttributes attributes;
+	attributes.colormap = colourmap;
+	attributes.event_mask = ExposureMask | KeyPressMask | KeyReleaseMask;
+	
+	this->window = XCreateWindow(this->display, root, 0, 0, size.x, size.y, 0, DefaultDepth(this->display, screen), InputOutput, visual, CWColormap | CWEventMask, &attributes);
+	
+	XFreeColormap(this->display, colourmap);
+	
+	XMapWindow(this->display, this->window);
+	XStoreName(this->display, this->window, title);
+	
+	if (!this->window) {
+		return DG_ERROR_FAILED;
+	}
+#endif
+	
 	this->size = size;
 	this->should_close = false;
 	
@@ -62,11 +96,16 @@ void DgWindowFree(DgWindow *this) {
 	 * @param this Window object
 	 */
 	
+#ifdef DG_USE_SDL2
 	gWindowCount_--;
 	
 	if (gWindowCount_ == 0) {
 		SDL_Quit();
 	}
+#elifdef DG_USE_X11
+	XDestroyWindow(this->display, this->window);
+	XCloseDisplay(this->display);
+#endif
 }
 
 DgWindowStatus DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
@@ -87,6 +126,7 @@ DgWindowStatus DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
 	 *         DG_WINDOW_SHOULD_CLOSE if the window is expected to close
 	 */
 	
+#ifdef DG_USE_SDL2
 	// Check up on events
 	SDL_Event event;
 	
@@ -112,6 +152,20 @@ DgWindowStatus DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
 	}
 	
 	return SDL_UpdateWindowSurface(this->window) ? DG_WINDOW_DRAW_FAILED : DG_WINDOW_CONTINUE;
+#elifdef DG_USE_X11
+	while (XPending(this->display)) {
+		XEvent event;
+		
+		XNextEvent(this->display, &event);
+		
+		if (event.type == KeyPress) {
+			this->should_close = true;
+			return DG_WINDOW_SHOULD_CLOSE;
+		}
+	}
+	
+	return DG_WINDOW_CONTINUE;
+#endif
 }
 
 DgError DgWindowAssocaiteBitmap(DgWindow * restrict this, DgBitmap * restrict bitmap) {
@@ -125,9 +179,13 @@ DgError DgWindowAssocaiteBitmap(DgWindow * restrict this, DgBitmap * restrict bi
 	 * @param bitmap Bitmap object
 	 */
 	
+#ifdef DG_USE_SDL2
 	DgBitmapSetSource(bitmap, this->surface->pixels, this->size, 4);
 	
 	return DG_ERROR_SUCCESSFUL;
+#else
+	return DG_ERROR_NOT_IMPLEMENTED;
+#endif
 }
 
 DgVec2 DgWindowGetMouseLocation(DgWindow * restrict this) {
@@ -138,12 +196,16 @@ DgVec2 DgWindowGetMouseLocation(DgWindow * restrict this) {
 	 * @return Cursor position relative to window
 	 */
 	
+#ifdef DG_USE_SDL2
 	int x, y;
 	
 	SDL_PumpEvents();
 	SDL_GetMouseState(&x, &y);
 	
 	return (DgVec2) {(float)(x) / (float)(this->size.x), ((float)(y) / (float)(this->size.y))};
+#else
+	return (DgVec2) {0.0, 0.0};
+#endif
 }
 
 DgVec2I DgWindowGetMouseLocation2(DgWindow * restrict this) {
@@ -154,12 +216,16 @@ DgVec2I DgWindowGetMouseLocation2(DgWindow * restrict this) {
 	 * @return Cursor position relative to window in window coordinates
 	 */
 	
+#ifdef DG_USE_SDL2
 	int x, y;
 	
 	SDL_PumpEvents();
 	SDL_GetMouseState(&x, &y);
 	
 	return (DgVec2I) {x, y};
+#else
+	return (DgVec2I) {0, 0};
+#endif
 }
 
 bool DgWindowGetMouseDown(DgWindow * restrict this) {
@@ -170,8 +236,12 @@ bool DgWindowGetMouseDown(DgWindow * restrict this) {
 	 * @return Cursor position relative to window
 	 */
 	
+#if DG_USE_SDL2
 	SDL_PumpEvents();
 	return !!(SDL_GetMouseState(NULL, NULL) & SDL_BUTTON_LMASK);
+#else
+	return false;
+#endif
 }
 
 #elif defined(DG_USE_WINDOWS_API)
@@ -331,7 +401,7 @@ bool DgWindowGetMouseDown(DgWindow *this) {
 
 #else
 
-uint32_t DgWindowInit(DgWindow *this, const char *title, DgVec2I size) {
+DgError DgWindowInit(DgWindow *this, const char *title, DgVec2I size) {
 	return 0;
 }
 
