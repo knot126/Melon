@@ -66,5 +66,7 @@ DgError DgWindowAssocaiteBitmap(DgWindow * restrict this, DgBitmap * restrict bi
 DgVec2 DgWindowGetMouseLocation(DgWindow * restrict this);
 DgVec2I DgWindowGetMouseLocation2(DgWindow * restrict this);
 bool DgWindowGetMouseDown(DgWindow * restrict this);
+void *DgWindowGetNativeDisplayHandle(DgWindow * restrict this);
+void *DgWindowGetNativeWindowHandle(DgWindow * restrict this);
 DgVec2I DgWindowGetSize(DgWindow * restrict this);
 bool DgWindowShouldClose(DgWindow * restrict this);

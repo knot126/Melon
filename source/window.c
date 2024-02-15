@@ -244,6 +244,32 @@ bool DgWindowGetMouseDown(DgWindow * restrict this) {
 #endif
 }
 
+void *DgWindowGetNativeDisplayHandle(DgWindow * restrict this) {
+	/**
+	 * Get the native display handle used with EGL.
+	 * 
+	 * @param this Window object
+	 * @return Handle to the native display object 
+	 */
+	
+#ifdef DG_USE_X11
+	return (void *) this->display;
+#else
+	return NULL;
+#endif
+}
+
+void *DgWindowGetNativeWindowHandle(DgWindow * restrict this) {
+	/**
+	 * Get the native window handle used with EGL.
+	 * 
+	 * @param this Window object
+	 * @return Handle to the native window object 
+	 */
+	
+	return (void *) this->window;
+}
+
 DgVec2I DgWindowGetSize(DgWindow * restrict this) {
 	/**
 	 * Get the current size of the window.
