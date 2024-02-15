@@ -629,6 +629,63 @@ uint32_t DgStringSeminise(const char *string) {
 	return hash;
 }
 
+const char gIntegerToStringTable[] = {
+	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e',
+	'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+	'u', 'v', 'w', 'x', 'y', 'z',
+};
+
+const char *DgIntegerToString(uint8_t base, int64_t data) {
+	/**
+	 * Convert an integer to a string
+	 * 
+	 * @param base output base of the number, between 2 and 36
+	 * @param data Integer to convert
+	 * @return Memory of the stringified integer
+	 */
+	
+	if (base < 2 || base > 36) {
+		return NULL;
+	}
+	
+	// Find if it's negative
+	bool negative = data < 0;
+	
+	// Find the amount of memory needed for our string.
+	size_t string_length = 0;
+	
+	if (negative) { string_length++; }
+	
+	int64_t temp = data;
+	
+	do {
+		string_length++;
+	} while (temp /= base);
+	
+	// Allocate memory
+	char *out = DgMemoryAllocate(string_length + 1);
+	
+	if (!out) {
+		return NULL;
+	}
+	
+	// Actually do the conversion
+	if (negative) {
+		out[0] = '-';
+	}
+	
+	size_t i = string_length - 1;
+	
+	do {
+		out[i] = gIntegerToStringTable[data % base];
+		i--;
+	} while (data /= base);
+	
+	out[string_length] = '\0';
+	
+	return out;
+}
+
 const char gBase64EncodeTable[] = {
 	'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q',
 	'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',

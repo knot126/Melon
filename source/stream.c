@@ -118,6 +118,26 @@ void DgBufferFromStream(DgMemoryStream *stream, void **pointer, size_t *size) {
 	DgFree(stream);
 }
 
+void DgMemoryStreamGetPointersAndSize(DgMemoryStream *stream, size_t *size, void **data) {
+	/**
+	 * Get the current pointers and size of the stream without allocating any 
+	 * new buffer. All feilds are optional and can be replaced with NULL.
+	 * 
+	 * @param size Pointer to where to store size of the data stream
+	 * @param data Pointer to where to store the pointer to the data
+	 */
+	
+	// Get current stream size
+	if (size) {
+		size[0] = stream->size;
+	}
+	
+	// Get current stream data
+	if (data) {
+		data[0] = (void *) stream->data;
+	}
+}
+
 size_t DgMemoryStreamError(DgMemoryStream *stream) {
 	/**
 	 * Get the latest error from the stream and set the error to DG_MEMORY_STREAM_OKAY.

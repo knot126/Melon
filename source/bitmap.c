@@ -744,7 +744,7 @@ void DgBitmapWritePPM(DgBitmap *this, const char * const filepath) {
 	 * @param filepath Path to write the file
 	 */
 	
-	if (this->chan != 3) {
+	if (this->chan < 3) {
 		return;
 	}
 	
@@ -752,18 +752,18 @@ void DgBitmapWritePPM(DgBitmap *this, const char * const filepath) {
 	DgStreamOpen(NULL, &stream, filepath, DG_STREAM_WRITE);
 	
 	// Write header
-// 	DgFileStreamWriteString(file, "P6\n");
-// 	DgFileStreamWriteIntegerString(file, this->width);
-// 	DgFileStreamWriteString(file, " ");
-// 	DgFileStreamWriteIntegerString(file, this->height);
-// 	DgFileStreamWriteString(file, "\n255\n");
-// 	
-// 	const size_t pixels = this->width * this->height;
-// 	
-// 	// Write pixels
-// 	for (size_t i = 0; i < pixels; i++) {
-// 		DgFileStreamWrite(file, 3, &this->src[i * this->chan]);
-// 	}
+	DgStreamWriteString(&stream, "P6\n");
+	DgStreamWriteIntegerString(&stream, this->width);
+	DgStreamWriteString(&stream, " ");
+	DgStreamWriteIntegerString(&stream, this->height);
+	DgStreamWriteString(&stream, "\n255\n");
+	
+	const size_t pixels = this->width * this->height;
+	
+	// Write pixels
+	for (size_t i = 0; i < pixels; i++) {
+		DgStreamWrite(&stream, 3, &this->src[i * this->chan]);
+	}
 	
 	DgStreamClose(&stream);
 }

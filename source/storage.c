@@ -681,12 +681,30 @@ size_t DgStreamLength(DgStream *context) {
 
 DgError DgStreamWriteString(DgStream * restrict context, const char * restrict data) {
 	/**
-	 * Write a Float64 to a stream.
+	 * Write a string to a stream.
 	 * 
 	 * @param context Stream object
-	 * @param data The Float64 to write
+	 * @param data The string to write
 	 * @return Error code
 	 */
 	
-	return DgStreamWrite(context, DgStringLength(data) + 1, data);
+	return DgStreamWrite(context, DgStringLength(data), data);
+}
+
+DgError DgStreamWriteIntegerString(DgStream * restrict context, int64_t data) {
+	/**
+	 * Write a stringified integer to a stream WITHOUT a null byte.
+	 * 
+	 * @param context Stream object
+	 * @param data The string to write
+	 * @return Error code
+	 */
+	
+	const char *str = DgIntegerToString(10, data);
+	
+	if (!str) {
+		return DG_ERROR_ALLOCATION_FAILED;
+	}
+	
+	return DgStreamWrite(context, DgStringLength(str), str);
 }

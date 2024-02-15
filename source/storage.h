@@ -172,3 +172,4 @@ size_t DgStreamLength(DgStream *context);
 #include "storage_generated.h"
 
 DgError DgStreamWriteString(DgStream * restrict context, const char * restrict data);
+DgError DgStreamWriteIntegerString(DgStream * restrict context, int64_t data);

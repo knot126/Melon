@@ -50,6 +50,7 @@ DgMemoryStream *DgMemoryStreamFromBuffer(void *buffer, size_t size);
 
 void DgMemoryStreamFree(DgMemoryStream *stream);
 void DgBufferFromStream(DgMemoryStream *stream, void **pointer, size_t *size);
+void DgMemoryStreamGetPointersAndSize(DgMemoryStream *stream, size_t *size, void **data);
 
 size_t DgMemoryStreamError(DgMemoryStream *stream);
 

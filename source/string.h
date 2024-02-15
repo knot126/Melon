@@ -35,6 +35,7 @@ size_t DgStringLength(const char * const string);
 char *DgStringSlice(const char *base, size_t start, size_t end);
 int64_t DgStringFind(const char * const string, const char * const what, const size_t which);
 uint32_t DgStringSeminise(const char *string);
+const char *DgIntegerToString(uint8_t base, int64_t data);
 char *DgStringEncodeBase64(size_t length, const void *input_);
 char *DgStringEncodeBase16(size_t length, const void *input_);
 
