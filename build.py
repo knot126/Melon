@@ -45,10 +45,7 @@ def create_folder(d, mode = 0o755):
 	Create a directory
 	"""
 	
-	try:
-		os.makedirs(d, mode = mode)
-	except FileExistsError:
-		print(f"\033[33mWarning: Tried to created file \"{d}\" when it already exsists.\033[0m")
+	os.makedirs(d, mode = mode, exist_ok = True)
 
 def hash_data(data):
 	"""
@@ -58,7 +55,7 @@ def hash_data(data):
 	if (type(data) == str):
 		data = data.encode('utf-8')
 	
-	return hashlib.shake_256(data).hexdigest(20)
+	return hashlib.blake2b(data).hexdigest()
 
 def preprocess_file(filename, includes, seen = None):
 	"""
@@ -152,12 +149,27 @@ def align_string(base, count = 8):
 	
 	return "".join(string)
 
+def which_cc():
+	"""
+	Get the best available c compiler name
+	"""
+	
+	cc_names = ["clang", "gcc", "tcc", "cc"]
+	
+	for cc in cc_names:
+		path = shutil.which(cc)
+		
+		if (path):
+			return cc
+	
+	return None
+
 def main():
-	if (os.name == "nt"):
+	if (sys.platform == "win32"):
 		os.system("cls")
 	
 	# Set up the profile
-	profile = sys.argv[1] if len(sys.argv) > 1 else "default"
+	profile = sys.argv[1] if len(sys.argv) > 1 else sys.platform
 	config = load_build_config(profile)
 	
 	if (config == None):
@@ -174,7 +186,6 @@ def main():
 	# Create the dirs we need if they don't exist
 	create_folder("temp", mode = 0o755)
 	create_folder("temp/outputs", mode = 0o755)
-	create_folder("temp/runes", mode = 0o755)
 	
 	# I don't know where else to put this stuff (includes and defines) so im
 	# just putting them here.
@@ -196,14 +207,16 @@ def main():
 	print(f"\033[35m[Defines: {defines}]\033[0m")
 	
 	# Get compiler info (TODO: hope we can make this somewhat automatic soon)
-	compiler = config.get("compiler", "cc")
+	compiler = config.get("compiler", which_cc())
+	
+	print(f"\033[35m[C compiler: {compiler}]\033[0m")
 	
 	# Enumerate files to build
 	print(f"\033[36m[Enumerate and hash files]\033[m")
 	
 	files = []
 	
-	for folder in config.get("folders", ["src"]):
+	for folder in config.get("sources", ["source"]):
 		filenames, outline = list_files_in_folder(folder)
 		files += filenames
 	
@@ -218,9 +231,9 @@ def main():
 	if (os.name != "nt"):
 		for filename in files:
 			print(f"\033[36m[Process file: \"{filename}\"]\033[m")
-			hashes[filename] = hash_command_output(f"{compiler} -E {filename} {defines} {include}")
+			hashes[filename] = hash_command_output(f"{compiler} -E -Wno-c2x-extensions {filename} {defines} {include}")
 	else:
-		# NT has show Popen so fuck that
+		# NT has slow Popen so fuck that
 		for filename in files:
 			print(f"\033[36m[Process file: \"{filename}\"]\033[m")
 			hashes[filename] = hash_preprocessed_file(filename, config["includes"])
@@ -257,8 +270,8 @@ def main():
 	# Set up linker
 	include = ""
 	
-	for incl in config["links"]:
-		print(f"\033[36m[Adding linked library {incl}]\033[0m")
+	for incl in config.get("links", []):
+		# print(f"\033[36m[Adding linked library {incl}]\033[0m")
 		include += f"-l{incl} "
 	
 	# output files
@@ -268,7 +281,7 @@ def main():
 		object_files += f"temp/outputs/{hashes[k]}.out "
 	
 	# Final binary name
-	executable_ext = {"posix": ".bin", "nt": ".exe"}.get(os.name, ".executable")
+	executable_ext = {"linux": "", "win32": ".exe"}.get(sys.platform, ".execimg")
 	executable_name = config.get("output", "app")
 	
 	# Link!

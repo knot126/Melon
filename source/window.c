@@ -36,6 +36,7 @@ static uint32_t gWindowCount_ = 0;
 #elifdef DG_USE_X11
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <signal.h>
 #endif
 
 DgError DgWindowInit(DgWindow *this, const char *title, DgVec2I size) {
@@ -69,7 +70,7 @@ DgError DgWindowInit(DgWindow *this, const char *title, DgVec2I size) {
 	
 	XSetWindowAttributes attributes;
 	attributes.colormap = colourmap;
-	attributes.event_mask = ExposureMask | KeyPressMask | KeyReleaseMask;
+	attributes.event_mask = ExposureMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask;
 	
 	this->window = XCreateWindow(this->display, root, 0, 0, size.x, size.y, 0, DefaultDepth(this->display, screen), InputOutput, visual, CWColormap | CWEventMask, &attributes);
 	
@@ -160,7 +161,9 @@ DgWindowStatus DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
 		
 		if (event.type == KeyPress) {
 			this->should_close = true;
-			return DG_WINDOW_SHOULD_CLOSE;
+		}
+		else if (event.type == DestroyNotify) {
+			this->should_close = true;
 		}
 	}
 	
