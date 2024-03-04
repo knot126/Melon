@@ -639,6 +639,8 @@ const char *DgIntegerToString(uint8_t base, int64_t data) {
 	/**
 	 * Convert an integer to a string
 	 * 
+	 * @todo proper full tests, seems to work for data > 0
+	 * 
 	 * @param base output base of the number, between 2 and 36
 	 * @param data Integer to convert
 	 * @return Memory of the stringified integer
