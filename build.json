@@ -4,8 +4,7 @@
 			"rm -r ./test/util",
 			"cp -r ./source ./test/util"
 		],
-		"compiler": "clang",
-		"folders": ["test"],
+		"sources": ["test"],
 		"includes": ["test"],
 		"links": ["m", "pthread", "SDL2"],
 		"defines": ["DG_USE_SDL2", "MELON_CRYPTOGRAPHY_RANDOM"],
@@ -16,8 +15,7 @@
 			"rd test\\util /s /q",
 			"xcopy .\\source test\\util /e /i"
 		],
-		"compiler": "clang",
-		"folders": ["test"],
+		"sources": ["test"],
 		"includes": ["test"],
 		"links": ["user32", "gdi32", "Ws2_32", "bcrypt"],
 		"defines": ["DG_USE_WINDOWS_API", "MELON_CRYPTOGRAPHY_RANDOM"],

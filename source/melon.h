@@ -1,5 +1,6 @@
 #include "alloc.h"
 #include "args.h"
+#include "value.h"
 #include "array.h"
 #include "bitmap.h"
 #include "bytes.h"

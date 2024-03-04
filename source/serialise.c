@@ -30,15 +30,15 @@ DgError DgSerialiseWriteValue(DgStream * restrict stream, const DgValue * restri
 	
 	DgError status;
 	
-	DgValueType type = DG_TABLE_TYPE_NIL;
+	DgValueType type = DG_TYPE_NIL;
 	
 	// Some types cannot be serialised in a way that makes sense. For static
 	// strings, it's better just to treat them as strings, and for pointers it
 	// makes no sense to store them since they will likely change by the time
 	// they are deserialised.
 	switch (value->type) {
-		case DG_TABLE_TYPE_STATIC_STRING: type = DG_TABLE_TYPE_STRING; break;
-		case DG_TABLE_TYPE_POINTER: type = DG_TABLE_TYPE_NIL; break;
+		case DG_TYPE_STATIC_STRING: type = DG_TYPE_STRING; break;
+		case DG_TYPE_POINTER: type = DG_TYPE_NIL; break;
 		default: type = value->type; break;
 	}
 	
@@ -51,45 +51,45 @@ DgError DgSerialiseWriteValue(DgStream * restrict stream, const DgValue * restri
 	
 	// Write the value
 	switch (type) {
-		case DG_TABLE_TYPE_NIL:
+		case DG_TYPE_NIL:
 			break;
-		case DG_TABLE_TYPE_BOOL:
+		case DG_TYPE_BOOL:
 			status = DgStreamWriteInt8(stream, value->data.asBool);
 			break;
-		case DG_TABLE_TYPE_INT8:
+		case DG_TYPE_INT8:
 			status = DgStreamWriteInt8(stream, value->data.asInt8);
 			break;
-		case DG_TABLE_TYPE_UINT8:
+		case DG_TYPE_UINT8:
 			status = DgStreamWriteUInt8(stream, value->data.asUInt8);
 			break;
-		case DG_TABLE_TYPE_INT16:
+		case DG_TYPE_INT16:
 			status = DgStreamWriteInt16(stream, value->data.asInt16);
 			break;
-		case DG_TABLE_TYPE_UINT16:
+		case DG_TYPE_UINT16:
 			status = DgStreamWriteUInt16(stream, value->data.asUInt16);
 			break;
-		case DG_TABLE_TYPE_INT32:
+		case DG_TYPE_INT32:
 			status = DgStreamWriteInt32(stream, value->data.asInt32);
 			break;
-		case DG_TABLE_TYPE_UINT32:
+		case DG_TYPE_UINT32:
 			status = DgStreamWriteUInt32(stream, value->data.asUInt32);
 			break;
-		case DG_TABLE_TYPE_INT64:
+		case DG_TYPE_INT64:
 			status = DgStreamWriteInt64(stream, value->data.asInt64);
 			break;
-		case DG_TABLE_TYPE_UINT64:
+		case DG_TYPE_UINT64:
 			status = DgStreamWriteUInt64(stream, value->data.asUInt64);
 			break;
-		case DG_TABLE_TYPE_STRING:
+		case DG_TYPE_STRING:
 			status = DgStreamWriteString(stream, value->data.asStaticString);
 			break;
-		case DG_TABLE_TYPE_FLOAT32:
+		case DG_TYPE_FLOAT32:
 			status = DgStreamWriteFloat32(stream, value->data.asFloat32);
 			break;
-		case DG_TABLE_TYPE_FLOAT64:
+		case DG_TYPE_FLOAT64:
 			status = DgStreamWriteFloat64(stream, value->data.asFloat64);
 			break;
-		case DG_TABLE_TYPE_TABLE: {
+		case DG_TYPE_TABLE: {
 			DgTable *table = value->data.asTable;
 			size_t length = DgTableLength(table);
 			

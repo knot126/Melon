@@ -12,18 +12,6 @@
  * Generic value arrays
  */
 
-#pragma once
+#include "array.h"
 
-#include "common.h"
-#include "value.h"
-
-/**
- * Header part of the array memory block
- * 
- * @todo This needs to be implemented
- */
-typedef struct DgArray {
-	DgValue *items;
-	size_t length;
-	size_t allocated;
-} DgArray;
+/// @todo it all
