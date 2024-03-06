@@ -12,7 +12,7 @@
  * Storage facilities
  */
 
-#include <string.h>
+#include "common.h"
 
 #include "error.h"
 #include "alloc.h"

@@ -1,5 +1,6 @@
 build/
-test/util
+test/source/util
+test/temp
 temp/
 tmp/
 *.o

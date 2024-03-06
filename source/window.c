@@ -461,7 +461,7 @@ void DgWindowFree(DgWindow *this) {
 	return;
 }
 
-int32_t DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
+DgWindowStatus DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
 	return 1;
 }
 

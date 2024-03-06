@@ -238,6 +238,9 @@ def main():
 			print(f"\033[36m[Process file: \"{filename}\"]\033[m")
 			hashes[filename] = hash_preprocessed_file(filename, config["includes"])
 	
+	# Get if the output object should be shared
+	shared = config.get("shared", False)
+	
 	# Build changed files
 	print(f"\033[36m[Build items]\033[m")
 	
@@ -259,7 +262,7 @@ def main():
 		else:
 			print(f"\033[36m[{progress} Building item: \"{infile}\"]\033[0m")
 			
-			status = os.system(f"{compiler} -c {defines} -o {outfile} -Wall -Wextra -Wno-missing-braces -Wno-unused-parameter {infile} {include}")
+			status = os.system(f"{compiler} -c {defines} -o {outfile} {'-fpic' if shared else ''} -Wall -Wextra -Wno-missing-braces -Wno-unused-parameter {infile} {include}")
 			
 			if (status):
 				print(f"\033[31m[Failed to build \"{infile}\"]\033[0m")
@@ -281,13 +284,12 @@ def main():
 		object_files += f"temp/outputs/{hashes[k]}.out "
 	
 	# Final binary name
-	executable_ext = {"linux": "", "win32": ".exe"}.get(sys.platform, ".execimg")
 	executable_name = config.get("output", "app")
 	
 	# Link!
 	print(f"\033[32m[Linking binary]\033[0m")
 	
-	link_cmd = f"{compiler} -o temp/{executable_name}{executable_ext} -std=c23 {object_files} {include}"
+	link_cmd = f"{compiler} -o temp/{executable_name} -std=c23 {'-shared' if shared else ''} -rdynamic {object_files} {include}"
 	status = os.system(link_cmd)
 	
 	if (status):

@@ -1,24 +1,10 @@
 {
 	"linux": {
-		"prebuild": [
-			"rm -r ./test/util",
-			"cp -r ./source ./test/util"
-		],
-		"sources": ["test"],
-		"includes": ["test"],
+		"prebuild": [],
+		"shared": true,
+		"includes": [],
 		"links": ["m", "pthread", "SDL2"],
-		"defines": ["DG_USE_SDL2", "MELON_CRYPTOGRAPHY_RANDOM"],
-		"output": "melon-test-linux"
-	},
-	"windows-clang": {
-		"prebuild": [
-			"rd test\\util /s /q",
-			"xcopy .\\source test\\util /e /i"
-		],
-		"sources": ["test"],
-		"includes": ["test"],
-		"links": ["user32", "gdi32", "Ws2_32", "bcrypt"],
-		"defines": ["DG_USE_WINDOWS_API", "MELON_CRYPTOGRAPHY_RANDOM"],
-		"output": "melon-test-windows"
+		"defines": ["MELON_CRYPTOGRAPHY_RANDOM"],
+		"output": "libmelon.so"
 	}
 }
