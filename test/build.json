@@ -1,24 +1,22 @@
 {
 	"linux": {
 		"prebuild": [
-			"rm -r ./test/util",
-			"cp -r ./source ./test/util"
+			"rm -r ./source/util",
+			"cp -r ../source ./source/util"
 		],
-		"sources": ["test"],
-		"includes": ["test"],
+		"includes": ["source"],
 		"links": ["m", "pthread", "SDL2"],
 		"defines": ["DG_USE_SDL2", "MELON_CRYPTOGRAPHY_RANDOM"],
-		"output": "melon-test-linux"
+		"output": "melontest"
 	},
 	"windows-clang": {
 		"prebuild": [
-			"rd test\\util /s /q",
-			"xcopy .\\source test\\util /e /i"
+			"rd source\\util /s /q",
+			"xcopy .\\source source\\util /e /i"
 		],
-		"sources": ["test"],
-		"includes": ["test"],
+		"includes": ["source"],
 		"links": ["user32", "gdi32", "Ws2_32", "bcrypt"],
 		"defines": ["DG_USE_WINDOWS_API", "MELON_CRYPTOGRAPHY_RANDOM"],
-		"output": "melon-test-windows"
+		"output": "melontest.exe"
 	}
 }
