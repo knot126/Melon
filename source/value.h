@@ -16,6 +16,7 @@
 
 #include "common.h"
 #include "error.h"
+#include "bytes.h"
 
 typedef uint16_t DgValueType;
 typedef DgValueType DgTableType;
@@ -43,11 +44,12 @@ enum {
 	DG_TYPE_FLOAT64 = 0x32,
 	// Low level data class
 	DG_TYPE_POINTER = 0x41,
+	DG_TYPE_BYTES_AND_UINT32 = 0x42,
 	// Value terminated array class
 	DG_TYPE_STRING = 0x51,
 	DG_TYPE_STATIC_STRING = 0x52,
 	// High level class
-	DG_TYPE_DATA = 0x61, // coming soon
+	DG_TYPE_BYTES = 0x61, // coming soon
 	DG_TYPE_ARRAY = 0x62,
 	DG_TYPE_TABLE = 0x63,
 };
@@ -70,9 +72,10 @@ typedef union DgValueData {
 	void *asPointer;
 	struct DgArray *asArray;
 	struct DgTable *asTable;
+	DgBytes *asBytes;
 	char *asString;
 	const char *asStaticString;
-	uint8_t *asBytes;
+	uint8_t *asRawBytes;
 	float asFloat32;
 	double asFloat64;
 	bool asBool;
