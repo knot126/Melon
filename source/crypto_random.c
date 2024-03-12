@@ -30,6 +30,8 @@
 	#ifndef BCRYPT_RNG_ALG_HANDLE
 		#define BCRYPT_RNG_ALG_HANDLE ((BCRYPT_ALG_HANDLE) 0x00000081)
 	#endif
+#elif defined(__linux__)
+	#include <sys/random.h>
 #else
 // ...
 #endif
@@ -72,16 +74,23 @@ DgError DgRandom(size_t size, void *buffer) {
 	 * @see https://sockpuppet.org/blog/2014/02/25/safely-generate-random-numbers/
 	 * @see https://www.2uo.de/myths-about-urandom/
 	 * 
+	 * getrandom() is basically using using /dev/urandom and is what I'm using
+	 * now:
+	 * 
+	 * @see https://man7.org/linux/man-pages/man2/getrandom.2.html
+	 * 
 	 * @param size Number of random bytes to generate
 	 * @param buffer Buffer to write bytes in
 	 */
 	
 #ifdef _WIN32
-	NTSTATUS status;
+	NTSTATUS status = BCryptGenRandom(BCRYPT_RNG_ALG_HANDLE, buffer, size, 0);
 	
-	status = BCryptGenRandom(BCRYPT_RNG_ALG_HANDLE, buffer, size, 0);
+	return (status == STATUS_SUCCESS) ? DG_ERROR_SUCCESS : DG_ERROR_FAILED;
+#elif defined(__linux__)
+	size_t real_size = getrandom(buffer, size, 0);
 	
-	return (status == STATUS_SUCCESS) ? (DG_ERROR_SUCCESS) : (DG_ERROR_FAILED);
+	return (real_size == size) ? DG_ERROR_SUCCESS : DG_ERROR_FAILED;
 #else
 	DgLog(DG_LOG_FATAL, "High quality random number generator is not available on this platform.");
 	
