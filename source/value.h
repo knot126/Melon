@@ -44,7 +44,7 @@ enum {
 	DG_TYPE_FLOAT64 = 0x32,
 	// Low level data class
 	DG_TYPE_POINTER = 0x41,
-	DG_TYPE_BYTES_AND_UINT32 = 0x42,
+	DG_TYPE_BYTES_AND_SIZE32 = 0x42,
 	// Value terminated array class
 	DG_TYPE_STRING = 0x51,
 	DG_TYPE_STATIC_STRING = 0x52,
@@ -87,7 +87,7 @@ typedef union DgValueData {
 typedef struct DgValue {
 	DgValueData data; // Raw data bytes
 	uint32_t metadata;     // Used for string hash or cached array length
-	DgTableType type;      // Type of value stored
+	DgValueType type;      // Type of value stored
 	uint16_t flags;        // To be used for flags applied to the value
 } DgValue;
 
@@ -111,6 +111,25 @@ DgError DgValueStaticString(DgValue * restrict value, const char * restrict data
 DgError DgValuePointer(DgValue * restrict value, void *data);
 DgError DgValueArray(DgValue * restrict value, struct DgArray *data);
 DgError DgValueTable(DgValue * restrict value, struct DgTable *data);
+
+DgValue DgMakeNil(void);
+DgValue DgMakeBool(bool data);
+DgValue DgMakeInt8(int8_t data);
+DgValue DgMakeUInt8(uint8_t data);
+DgValue DgMakeInt16(int16_t data);
+DgValue DgMakeUInt16(uint16_t data);
+DgValue DgMakeInt32(int32_t data);
+DgValue DgMakeUInt32(uint32_t data);
+DgValue DgMakeInt64(int64_t data);
+DgValue DgMakeUInt64(uint64_t data);
+DgValue DgMakeFloat32(float data);
+DgValue DgMakeFloat64(double data);
+DgValue DgMakeString(const char * data);
+DgValue DgMakeStaticString(const char * data);
+DgValue DgMakePointer(void * data);
+DgValue DgMakeArray(struct DgArray * data);
+DgValue DgMakeTable(struct DgTable * data);
+
 DgError DgValueFree(DgValue * restrict this);
 
 bool DgValueEqual(const DgValue * const restrict value1, const DgValue * const restrict value2);

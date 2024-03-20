@@ -22,29 +22,21 @@
 #define ROTR(x, y) (((x) >> (y)) | ((x) << (32 - (y))))
 
 #define QR(a, b, c, d) \
-	a += b; d ^= a; ROTL(d, 16); \
-	c += d; b ^= c; ROTL(b, 12); \
-	a += b; d ^= a; ROTL(d, 8); \
-	c += d; b ^= c; ROTL(b, 7);
+	a += b; d ^= a; d = ROTL(d, 16); \
+	c += d; b ^= c; b = ROTL(b, 12); \
+	a += b; d ^= a; d = ROTL(d, 8); \
+	c += d; b ^= c; b = ROTL(b, 7);
 
-static void DgCryptoSymmetric_ChaCha20_Block(const uint32_t * const restrict in, uint32_t * const restrict out, const size_t rounds) {
+static void DgCryptoSymmetric_ChaCha_Block(const uint32_t * const restrict in, uint32_t * const restrict out, const size_t rounds) {
 	/**
-	 * Internal stream generation for ChaCha20
+	 * Internal stream generation for ChaChaN (ChaCha20)
 	 * 
 	 * @see https://en.wikipedia.org/wiki/Salsa20#ChaCha_variant
 	 * 
-	 * @param rounds number of rounds of ChaCha20, secure = 20, fast = 12
-	 * @param key key to use, 256 bits / 32 bytes
-	 * @param counter counter, 64 bits / 8 bytes, can either go up one per block or byte afaik
-	 * @param nonce random nonce, 64 bits / 8 bytes, should be actually random
-	 * @param out output keystream block, 16 unsigned 32-bit words
+	 * @param in Input block of data
+	 * @param out Output block of data
+	 * @param rounds Number of rounds to preform
 	 */
-	
-	// Copy the shit into place for ChaCha
-	// DgMemoryCopy(16, "expand 32-byte k", &out[0]);
-	// DgMemoryCopy(32, key, &out[4]);
-	// DgMemoryCopy(8, counter, &out[12]);
-	// DgMemoryCopy(8, nonce, &out[14]);
 	
 	// Do the rounds
 	for (size_t i = 0; i < rounds; i++) {

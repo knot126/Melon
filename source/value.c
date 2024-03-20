@@ -17,6 +17,7 @@
 #include "string.h"
 #include "checksum.h"
 #include "alloc.h"
+#include "log.h"
 
 DgError DgValueNil(DgValue * restrict value) {
 	/**
@@ -263,7 +264,7 @@ DgError DgValueArray(DgValue * restrict value, struct DgArray *data) {
 	 * @return Error code
 	 */
 	
-	value->data.asTable = data;
+	value->data.asArray = data;
 	value->type = DG_TYPE_ARRAY;
 	
 	return DG_ERROR_SUCCESSFUL;
@@ -283,6 +284,231 @@ DgError DgValueTable(DgValue * restrict value, struct DgTable *data) {
 	
 	return DG_ERROR_SUCCESSFUL;
 }
+
+/* ************************************************************************** */
+
+DgValue DgMakeNil(void) {
+	/**
+	 * Make a value of the type Nil.
+	 * 
+	 * @param Data that the generic value will contain
+	 * @return Value
+	 */
+	
+	DgValue v;
+	DgValueNil(&v);
+	return v;
+}
+
+DgValue DgMakeBool(bool data) {
+	/**
+	 * Make a value of the type Bool.
+	 * 
+	 * @param Data that the generic value will contain
+	 * @return Value
+	 */
+	
+	DgValue v;
+	DgValueBool(&v, data);
+	return v;
+}
+
+DgValue DgMakeInt8(int8_t data) {
+	/**
+	 * Make a value of the type Int8.
+	 * 
+	 * @param Data that the generic value will contain
+	 * @return Value
+	 */
+	
+	DgValue v;
+	DgValueInt8(&v, data);
+	return v;
+}
+
+DgValue DgMakeUInt8(uint8_t data) {
+	/**
+	 * Make a value of the type UInt8.
+	 * 
+	 * @param Data that the generic value will contain
+	 * @return Value
+	 */
+	
+	DgValue v;
+	DgValueUInt8(&v, data);
+	return v;
+}
+
+DgValue DgMakeInt16(int16_t data) {
+	/**
+	 * Make a value of the type Int16.
+	 * 
+	 * @param Data that the generic value will contain
+	 * @return Value
+	 */
+	
+	DgValue v;
+	DgValueInt16(&v, data);
+	return v;
+}
+
+DgValue DgMakeUInt16(uint16_t data) {
+	/**
+	 * Make a value of the type UInt16.
+	 * 
+	 * @param Data that the generic value will contain
+	 * @return Value
+	 */
+	
+	DgValue v;
+	DgValueUInt16(&v, data);
+	return v;
+}
+
+DgValue DgMakeInt32(int32_t data) {
+	/**
+	 * Make a value of the type Int32.
+	 * 
+	 * @param Data that the generic value will contain
+	 * @return Value
+	 */
+	
+	DgValue v;
+	DgValueInt32(&v, data);
+	return v;
+}
+
+DgValue DgMakeUInt32(uint32_t data) {
+	/**
+	 * Make a value of the type UInt32.
+	 * 
+	 * @param Data that the generic value will contain
+	 * @return Value
+	 */
+	
+	DgValue v;
+	DgValueUInt32(&v, data);
+	return v;
+}
+
+DgValue DgMakeInt64(int64_t data) {
+	/**
+	 * Make a value of the type Int64.
+	 * 
+	 * @param Data that the generic value will contain
+	 * @return Value
+	 */
+	
+	DgValue v;
+	DgValueInt64(&v, data);
+	return v;
+}
+
+DgValue DgMakeUInt64(uint64_t data) {
+	/**
+	 * Make a value of the type UInt64.
+	 * 
+	 * @param Data that the generic value will contain
+	 * @return Value
+	 */
+	
+	DgValue v;
+	DgValueUInt64(&v, data);
+	return v;
+}
+
+DgValue DgMakeFloat32(float data) {
+	/**
+	 * Make a value of the type Float32.
+	 * 
+	 * @param Data that the generic value will contain
+	 * @return Value
+	 */
+	
+	DgValue v;
+	DgValueFloat32(&v, data);
+	return v;
+}
+
+DgValue DgMakeFloat64(double data) {
+	/**
+	 * Make a value of the type Float64.
+	 * 
+	 * @param Data that the generic value will contain
+	 * @return Value
+	 */
+	
+	DgValue v;
+	DgValueFloat64(&v, data);
+	return v;
+}
+
+DgValue DgMakeString(const char * data) {
+	/**
+	 * Make a value of the type String.
+	 * 
+	 * @param Data that the generic value will contain
+	 * @return Value
+	 */
+	
+	DgValue v;
+	DgValueString(&v, data);
+	return v;
+}
+
+DgValue DgMakeStaticString(const char * data) {
+	/**
+	 * Make a value of the type StaticString.
+	 * 
+	 * @param Data that the generic value will contain
+	 * @return Value
+	 */
+	
+	DgValue v;
+	DgValueStaticString(&v, data);
+	return v;
+}
+
+DgValue DgMakePointer(void * data) {
+	/**
+	 * Make a value of the type Pointer.
+	 * 
+	 * @param Data that the generic value will contain
+	 * @return Value
+	 */
+	
+	DgValue v;
+	DgValuePointer(&v, data);
+	return v;
+}
+
+DgValue DgMakeArray(struct DgArray * data) {
+	/**
+	 * Make a value of the type Array.
+	 * 
+	 * @param Data that the generic value will contain
+	 * @return Value
+	 */
+	
+	DgValue v;
+	DgValueArray(&v, data);
+	return v;
+}
+
+DgValue DgMakeTable(struct DgTable * data) {
+	/**
+	 * Make a value of the type Table.
+	 * 
+	 * @param Data that the generic value will contain
+	 * @return Value
+	 */
+	
+	DgValue v;
+	DgValueTable(&v, data);
+	return v;
+}
+
+/* ************************************************************************** */
 
 DgError DgTableFree(struct DgTable *this);
 
@@ -305,7 +531,7 @@ DgError DgValueFree(DgValue * restrict this) {
 		return DgTableFree(this->data.asTable);
 	}
 	
-	// Free array
+	// TODO Free array
 	else if (this->type == DG_TYPE_ARRAY) {
 		return DG_ERROR_NOT_IMPLEMENTED;
 	}
@@ -339,12 +565,34 @@ bool DgValueEqual(const DgValue * const restrict value1, const DgValue * const r
 	
 	// Compare based on the type
 	switch (type1) {
+		case DG_TYPE_NIL:
+		case DG_TYPE_NULL: {
+			return true;
+		}
+		
+		case DG_TYPE_BOOL: { return (value1->data.asBool == value2->data.asBool); }
+		
+		case DG_TYPE_INT8: { return (value1->data.asInt8 == value2->data.asInt8); }
+		case DG_TYPE_UINT8: { return (value1->data.asUInt8 == value2->data.asUInt8); }
+		case DG_TYPE_INT16: { return (value1->data.asInt16 == value2->data.asInt16); }
+		case DG_TYPE_UINT16: { return (value1->data.asUInt16 == value2->data.asUInt16); }
+		case DG_TYPE_INT32: { return (value1->data.asInt32 == value2->data.asInt32); }
+		case DG_TYPE_UINT32: { return (value1->data.asUInt32 == value2->data.asUInt32); }
+		case DG_TYPE_INT64: { return (value1->data.asInt64 == value2->data.asInt64); }
+		case DG_TYPE_UINT64: { return (value1->data.asUInt64 == value2->data.asUInt64); }
+		
+		case DG_TYPE_FLOAT32: { return (value1->data.asFloat32 == value2->data.asFloat32); }
+		case DG_TYPE_FLOAT64: { return (value1->data.asFloat64 == value2->data.asFloat64); }
+		
+		case DG_TYPE_POINTER: { return (value1->data.asPointer == value2->data.asPointer); }
+		
 		case DG_TYPE_STRING: {
 			return ((value1->metadata == value2->metadata) && (DgStringEqual(value1->data.asStaticString, value2->data.asStaticString)));
 		}
 		
 		default: {
 			/// @warning This does not work with non-64-bit values
+			DgLog(DG_LOG_WARNING, "DgValueEqual: Equality is not explicitly implemented for type <0x%x>.", type1);
 			return (value1->data.asUInt64 == value2->data.asUInt64);
 		}
 	}

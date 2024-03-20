@@ -25,10 +25,14 @@ typedef struct DgTable {
 	DgValue *value;  // Values
 	size_t length;        // Length of used entries
 	size_t allocated;     // Length of allocated entries
+	
+	size_t references;     // References to this table
 } DgTable;
 
 DgError DgTableInit(DgTable *this);
 DgError DgTableFree(DgTable *this);
+DgError DgTableInc(DgTable *this);
+DgError DgTableDec(DgTable *this);
 
 DgError DgTableSet(DgTable * restrict this, DgValue * restrict key, DgValue * restrict value);
 DgError DgTableGet(DgTable * restrict this, DgValue * restrict key, DgValue * restrict value);

@@ -30,6 +30,7 @@ DgError DgTableInit(DgTable *this) {
 	this->value = NULL;
 	this->length = 0;
 	this->allocated = 0;
+	this->references = 1;
 	
 	return DG_ERROR_SUCCESSFUL;
 }
@@ -44,24 +45,34 @@ DgError DgTableFree(DgTable *this) {
 	
 	DgError error = DG_ERROR_SUCCESSFUL;
 	
-	for (size_t i = 0; i < this->length; i++) {
-		DgError status = DgValueFree(&this->key[i]);
-		
-		if (status != DG_ERROR_SUCCESSFUL) {
-			error = status;
+	if (!(--this->references)) {
+		for (size_t i = 0; i < this->length; i++) {
+			DgError status = DgValueFree(&this->key[i]);
+			
+			if (status != DG_ERROR_SUCCESSFUL) {
+				error = status;
+			}
+			
+			status = DgValueFree(&this->value[i]);
+			
+			if (status != DG_ERROR_SUCCESSFUL) {
+				error = status;
+			}
 		}
 		
-		status = DgValueFree(&this->value[i]);
-		
-		if (status != DG_ERROR_SUCCESSFUL) {
-			error = status;
-		}
+		DgMemoryFree(this->key);
+		DgMemoryFree(this->value);
 	}
 	
-	DgMemoryFree(this->key);
-	DgMemoryFree(this->value);
-	
 	return error;
+}
+
+DgError DgTableInc(DgTable *this) {
+	/**
+	 * Increment the reference count to the table
+	 */
+	
+	this->references++;
 }
 
 static DgError DgTablePreallocMore(DgTable *this) {
@@ -77,10 +88,15 @@ static DgError DgTablePreallocMore(DgTable *this) {
 		this->allocated = 2 + (2 * this->allocated);
 		
 		this->key = DgMemoryReallocate(this->key, sizeof *this->key * this->allocated);
+		
+		if (this->key == NULL) {
+			return DG_ERROR_ALLOCATION_FAILED;
+		}
+		
 		this->value = DgMemoryReallocate(this->value, sizeof *this->value * this->allocated);
 		
-		if (this->key == NULL || this->value == NULL) {
-			// TODO Memory leak!
+		if (this->value == NULL) {
+			DgMemoryFree(this->key);
 			return DG_ERROR_ALLOCATION_FAILED;
 		}
 	}
