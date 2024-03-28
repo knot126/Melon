@@ -18,8 +18,8 @@
 #include "error.h"
 #include "bytes.h"
 
-typedef uint16_t DgValueType;
-typedef DgValueType DgTableType;
+typedef uint32_t DgValueType;
+typedef uint32_t DgValueFlags;
 
 /**
  * Type IDs
@@ -44,7 +44,6 @@ enum {
 	DG_TYPE_FLOAT64 = 0x32,
 	// Low level data class
 	DG_TYPE_POINTER = 0x41,
-	DG_TYPE_BYTES_AND_SIZE32 = 0x42,
 	// Value terminated array class
 	DG_TYPE_STRING = 0x51,
 	DG_TYPE_STATIC_STRING = 0x52,
@@ -52,6 +51,13 @@ enum {
 	DG_TYPE_BYTES = 0x61, // coming soon
 	DG_TYPE_ARRAY = 0x62,
 	DG_TYPE_TABLE = 0x63,
+};
+
+/**
+ * Value flags
+ */
+enum {
+	DG_VALUE_STATIC = (1 << 0),
 };
 
 struct DgArray;
@@ -86,13 +92,19 @@ typedef union DgValueData {
  */
 typedef struct DgValue {
 	DgValueData data; // Raw data bytes
-	uint32_t metadata;     // Used for string hash or cached array length
 	DgValueType type;      // Type of value stored
-	uint16_t flags;        // To be used for flags applied to the value
+	DgValueFlags flags;        // To be used for flags applied to the value
 } DgValue;
 
 /**
- * Functions
+ * Initialiser functions
+ * =====================
+ * 
+ * These are convinece functions that create values of various types. DgValueXX
+ * assumes that there is already memory to store a value; DgMakeXX does not.
+ * 
+ * @note We don't respect the typical function naming rule of Dg<Module>XX since
+ * these will be used a lot and I think the shorter name is preferable.
  */
 DgError DgValueNil(DgValue * restrict value);
 DgError DgValueBool(DgValue * restrict value, bool data);
@@ -132,4 +144,6 @@ DgValue DgMakeTable(struct DgTable * data);
 
 DgError DgValueFree(DgValue * restrict this);
 
+DgValueType DgValueGetType(DgValue * restrict this);
 bool DgValueEqual(const DgValue * const restrict value1, const DgValue * const restrict value2);
+uint64_t DgValueHash(const DgValue * const restrict this);

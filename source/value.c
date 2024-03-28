@@ -216,8 +216,8 @@ DgError DgValueString(DgValue * restrict value, const char * restrict data) {
 		return DG_ERROR_ALLOCATION_FAILED;
 	}
 	
-	value->metadata = DgChecksumStringU32(value->data.asString);
 	value->type = DG_TYPE_STRING;
+	value->flags = 0;
 	
 	return DG_ERROR_SUCCESSFUL;
 }
@@ -234,8 +234,8 @@ DgError DgValueStaticString(DgValue * restrict value, const char * restrict data
 	 */
 	
 	value->data.asStaticString = data;
-	value->metadata = DgChecksumStringU32(value->data.asStaticString);
-	value->type = DG_TYPE_STATIC_STRING;
+	value->type = DG_TYPE_STRING;
+	value->flags = DG_VALUE_STATIC;
 	
 	return DG_ERROR_SUCCESSFUL;
 }
@@ -540,25 +540,34 @@ DgError DgValueFree(DgValue * restrict this) {
 	return DG_ERROR_SUCCESSFUL;
 }
 
+DgValueType DgValueGetType(DgValue * restrict this) {
+	/**
+	 * Get the type of value this DgValue object stores
+	 * 
+	 * @param this Value to get type of
+	 * @return Type of value
+	 */
+	
+	return this->type;
+}
+
 bool DgValueEqual(const DgValue * const restrict value1, const DgValue * const restrict value2) {
 	/**
 	 * Check if the two given values are equal.
 	 * 
-	 * @note String and Static String with the same data will compare the same.
+	 * @note Integers of different sizes and/or signs (ex: Int16, UInt32) will
+	 * always be treated as being different, even if their actual values are
+	 * the same.
 	 * 
 	 * @param value1 First value
 	 * @param value2 Second value
 	 * @return If the values are equal or not
 	 */
 	
-	DgTableType type1 = value1->type;
-	DgTableType type2 = value2->type;
+	DgTableType type1 = DgValueGetType(value1);
+	DgTableType type2 = DgValueGetType(value2);
 	
-	// Let strings and static strings be the same type for comparison
-	if (type1 == DG_TYPE_STATIC_STRING) { type1 = DG_TYPE_STRING; }
-	if (type2 == DG_TYPE_STATIC_STRING) { type2 = DG_TYPE_STRING; }
-	
-	// The types of both now must be the same
+	// The types of both must be the same for equality. Simple!
 	if (type1 != type2) {
 		return false;
 	}
@@ -586,17 +595,65 @@ bool DgValueEqual(const DgValue * const restrict value1, const DgValue * const r
 		
 		case DG_TYPE_POINTER: { return (value1->data.asPointer == value2->data.asPointer); }
 		
-		case DG_TYPE_STRING: {
-			return ((value1->metadata == value2->metadata) && (DgStringEqual(value1->data.asStaticString, value2->data.asStaticString)));
-		}
+		case DG_TYPE_STRING: { return DgStringEqual(value1->data.asStaticString, value2->data.asStaticString); }
+		
+		/// @todo DG_TYPE_BYTES, DG_TYPE_ARRAY, DG_TYPE_TABLE
 		
 		default: {
-			/// @warning This does not work with non-64-bit values
-			DgLog(DG_LOG_WARNING, "DgValueEqual: Equality is not explicitly implemented for type <0x%x>.", type1);
-			return (value1->data.asUInt64 == value2->data.asUInt64);
+			DgLog(DG_LOG_WARNING, "DgValueEqual: Equality is not implemented for type <0x%x>!!", type1);
+			return false;
 		}
 	}
 	
 	// Just in case...
 	return false;
+}
+
+uint64_t DgValueHash(const DgValue * const restrict this) {
+	/**
+	 * Get a hash of the given value that can be used for a hash table.
+	 * 
+	 * @note This only meant to be used by DgTable.
+	 * 
+	 * @note It's perfectly fine that, for integer values, hash(x) = x. In fact,
+	 * for hash tables this is optimal, since this maximises usage of the hash
+	 * table's buckets.
+	 * 
+	 * @see https://en.wikipedia.org/wiki/Hash_table
+	 * 
+	 * @param this Value to get hash of
+	 * @return Hash of value
+	 */
+	
+	DgValueType type = DgValueGetType(this);
+	
+	switch (this) {
+		case DG_TYPE_NIL: { return 0xbadf00d; }
+		case DG_TYPE_NULL: { return 0xdeadbeef; }
+		
+		case DG_TYPE_BOOL: { return this->data.asBool; }
+		
+		case DG_TYPE_INT8: { return this->data.asUInt8; }
+		case DG_TYPE_UINT8: { return this->data.asUInt8; }
+		case DG_TYPE_INT16: { return this->data.asUInt16; }
+		case DG_TYPE_UINT16: { return this->data.asUInt16; }
+		case DG_TYPE_INT32: { return this->data.asUInt32; }
+		case DG_TYPE_UINT32: { return this->data.asUInt32; }
+		case DG_TYPE_INT64: { return this->data.asUInt64; }
+		case DG_TYPE_UINT64: { return this->data.asUInt64; }
+		
+		case DG_TYPE_FLOAT32: { return this->data.asUInt32; }
+		case DG_TYPE_FLOAT64: { return this->data.asUInt64; }
+		
+		case DG_TYPE_POINTER: { return this->data.asUInt64; }
+		
+		case DG_TYPE_STRING: { return DgChecksumStringU32_DJB2(this->data.asStaticString); }
+		
+		/// @todo DG_TYPE_BYTES, DG_TYPE_ARRAY, DG_TYPE_TABLE
+		
+		default: {
+			DgLog(DG_LOG_WARNING, "DgValueHash: Hash is not implemented for type <0x%x>!!", type);
+			return 0xdabdab;
+		}
+	}
 }
