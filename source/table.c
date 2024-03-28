@@ -9,7 +9,11 @@
  * 
  * =============================================================================
  * 
- * Map/Table array type
+ * Table/Dictionary type
+ * 
+ * @note This is implemented using an ordered hash table - that is, references
+ * to the actual values are made in the hash map, which are then stored in an
+ * array in the order they were inserted.
  */
 
 #include "alloc.h"
@@ -30,7 +34,6 @@ DgError DgTableInit(DgTable *this) {
 	this->value = NULL;
 	this->length = 0;
 	this->allocated = 0;
-	this->references = 1;
 	
 	return DG_ERROR_SUCCESSFUL;
 }
@@ -45,34 +48,24 @@ DgError DgTableFree(DgTable *this) {
 	
 	DgError error = DG_ERROR_SUCCESSFUL;
 	
-	if (!(--this->references)) {
-		for (size_t i = 0; i < this->length; i++) {
-			DgError status = DgValueFree(&this->key[i]);
-			
-			if (status != DG_ERROR_SUCCESSFUL) {
-				error = status;
-			}
-			
-			status = DgValueFree(&this->value[i]);
-			
-			if (status != DG_ERROR_SUCCESSFUL) {
-				error = status;
-			}
+	for (size_t i = 0; i < this->length; i++) {
+		DgError status = DgValueFree(&this->key[i]);
+		
+		if (status != DG_ERROR_SUCCESSFUL) {
+			error = status;
 		}
 		
-		DgMemoryFree(this->key);
-		DgMemoryFree(this->value);
+		status = DgValueFree(&this->value[i]);
+		
+		if (status != DG_ERROR_SUCCESSFUL) {
+			error = status;
+		}
 	}
 	
-	return error;
-}
-
-DgError DgTableInc(DgTable *this) {
-	/**
-	 * Increment the reference count to the table
-	 */
+	DgMemoryFree(this->key);
+	DgMemoryFree(this->value);
 	
-	this->references++;
+	return error;
 }
 
 static DgError DgTablePreallocMore(DgTable *this) {

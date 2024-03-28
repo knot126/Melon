@@ -37,7 +37,6 @@ DgError DgSerialiseWriteValue(DgStream * restrict stream, const DgValue * restri
 	// makes no sense to store them since they will likely change by the time
 	// they are deserialised.
 	switch (value->type) {
-		case DG_TYPE_STATIC_STRING: type = DG_TYPE_STRING; break;
 		case DG_TYPE_POINTER: type = DG_TYPE_NIL; break;
 		default: type = value->type; break;
 	}

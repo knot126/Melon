@@ -9,13 +9,51 @@
  * 
  * =============================================================================
  * 
- * Map/Table array type
+ * Table/Dictionary type
+ * 
+ * @note This is implemented using a hash table that respects the order mappings
+ * were inserted. Its implementation is similar to python in some ways.
+ * 
+ * To preserve order while still using a hash table, the actual keys and values
+ * are kept in an array, and the hash table maps key hashes -> indexes to real
+ * key-value pairs. Seprate chaining (a linked list) is used to resolve
+ * collisions.
  */
 
 #pragma once
 
 #include "common.h"
 #include "value.h"
+
+/**
+ * The structure for each key in the hash table.
+ */
+struct DgTableQuick;
+typedef struct DgTableQuick {
+	size_t index;              // Index into the array of values
+	struct DgTableQuick *next; // Next possible key for this hash output
+} DgTableQuick;
+
+/**
+ * The real key/value pair information
+ */
+typedef struct DgTablePair {
+	DgValue value;
+	DgValue key;
+} DgTablePair;
+
+/**
+ * Real table structure
+ */
+typedef struct DgTable_New {
+	DgTableQuick *quick;   // Hash table that maps key hashes -> indexes
+	size_t quick_length;   // Number of allocated slots in quick table
+	size_t quick_hash_space; // 2 to the number of bits of the hash to use
+	
+	DgTablePair *pairs;    // Key-value pairs
+	size_t pairs_length;   // Count of currently in use slots for pairs
+	size_t pairs_alloc;    // Count of currently allocated slots for pairs
+} DgTable_New;
 
 /**
  * Actual type for the table
@@ -25,14 +63,10 @@ typedef struct DgTable {
 	DgValue *value;  // Values
 	size_t length;        // Length of used entries
 	size_t allocated;     // Length of allocated entries
-	
-	size_t references;     // References to this table
 } DgTable;
 
 DgError DgTableInit(DgTable *this);
 DgError DgTableFree(DgTable *this);
-DgError DgTableInc(DgTable *this);
-DgError DgTableDec(DgTable *this);
 
 DgError DgTableSet(DgTable * restrict this, DgValue * restrict key, DgValue * restrict value);
 DgError DgTableGet(DgTable * restrict this, DgValue * restrict key, DgValue * restrict value);

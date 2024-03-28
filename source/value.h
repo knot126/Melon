@@ -46,7 +46,6 @@ enum {
 	DG_TYPE_POINTER = 0x41,
 	// Value terminated array class
 	DG_TYPE_STRING = 0x51,
-	DG_TYPE_STATIC_STRING = 0x52,
 	// High level class
 	DG_TYPE_BYTES = 0x61, // coming soon
 	DG_TYPE_ARRAY = 0x62,
