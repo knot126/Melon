@@ -31,6 +31,7 @@
 struct DgTableQuick;
 typedef struct DgTableQuick {
 	size_t index;              // Index into the array of values
+	                           // Should have some type of sintel value
 	struct DgTableQuick *next; // Next possible key for this hash output
 } DgTableQuick;
 
@@ -47,8 +48,8 @@ typedef struct DgTablePair {
  */
 typedef struct DgTable_New {
 	DgTableQuick *quick;   // Hash table that maps key hashes -> indexes
-	size_t quick_length;   // Number of allocated slots in quick table
-	size_t quick_hash_space; // 2 to the number of bits of the hash to use
+	size_t quick_alloc;    // Number of allocated slots in quick table
+	                       // = 2 to the number of bits of the hash to use
 	
 	DgTablePair *pairs;    // Key-value pairs
 	size_t pairs_length;   // Count of currently in use slots for pairs
