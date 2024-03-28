@@ -144,6 +144,6 @@ DgValue DgMakeTable(struct DgTable * data);
 
 DgError DgValueFree(DgValue * restrict this);
 
-DgValueType DgValueGetType(DgValue * restrict this);
+DgValueType DgValueGetType(const DgValue * const restrict this);
 bool DgValueEqual(const DgValue * const restrict value1, const DgValue * const restrict value2);
 uint64_t DgValueHash(const DgValue * const restrict this);

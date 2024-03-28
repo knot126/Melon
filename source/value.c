@@ -540,7 +540,7 @@ DgError DgValueFree(DgValue * restrict this) {
 	return DG_ERROR_SUCCESSFUL;
 }
 
-DgValueType DgValueGetType(DgValue * restrict this) {
+DgValueType DgValueGetType(const DgValue * const restrict this) {
 	/**
 	 * Get the type of value this DgValue object stores
 	 * 
@@ -564,8 +564,8 @@ bool DgValueEqual(const DgValue * const restrict value1, const DgValue * const r
 	 * @return If the values are equal or not
 	 */
 	
-	DgTableType type1 = DgValueGetType(value1);
-	DgTableType type2 = DgValueGetType(value2);
+	DgValueType type1 = DgValueGetType(value1);
+	DgValueType type2 = DgValueGetType(value2);
 	
 	// The types of both must be the same for equality. Simple!
 	if (type1 != type2) {
@@ -627,7 +627,7 @@ uint64_t DgValueHash(const DgValue * const restrict this) {
 	
 	DgValueType type = DgValueGetType(this);
 	
-	switch (this) {
+	switch (type) {
 		case DG_TYPE_NIL: { return 0xbadf00d; }
 		case DG_TYPE_NULL: { return 0xdeadbeef; }
 		
