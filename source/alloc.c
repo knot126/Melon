@@ -122,3 +122,30 @@ void *DgMemoryCopy(size_t length, const void *from, void *to) {
 	
 	return memmove(to, from, length);
 }
+
+bool DgMemoryEqual(size_t length, const void *block1, const void *block2) {
+	/**
+	 * Compare the first length bytes of the contents that block1 and block2
+	 * point to.
+	 * 
+	 * @note Some edge cases are defined:
+	 * 
+	 * 1. If length is zero, always return true.
+	 * 2. If length is nonzero and block1 and/or block2 is NULL, then return false.
+	 * 
+	 * @param length Length of both blocks
+	 * @param block1 First memory block
+	 * @param block2 Second memory block
+	 * @return true if *block1 == *block2 for length bytes of data
+	 */
+	
+	if (!length) {
+		return true;
+	}
+	
+	if (!block1 || !block2) {
+		return false;
+	}
+	
+	return !memcmp(block1, block2, length);
+}

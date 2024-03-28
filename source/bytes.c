@@ -16,6 +16,7 @@
 
 #include "alloc.h"
 #include "log.h"
+#include "checksum.h"
 
 #include "bytes.h"
 
@@ -84,4 +85,36 @@ size_t DgBytesLength(DgBytes *this) {
 	 */
 	
 	return this->length;
+}
+
+bool DgBytesEqual(const DgBytes * const restrict bytes1, const DgBytes * const restrict bytes2) {
+	/**
+	 * Check if two bytes values are equal.
+	 * 
+	 * @param bytes1 first bytes object
+	 * @param bytes2 second bytes object
+	 * @return true if the bytes are equal, false otherwise
+	 */
+	
+	if (bytes1->length != bytes2->length) {
+		return false;
+	}
+	
+	return DgMemoryEqual(bytes1->length, bytes1->data, bytes2->data);
+}
+
+uint64_t DgBytesQuickHash(DgBytes *this) {
+	/**
+	 * Compute a hash that can be used for non-cryptographic purposes.
+	 * 
+	 * @param this Bytes to hash
+	 * @return Hash
+	 */
+	
+	if (this->data) {
+		return DgChecksumU32_DJB2(this->data, this->length);
+	}
+	else {
+		return 0;
+	}
 }
