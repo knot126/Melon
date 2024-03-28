@@ -91,9 +91,9 @@ typedef union DgValueData {
  * Value storage type
  */
 typedef struct DgValue {
-	DgValueData data; // Raw data bytes
+	DgValueData data;      // Raw data bytes
 	DgValueType type;      // Type of value stored
-	DgValueFlags flags;        // To be used for flags applied to the value
+	DgValueFlags flags;    // Special value flags
 } DgValue;
 
 /**
@@ -146,4 +146,4 @@ DgError DgValueFree(DgValue * restrict this);
 
 DgValueType DgValueGetType(const DgValue * const restrict this);
 bool DgValueEqual(const DgValue * const restrict value1, const DgValue * const restrict value2);
-uint64_t DgValueHash(const DgValue * const restrict this);
+uint64_t DgValueQuickHash(const DgValue * const restrict this);

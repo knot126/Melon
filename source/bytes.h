@@ -27,7 +27,9 @@ void DgBytesInit(DgBytes *this);
 void DgBytesFree(DgBytes *this);
 DgByte DgBytesAt_(DgBytes *this, size_t index, const char *debug_file, size_t debug_line);
 void DgBytesSet_(DgBytes *this, size_t index, DgByte byte, const char *debug_file, size_t debug_line);
+DgError DgBytesAppendBuffer(DgBytes *this, const size_t buffer_length, const void *buffer);
 size_t DgBytesLength(DgBytes *this);
+bool DgBytesEqual(const DgBytes * const restrict bytes1, const DgBytes * const restrict bytes2);
 uint64_t DgBytesQuickHash(DgBytes *this);
 
 #define DgBytesAt(THIS, INDEX) DgBytesAt_(THIS, INDEX, __FILE__, __LINE__)

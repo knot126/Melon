@@ -76,6 +76,30 @@ void DgBytesSet_(DgBytes *this, size_t index, DgByte byte, const char *debug_fil
 	this->data[index] = byte;
 }
 
+DgError DgBytesAppendBuffer(DgBytes *this, const size_t buffer_length, const void *buffer) {
+	/**
+	 * Append a raw buffer of bytes to a DgBytes object.
+	 * 
+	 * @param this Bytes object to append to
+	 * @param buffer_length Length of the buffer to append
+	 * @param buffer Pointer to buffer contents
+	 * @return Errors while appending buffer
+	 */
+	
+	this->length += buffer_length;
+	
+	this->data = DgMemoryReallocate(this->data, sizeof *this->data * this->length);
+	
+	if (!this->data) {
+		this->length = 0;
+		return DG_ERROR_ALLOCATION_FAILED;
+	}
+	
+	DgMemoryCopy(buffer_length, buffer, &this->data[this->length]);
+	
+	return DG_ERROR_SUCCESS;
+}
+
 size_t DgBytesLength(DgBytes *this) {
 	/**
 	 * Get the length of the byte array
@@ -112,7 +136,8 @@ uint64_t DgBytesQuickHash(DgBytes *this) {
 	 */
 	
 	if (this->data) {
-		return DgChecksumU32_DJB2(this->data, this->length);
+		// HACK This really shouldn't need (const char *)
+		return DgChecksumU32_DJB2(this->length, (const char *) this->data);
 	}
 	else {
 		return 0;

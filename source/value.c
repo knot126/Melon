@@ -597,6 +597,8 @@ bool DgValueEqual(const DgValue * const restrict value1, const DgValue * const r
 		
 		case DG_TYPE_STRING: { return DgStringEqual(value1->data.asStaticString, value2->data.asStaticString); }
 		
+		case DG_TYPE_BYTES: { return DgBytesEqual(value1->data.asBytes, value2->data.asBytes); }
+		
 		/// @todo DG_TYPE_BYTES, DG_TYPE_ARRAY, DG_TYPE_TABLE
 		
 		default: {
@@ -609,7 +611,7 @@ bool DgValueEqual(const DgValue * const restrict value1, const DgValue * const r
 	return false;
 }
 
-uint64_t DgValueHash(const DgValue * const restrict this) {
+uint64_t DgValueQuickHash(const DgValue * const restrict this) {
 	/**
 	 * Get a hash of the given value that can be used for a hash table.
 	 * 
@@ -648,6 +650,8 @@ uint64_t DgValueHash(const DgValue * const restrict this) {
 		case DG_TYPE_POINTER: { return this->data.asUInt64; }
 		
 		case DG_TYPE_STRING: { return DgChecksumStringU32_DJB2(this->data.asStaticString); }
+		
+		case DG_TYPE_BYTES: { return DgBytesQuickHash(this->data.asBytes); }
 		
 		/// @todo DG_TYPE_BYTES, DG_TYPE_ARRAY, DG_TYPE_TABLE
 		
