@@ -511,6 +511,7 @@ DgValue DgMakeTable(struct DgTable * data) {
 /* ************************************************************************** */
 
 DgError DgTableFree(struct DgTable *this);
+DgError DgArrayFree(DgArray *this, bool deep);
 
 DgError DgValueFree(DgValue * restrict this) {
 	/**
@@ -526,14 +527,21 @@ DgError DgValueFree(DgValue * restrict this) {
 		return DG_ERROR_SUCCESSFUL;
 	}
 	
-	// Free sub-table
+	// Free array
+	else if (this->type == DG_TYPE_ARRAY) {
+		return DgArrayFree(this->data.asArray, true);
+	}
+	
+	// Free table
 	else if (this->type == DG_TYPE_TABLE) {
 		return DgTableFree(this->data.asTable);
 	}
 	
-	// TODO Free array
-	else if (this->type == DG_TYPE_ARRAY) {
-		return DG_ERROR_NOT_IMPLEMENTED;
+	// Free bytes
+	else if (this->type == DG_TYPE_BYTES) {
+		DgBytesFree(this->data.asBytes);
+		/// @todo how the fuck is bytes stored???
+		return DG_ERROR_SUCCESSFUL;
 	}
 	
 	// Any other case does not need automatic free

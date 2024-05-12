@@ -22,6 +22,135 @@
 
 #include "table.h"
 
+/**
+ * ---- QUICK LOOKUP TABLE ----
+ **/
+
+static void DgTableQuickInit(DgTableQuick *this) {
+	/**
+	 * Init a quick lookup entry.
+	 * 
+	 * @param this Quick lookup entry
+	 */
+	
+	this->index = DG_TABLE_QUICK_NONE;
+	this->next = NULL;
+}
+
+static DgError DgTableQuickAdd(DgTableQuick *this, size_t index, size_t *depth) {
+	/**
+	 * Add an index to a linked list. Also returns depth info for use when
+	 * deciding to remake the table with larger indexes.
+	 * 
+	 * @param this Quick lookup entry
+	 * @param index Index to insert
+	 * @param depth Output parameter for the number of entries that were
+	 * traversed before either needing to make a new entry or finding a blank
+	 * entry.
+	 */
+	
+	// Traverse over each entry
+	DgTableQuick *cur = this;
+	depth[0] = 0;
+	
+	while (true) {
+		depth[0]++;
+		
+		// If we found one with a NIL index, we can just use that
+		if (cur->index == DG_TABLE_QUICK_NONE) {
+			cur->index = index;
+			return DG_ERROR_SUCCESSFUL;
+		}
+		// Otherwise if the next is NULL we can append a new entry
+		else if (cur->next == NULL) {
+			// Allocate memory for it
+			cur->next = DgMemoryAllocate(sizeof *cur->next);
+			
+			if (!cur->next) {
+				return DG_ERROR_ALLOCATION_FAILED;
+			}
+			
+			// Set values
+			cur->next->index = index;
+			cur->next->next = NULL;
+			
+			return DG_ERROR_SUCCESSFUL;
+		}
+		// Otherwise we try the next one
+		else {
+			cur = cur->next;
+		}
+	}
+}
+
+static DgError DgTableQuickLookupInit(DgTable *this, size_t size) {
+	/**
+	 * Initialise the contents of the quick lookup table.
+	 * 
+	 * @note Normally I would try to corse initialisation into a normal routine
+	 * (like a resize of an array) but in this case I feel like it's just
+	 * simpler to make a seprate init routine. :P
+	 * 
+	 * @param this Table to initialise the contents for
+	 * @param size Initial size of the lookup table, should be a power of two
+	 * lest the entire hash table explode in your face.
+	 * @return Any error that occured
+	 */
+	
+	// Allocate memory for the table
+	this->lookup = DgMemoryAllocate(sizeof *this->lookup * size);
+	
+	if (!this->lookup) {
+		return DG_ERROR_ALLOCATION_FAILED;
+	}
+	
+	// Init each entry
+	for (size_t i = 0; i < size; i++) {
+		DgTableLookupInit(&this->lookup[i]);
+	}
+	
+	// Set the size
+	this->lookup_alloc = size;
+	
+	return DG_ERROR_SUCCESSFUL;
+}
+
+static size_t DgTableQuickLookupTrimHash(DgTable *this, uint64_t hash) {
+	/**
+	 * Trim the hash to its proper size
+	 */
+	
+	return (size_t) (hash & ((this->lookup_alloc << 1) - 1));
+}
+
+static size_t DgTableQuickLookupIndexForKey(DgTable *this, DgValue *key) {
+	/**
+	 * Find the index of the entry with the given `key`
+	 * 
+	 * @param this Table to preform the lookup in
+	 * @param key Key to look for
+	 * @return Index if found, otherwise DG_TABLE_QUICK_NONE
+	 */
+	
+	// Get the hash and trim it to size
+	size_t hash = DgTableQuickLookupTrimHash(this, DgValueQuickHash(key));
+	
+	// Traverse the lookup table for possible matches
+	DgTableQuick *cur = &this->lookup[hash];
+	
+	while (cur) {
+		if (cur->index != DG_TABLE_QUICK_NONE) {
+			// TODO: see if the key value at that index matches, if so return it
+		}
+	}
+	
+	return DG_TABLE_QUICK_NONE;
+}
+
+/**
+ * ---- THE ACTUAL SHIT ----
+ **/
+
 DgError DgTableInit(DgTable *this) {
 	/**
 	 * Initialise a table
@@ -30,10 +159,14 @@ DgError DgTableInit(DgTable *this) {
 	 * @return Error code
 	 */
 	
-	this->key = NULL;
-	this->value = NULL;
-	this->length = 0;
-	this->allocated = 0;
+	DgError error;
+	
+	// Zero it all! (not needed ?)
+	DgMemoryZero(this, sizeof *this);
+	
+	if ((error = DgTableQuickLookupInit(this, 8))) {
+		return error;
+	}
 	
 	return DG_ERROR_SUCCESSFUL;
 }

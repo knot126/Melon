@@ -24,9 +24,20 @@
 
 #include "common.h"
 #include "value.h"
+#include "array.h"
 
 /**
  * The structure for each key in the hash table.
+ * 
+ * NOTE: I'm not yet storing the key here, just seems like it uses too much
+ * memory when could you just check the index for a key match :P
+ * 
+ * NOTE: I could also chose to use DgArray here instead of manually implementing
+ * a linked list, I just feel like that could have too much memory overhead when
+ * the arrays will be at most 4 - 5 entries long. Then again, it might be more
+ * sane and in C you need to value any little bit of sanity because C is trying
+ * to murder you at all times and any successful attempts to resist are, of
+ * course, beyond what any human should need to endure.
  */
 struct DgTableQuick;
 typedef struct DgTableQuick {
@@ -35,8 +46,15 @@ typedef struct DgTableQuick {
 	struct DgTableQuick *next; // Next possible key for this hash output
 } DgTableQuick;
 
+enum {
+	DG_TABLE_QUICK_NONE = -1,
+};
+
 /**
  * The real key/value pair information
+ * 
+ * NOTE: I assume this results in nicer cache loaclity when using a quick lookup
+ * table.
  */
 typedef struct DgTablePair {
 	DgValue value;
@@ -46,24 +64,17 @@ typedef struct DgTablePair {
 /**
  * Real table structure
  */
-typedef struct DgTable_New {
-	DgTableQuick *quick;   // Hash table that maps key hashes -> indexes
-	size_t quick_alloc;    // Number of allocated slots in quick table
-	                       // = 2 to the number of bits of the hash to use
-	
-	DgTablePair *pairs;    // Key-value pairs
-	size_t pairs_length;   // Count of currently in use slots for pairs
-	size_t pairs_alloc;    // Count of currently allocated slots for pairs
-} DgTable_New;
-
-/**
- * Actual type for the table
- */
 typedef struct DgTable {
-	DgValue *key;    // Keys
-	DgValue *value;  // Values
-	size_t length;        // Length of used entries
-	size_t allocated;     // Length of allocated entries
+	// First: The array for quick lookups, implemented like a hash table.
+	// It will only ever be power of two sizes so don't really need to keep
+	// a difference between the allocated and actual lengths :3
+	DgTableQuick *lookup;   // Hash table that maps key hashes -> indexes
+	size_t lookup_alloc;    // Number of allocated slots in quick lookup table
+	                        // = 2 ^ number of bits of the hash to use
+	
+	// The array of pairs, which is stored as a typical array. In fact, why
+	// the fuck shouldn't we just use a DgArray for this? There, I did it. UwU
+	DgArray array;
 } DgTable;
 
 DgError DgTableInit(DgTable *this);

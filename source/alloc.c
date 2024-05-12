@@ -149,3 +149,11 @@ bool DgMemoryEqual(size_t length, const void *block1, const void *block2) {
 	
 	return !memcmp(block1, block2, length);
 }
+
+void DgMemoryZero(const void *block, size_t length) {
+	/**
+	 * Fill the memory starting at block with zero bytes.
+	 */
+	
+	memset(block, 0, length);
+}

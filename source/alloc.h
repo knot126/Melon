@@ -27,3 +27,4 @@ void *DgMemoryReallocate(void *block, size_t size);
 
 void *DgMemoryCopy(size_t length, const void *from, void *to);
 bool DgMemoryEqual(size_t length, const void *block1, const void *block2);
+void DgMemoryZero(const void *block, size_t length);
