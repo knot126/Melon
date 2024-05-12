@@ -102,6 +102,33 @@ bool DgArrayInRange(DgArray *this, size_t index) {
 	return index < DgArrayLength(this);
 }
 
+DgError DgArrayResize(DgArray *this, size_t size) {
+	/**
+	 * Resize the array to match the requested size. If the requested size is
+	 * greater than the current length, the empty slots are filled with nil.
+	 * 
+	 * @param this Array to resize
+	 * @param size New size of the array
+	 */
+	
+	// Prepare for the new elements
+	DgError error;
+	
+	if ((error = DgArrayPrepareForElements(this, size - this->length))) {
+		return error;
+	}
+	
+	// Set any extras to nil
+	for (size_t i = this->length; i < size; i++) {
+		// HACK: This can't fail (unless I made some off by one error), but it
+		// returns an error code which for correctness really ought to be
+		// checked.
+		DgArrayPut(this, i, &DgMakeNil());
+	}
+	
+	return DG_ERROR_SUCCESS;
+}
+
 DgValue *DgArrayAt(DgArray *this, size_t index) {
 	/**
 	 * Return a direct pointer to the value at `index`.
@@ -206,4 +233,28 @@ DgError DgArrayConcat(DgArray *this, DgArray *other) {
 	 */
 	
 	return DG_ERROR_NOT_IMPLEMENTED;
+}
+
+bool DgArrayEqual(DgArray *this, DgArray *other) {
+	/**
+	 * Compare the current array with another array.
+	 * 
+	 * @param this First array
+	 * @param other Other array
+	 * @return true if arrays are equal, false if not
+	 */
+	
+	size_t this_len = DgArrayLength(this), other_len = DgArrayLength(other);
+	
+	if (this_len != other_len) {
+		return false;
+	}
+	
+	for (size_t i = 0; i < this_len; i++) {
+		if (!DgValueEqual(DgArrayAt(this, i), DgArrayAt(other, i))) {
+			return false;
+		}
+	}
+	
+	return true;
 }

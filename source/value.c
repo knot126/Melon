@@ -559,6 +559,8 @@ DgValueType DgValueGetType(const DgValue * const restrict this) {
 	return this->type;
 }
 
+bool DgArrayEqual(DgArray *this, DgArray *other);
+
 bool DgValueEqual(const DgValue * const restrict value1, const DgValue * const restrict value2) {
 	/**
 	 * Check if the two given values are equal.
@@ -606,6 +608,7 @@ bool DgValueEqual(const DgValue * const restrict value1, const DgValue * const r
 		case DG_TYPE_STRING: { return DgStringEqual(value1->data.asStaticString, value2->data.asStaticString); }
 		
 		case DG_TYPE_BYTES: { return DgBytesEqual(value1->data.asBytes, value2->data.asBytes); }
+		case DG_TYPE_ARRAY: { return DgArrayEqual(value1->data.asArray, value2->data.asArray); }
 		
 		/// @todo DG_TYPE_BYTES, DG_TYPE_ARRAY, DG_TYPE_TABLE
 		
