@@ -28,7 +28,7 @@
  * TODO: Expanding LUT when its getting full
  **/
 
-static void DgTableQuickInit(DgTableQuick *this) {
+static void DgTableLUTEntryInit(DgTableQuick *this) {
 	/**
 	 * Init a quick lookup entry.
 	 * 
@@ -39,7 +39,7 @@ static void DgTableQuickInit(DgTableQuick *this) {
 	this->next = NULL;
 }
 
-static void DgTableQuickFree(DgTableQuick *this) {
+static void DgTableLUTEntryFree(DgTableQuick *this) {
 	/**
 	 * Free a quick lookup entry.
 	 * 
@@ -125,7 +125,7 @@ static DgError DgTableLUTInit(DgTable *this, size_t size) {
 	
 	// Init each entry
 	for (size_t i = 0; i < size; i++) {
-		DgTableLookupInit(&this->lookup[i]);
+		DgTableLUTEntryInit(&this->lookup[i]);
 	}
 	
 	// Set the size
@@ -160,7 +160,7 @@ static size_t DgTableLUTIndexForKey(DgTable *this, DgValue *key) {
 	while (cur) {
 		if (cur->index != DG_TABLE_QUICK_NONE) {
 			// see if the key value at that index matches, if so return it
-			DgValue *value = DgArrayAt(&this->array);
+			DgValue *value = DgArrayAt(&this->array, cur->index);
 			
 			if (DgValueEqual(value, key)) {
 				return cur->index;
@@ -197,7 +197,7 @@ static void DgTableLUTFree(DgTable *this) {
 	 */
 	
 	for (size_t i = 0; i < this->lookup_alloc; i++) {
-		DgTableQuickFree(&this->lookup[i]);
+		DgTableLUTEntryFree(&this->lookup[i]);
 	}
 }
 
@@ -402,6 +402,9 @@ DgError DgTablePairAt(DgTable * restrict this, size_t index, DgValue ** const re
 	/**
 	 * Get direct pointers to the key and value entries at index. This is good
 	 * for iteration.
+	 * 
+	 * @note This function this most useful for serialisation or iteration,
+	 * since it will show you the preserved order of pairs.
 	 * 
 	 * @param this Table object
 	 * @param index The index to get

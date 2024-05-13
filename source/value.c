@@ -510,8 +510,8 @@ DgValue DgMakeTable(struct DgTable * data) {
 
 /* ************************************************************************** */
 
-DgError DgTableFree(struct DgTable *this);
-DgError DgArrayFree(DgArray *this, bool deep);
+DgError DgArrayFree(struct DgArray *this, bool deep);
+DgError DgTableFree(struct DgTable *this, bool deep);
 
 DgError DgValueFree(DgValue * restrict this) {
 	/**
@@ -534,7 +534,7 @@ DgError DgValueFree(DgValue * restrict this) {
 	
 	// Free table
 	else if (this->type == DG_TYPE_TABLE) {
-		return DgTableFree(this->data.asTable);
+		return DgTableFree(this->data.asTable, true);
 	}
 	
 	// Free bytes
@@ -559,7 +559,7 @@ DgValueType DgValueGetType(const DgValue * const restrict this) {
 	return this->type;
 }
 
-bool DgArrayEqual(DgArray *this, DgArray *other);
+bool DgArrayEqual(struct DgArray *this, struct DgArray *other);
 
 bool DgValueEqual(const DgValue * const restrict value1, const DgValue * const restrict value2) {
 	/**

@@ -47,7 +47,7 @@ typedef struct DgTableQuick {
 } DgTableQuick;
 
 enum {
-	DG_TABLE_QUICK_NONE = -1,
+	DG_TABLE_QUICK_NONE = 0xFFffFFffFFffFFff,
 };
 
 /**
@@ -67,10 +67,12 @@ typedef struct DgTable {
 } DgTable;
 
 DgError DgTableInit(DgTable *this);
-DgError DgTableFree(DgTable *this);
+DgError DgTableFree(DgTable *this, bool deep);
 
-DgError DgTableSet(DgTable * restrict this, DgValue * restrict key, DgValue * restrict value);
-DgError DgTableGet(DgTable * restrict this, DgValue * restrict key, DgValue * restrict value);
+bool DgTableHas(DgTable * restrict this, DgValue * restrict key);
+DgError DgTablePut(DgTable * restrict this, DgValue * restrict key, DgValue * restrict value);
+DgValue *DgTableAt(DgTable * restrict this, DgValue * restrict key);
 DgError DgTableRemove(DgTable * restrict this, const DgValue * const restrict key);
 DgError DgTablePairAt(DgTable * restrict this, size_t index, DgValue ** const restrict key, DgValue ** const restrict value);
+
 size_t DgTableLength(DgTable * restrict this);

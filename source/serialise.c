@@ -99,11 +99,11 @@ DgError DgSerialiseWriteValue(DgStream * restrict stream, const DgValue * restri
 			}
 			
 			for (size_t i = 0; i < length; i++) {
-				DgValue key = {}, value = {};
-				DgTableAt(table, i, &key, &value);
+				DgValue *key, *value;
+				DgTablePairAt(table, i, &key, &value);
 				
-				status = DgSerialiseWriteValue(stream, &key);
-				status |= DgSerialiseWriteValue(stream, &value); // HACK im lazy
+				status = DgSerialiseWriteValue(stream, key);
+				status |= DgSerialiseWriteValue(stream, value); // HACK im lazy
 				
 				if (status) {
 					return status;

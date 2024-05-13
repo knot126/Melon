@@ -123,7 +123,8 @@ DgError DgArrayResize(DgArray *this, size_t size) {
 		// HACK: This can't fail (unless I made some off by one error), but it
 		// returns an error code which for correctness really ought to be
 		// checked.
-		DgArrayPut(this, i, &DgMakeNil());
+		DgValue nil = DgMakeNil();
+		DgArrayPut(this, i, &nil);
 	}
 	
 	return DG_ERROR_SUCCESS;
