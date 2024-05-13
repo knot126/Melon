@@ -51,17 +51,6 @@ enum {
 };
 
 /**
- * The real key/value pair information
- * 
- * NOTE: I assume this results in nicer cache loaclity when using a quick lookup
- * table.
- */
-typedef struct DgTablePair {
-	DgValue value;
-	DgValue key;
-} DgTablePair;
-
-/**
  * Real table structure
  */
 typedef struct DgTable {

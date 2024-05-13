@@ -133,18 +133,43 @@ static size_t DgTableQuickLookupIndexForKey(DgTable *this, DgValue *key) {
 	 */
 	
 	// Get the hash and trim it to size
-	size_t hash = DgTableQuickLookupTrimHash(this, DgValueQuickHash(key));
+	size_t qt_index = DgTableQuickLookupTrimHash(this, DgValueQuickHash(key));
 	
 	// Traverse the lookup table for possible matches
-	DgTableQuick *cur = &this->lookup[hash];
+	DgTableQuick *cur = &this->lookup[qt_index];
 	
 	while (cur) {
 		if (cur->index != DG_TABLE_QUICK_NONE) {
-			// TODO: see if the key value at that index matches, if so return it
+			// see if the key value at that index matches, if so return it
+			DgValue *value = DgArrayAt(&this->array);
+			
+			if (DgValueEqual(value, key)) {
+				return cur->index;
+			}
 		}
+		
+		// Try the next one
+		cur = cur->next;
 	}
 	
 	return DG_TABLE_QUICK_NONE;
+}
+
+static DgError DgTableQuickInsertIndexForKey(DgTable *this, DgValue *key, size_t index) {
+	/**
+	 * Insert an entry in the quick lookup table for the given key and index
+	 * 
+	 * @param this Table to insert key for
+	 * @param key Key to insert into the table
+	 * @param index Index to use for the key
+	 * @return Error
+	 */
+	
+	// Get the hash and trim it to size
+	size_t qt_index = DgTableQuickLookupTrimHash(this, DgValueQuickHash(key));
+	size_t depth;
+	
+	return DgTableQuickAdd(&this->lookup[qt_index], index, &depth);
 }
 
 /**
