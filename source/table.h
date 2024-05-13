@@ -71,6 +71,6 @@ DgError DgTableFree(DgTable *this);
 
 DgError DgTableSet(DgTable * restrict this, DgValue * restrict key, DgValue * restrict value);
 DgError DgTableGet(DgTable * restrict this, DgValue * restrict key, DgValue * restrict value);
-DgError DgTableRemove(DgTable * restrict this, DgValue * const restrict key);
-DgError DgTableAt(DgTable * restrict this, size_t index, DgValue * const restrict key, DgValue * const restrict value);
+DgError DgTableRemove(DgTable * restrict this, const DgValue * const restrict key);
+DgError DgTablePairAt(DgTable * restrict this, size_t index, DgValue ** const restrict key, DgValue ** const restrict value);
 size_t DgTableLength(DgTable * restrict this);

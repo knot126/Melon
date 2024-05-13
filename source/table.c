@@ -24,6 +24,8 @@
 
 /**
  * ---- QUICK LOOKUP TABLE ----
+ * 
+ * TODO: Expanding LUT when its getting full
  **/
 
 static void DgTableQuickInit(DgTableQuick *this) {
@@ -35,6 +37,23 @@ static void DgTableQuickInit(DgTableQuick *this) {
 	
 	this->index = DG_TABLE_QUICK_NONE;
 	this->next = NULL;
+}
+
+static void DgTableQuickFree(DgTableQuick *this) {
+	/**
+	 * Free a quick lookup entry.
+	 * 
+	 * @param this Quick lookup entry, Must be a root entry.
+	 */
+	
+	// We start at the second since only those are alloc'd dynamically
+	DgTableQuick *cur = this->next;
+	
+	while (cur) {
+		DgTableQuick *cur_next = cur->next;
+		DgMemoryFree(cur);
+		cur = cur_next;
+	}
 }
 
 static DgError DgTableQuickAdd(DgTableQuick *this, size_t index, size_t *depth) {
@@ -83,7 +102,7 @@ static DgError DgTableQuickAdd(DgTableQuick *this, size_t index, size_t *depth) 
 	}
 }
 
-static DgError DgTableQuickLookupInit(DgTable *this, size_t size) {
+static DgError DgTableLUTInit(DgTable *this, size_t size) {
 	/**
 	 * Initialise the contents of the quick lookup table.
 	 * 
@@ -115,7 +134,7 @@ static DgError DgTableQuickLookupInit(DgTable *this, size_t size) {
 	return DG_ERROR_SUCCESSFUL;
 }
 
-static size_t DgTableQuickLookupTrimHash(DgTable *this, uint64_t hash) {
+static size_t DgTableLUTTrimHash(DgTable *this, uint64_t hash) {
 	/**
 	 * Trim the hash to its proper size
 	 */
@@ -123,7 +142,7 @@ static size_t DgTableQuickLookupTrimHash(DgTable *this, uint64_t hash) {
 	return (size_t) (hash & ((this->lookup_alloc << 1) - 1));
 }
 
-static size_t DgTableQuickLookupIndexForKey(DgTable *this, DgValue *key) {
+static size_t DgTableLUTIndexForKey(DgTable *this, DgValue *key) {
 	/**
 	 * Find the index of the entry with the given `key`
 	 * 
@@ -133,7 +152,7 @@ static size_t DgTableQuickLookupIndexForKey(DgTable *this, DgValue *key) {
 	 */
 	
 	// Get the hash and trim it to size
-	size_t qt_index = DgTableQuickLookupTrimHash(this, DgValueQuickHash(key));
+	size_t qt_index = DgTableLUTTrimHash(this, DgValueQuickHash(key));
 	
 	// Traverse the lookup table for possible matches
 	DgTableQuick *cur = &this->lookup[qt_index];
@@ -155,7 +174,7 @@ static size_t DgTableQuickLookupIndexForKey(DgTable *this, DgValue *key) {
 	return DG_TABLE_QUICK_NONE;
 }
 
-static DgError DgTableQuickInsertIndexForKey(DgTable *this, DgValue *key, size_t index) {
+static DgError DgTableLUTInsertIndexForKey(DgTable *this, DgValue *key, size_t index) {
 	/**
 	 * Insert an entry in the quick lookup table for the given key and index
 	 * 
@@ -166,10 +185,20 @@ static DgError DgTableQuickInsertIndexForKey(DgTable *this, DgValue *key, size_t
 	 */
 	
 	// Get the hash and trim it to size
-	size_t qt_index = DgTableQuickLookupTrimHash(this, DgValueQuickHash(key));
+	size_t qt_index = DgTableLUTTrimHash(this, DgValueQuickHash(key));
 	size_t depth;
 	
 	return DgTableQuickAdd(&this->lookup[qt_index], index, &depth);
+}
+
+static void DgTableLUTFree(DgTable *this) {
+	/**
+	 * Free the quick lookup table
+	 */
+	
+	for (size_t i = 0; i < this->lookup_alloc; i++) {
+		DgTableQuickFree(&this->lookup[i]);
+	}
 }
 
 /**
@@ -189,14 +218,20 @@ DgError DgTableInit(DgTable *this) {
 	// Zero it all! (not needed ?)
 	DgMemoryZero(this, sizeof *this);
 	
-	if ((error = DgTableQuickLookupInit(this, 8))) {
+	// Prepare the main array
+	if ((error = DgArrayInit(&this->array))) {
+		return error;
+	}
+	
+	// Prepare the quick lookup table
+	if ((error = DgTableLUTInit(this, 8))) {
 		return error;
 	}
 	
 	return DG_ERROR_SUCCESSFUL;
 }
 
-DgError DgTableFree(DgTable *this) {
+DgError DgTableFree(DgTable *this, bool deep) {
 	/**
 	 * Free a table
 	 * 
@@ -204,153 +239,151 @@ DgError DgTableFree(DgTable *this) {
 	 * @return Error code
 	 */
 	
-	DgError error = DG_ERROR_SUCCESSFUL;
+	DgError error;
 	
-	for (size_t i = 0; i < this->length; i++) {
-		DgError status = DgValueFree(&this->key[i]);
-		
-		if (status != DG_ERROR_SUCCESSFUL) {
-			error = status;
-		}
-		
-		status = DgValueFree(&this->value[i]);
-		
-		if (status != DG_ERROR_SUCCESSFUL) {
-			error = status;
-		}
+	DgTableLUTFree(this);
+	
+	if ((error = DgArrayFree(&this->array, deep))) {
+		return error;
 	}
-	
-	DgMemoryFree(this->key);
-	DgMemoryFree(this->value);
 	
 	return error;
 }
 
-static DgError DgTablePreallocMore(DgTable *this) {
+bool DgTableHas(DgTable * restrict this, DgValue * restrict key) {
 	/**
-	 * Preallocate more memory for the table. This must make sure at least one
-	 * more space is available.
+	 * Check if the table has an entry with the given key.
 	 * 
-	 * @param this Table object
-	 * @return Error code
+	 * @param this Table to check in
+	 * @param key Key to check for
+	 * @return true if the table has an entry with `key`, false if not
 	 */
 	
-	if (this->length >= this->allocated) {
-		this->allocated = 2 + (2 * this->allocated);
-		
-		this->key = DgMemoryReallocate(this->key, sizeof *this->key * this->allocated);
-		
-		if (this->key == NULL) {
-			return DG_ERROR_ALLOCATION_FAILED;
-		}
-		
-		this->value = DgMemoryReallocate(this->value, sizeof *this->value * this->allocated);
-		
-		if (this->value == NULL) {
-			DgMemoryFree(this->key);
-			return DG_ERROR_ALLOCATION_FAILED;
-		}
-	}
-	
-	return DG_ERROR_SUCCESSFUL;
+	return DgTableLUTIndexForKey(this, key) != DG_TABLE_QUICK_NONE;
 }
 
-static DgError DgTableFind(DgTable * restrict this, const DgValue * restrict key, size_t * restrict index) {
+DgError DgTablePut(DgTable * restrict this, DgValue * restrict key, DgValue * restrict value) {
 	/**
-	 * Find the index of the pair with the given key
+	 * Put a key -> value pair into the table
 	 * 
-	 * @param this Table object
-	 * @param key Key value
-	 * @param index Pointer to write the index of the value if it exists (can be NULL)
-	 * @return Error code
-	 */
-	
-	for (size_t i = 0; i < this->length; i++) {
-		if (DgValueEqual(&this->key[i], key)) {
-			if (index) {
-				index[0] = i;
-			}
-			return DG_ERROR_SUCCESSFUL;
-		}
-	}
-	
-	return DG_ERROR_NOT_FOUND;
-}
-
-DgError DgTableSet(DgTable * restrict this, DgValue * restrict key, DgValue * restrict value) {
-	/**
-	 * Set a key/value pair
-	 * 
-	 * @note This effectively frees the key and value (if successful).
+	 * @note This effectively takes ownership of the key and value. If you want
+	 * them to be copied instead use DgTableSet().
 	 * 
 	 * @param this Table object
 	 * @param key Key
 	 * @param value Value
 	 */
 	
-	// Handle the case where key/value already exists
-	size_t index = 0;
+	DgError error;
 	
-	if (DgTableFind(this, key, &index) == DG_ERROR_SUCCESSFUL) {
-		// Free old value
-		DgError status = DgValueFree(&this->value[index]);
+	// Handle the case where key/value already exists
+	if (DgTableHas(this, key)) {
+		size_t index = DgTableLUTIndexForKey(this, key);
 		
-		if (status != DG_ERROR_SUCCESSFUL) {
-			return status;
-		}
+		// Place the value into its slot
+		error = DgArrayPut(&this->array, 2 * index + 1, value);
 		
-		// Set key and value
-		this->value[index] = *value;
-		
-		// Free the key value used for search
+		// Free the key, since we'll never be using it
 		DgValueFree(key);
+		
+		// Return our error from earlier, if any
+		if (error) {
+			return error;
+		}
 	}
 	
 	// Handle the case where the key does not exist yet
 	else {
-		// Preallocate more
-		if (DgTablePreallocMore(this) == DG_ERROR_ALLOCATION_FAILED) {
-			DgLog(DG_LOG_ERROR, "Allocation failed for table <0x%16x>", this);
-			return DG_ERROR_ALLOCATION_FAILED;
+		// Calculate the new index
+		size_t index = DgTableLength(this);
+		
+		// Add the new index to the LUT
+		if ((error = DgTableLUTInsertIndexForKey(this, key, index))) {
+			return error;
 		}
 		
-		// Set key and value
-		this->key[this->length] = *key;
-		this->value[this->length] = *value;
+		// Append the new key/value pair
+		if ((error = DgArrayAppend(&this->array, key))) {
+			return error;
+		}
 		
-		// Increment length
-		this->length++;
+		if ((error = DgArrayAppend(&this->array, value))) {
+			return error;
+		}
 	}
 	
-	// Return success status
-	return DG_ERROR_SUCCESSFUL;
+	return DG_ERROR_SUCCESS;
+// 	// Handle the case where key/value already exists
+// 	size_t index = 0;
+// 	
+// 	if (DgTableFind(this, key, &index) == DG_ERROR_SUCCESSFUL) {
+// 		// Free old value
+// 		DgError status = DgValueFree(&this->value[index]);
+// 		
+// 		if (status != DG_ERROR_SUCCESSFUL) {
+// 			return status;
+// 		}
+// 		
+// 		// Set key and value
+// 		this->value[index] = *value;
+// 		
+// 		// Free the key value used for search
+// 		DgValueFree(key);
+// 	}
+// 	
+// 	// Handle the case where the key does not exist yet
+// 	else {
+// 		// Preallocate more
+// 		if (DgTablePreallocMore(this) == DG_ERROR_ALLOCATION_FAILED) {
+// 			DgLog(DG_LOG_ERROR, "Allocation failed for table <0x%16x>", this);
+// 			return DG_ERROR_ALLOCATION_FAILED;
+// 		}
+// 		
+// 		// Set key and value
+// 		this->key[this->length] = *key;
+// 		this->value[this->length] = *value;
+// 		
+// 		// Increment length
+// 		this->length++;
+// 	}
+// 	
+// 	// Return success status
+// 	return DG_ERROR_SUCCESSFUL;
 }
 
-DgError DgTableGet(DgTable * restrict this, DgValue * restrict key, DgValue * restrict value) {
+DgValue *DgTableAt(DgTable * restrict this, DgValue * restrict key) {
 	/**
-	 * Get a value assocaited with a key
+	 * Get a direct pointer to the value assocaited with a key
 	 * 
 	 * @note Automatically frees the key (regardless if success or failure)
 	 * 
 	 * @param this Table object
-	 * @param key Key
-	 * @param value Value
+	 * @param key Key (in)
+	 * @param value Value (out)
 	 */
 	
-	size_t index = 0;
+	size_t index = DgTableLUTIndexForKey(this, key);
 	
-	DgError status = DgTableFind(this, key, &index);
-	
-	if (status == DG_ERROR_SUCCESSFUL) {
-		value[0] = this->value[index];
+	if (index == DG_TABLE_QUICK_NONE) {
+		return NULL;
 	}
 	
-	DgValueFree(key);
+	return DgArrayAt(&this->array, 2 * index + 1);
 	
-	return status;
+// 	size_t index = 0;
+// 	
+// 	DgError status = DgTableFind(this, key, &index);
+// 	
+// 	if (status == DG_ERROR_SUCCESSFUL) {
+// 		value[0] = this->value[index];
+// 	}
+// 	
+// 	DgValueFree(key);
+// 	
+// 	return status;
 }
 
-DgError DgTableRemove(DgTable * restrict this, DgValue * const restrict key) {
+DgError DgTableRemove(DgTable * restrict this, const DgValue * const restrict key) {
 	/**
 	 * Remove an element from the table
 	 * 
@@ -365,9 +398,10 @@ DgError DgTableRemove(DgTable * restrict this, DgValue * const restrict key) {
 	return DG_ERROR_NOT_IMPLEMENTED;
 }
 
-DgError DgTableAt(DgTable * restrict this, size_t index, DgValue * const restrict key, DgValue * const restrict value) {
+DgError DgTablePairAt(DgTable * restrict this, size_t index, DgValue ** const restrict key, DgValue ** const restrict value) {
 	/**
-	 * Get the value at the given index.
+	 * Get direct pointers to the key and value entries at index. This is good
+	 * for iteration.
 	 * 
 	 * @param this Table object
 	 * @param index The index to get
@@ -375,16 +409,16 @@ DgError DgTableAt(DgTable * restrict this, size_t index, DgValue * const restric
 	 * @param value The value for the index (or NULL to ignore)
 	 */
 	
-	if (index >= this->length) {
-		return DG_ERROR_NOT_FOUND;
+	if (index >= DgTableLength(this)) {
+		return DG_ERROR_OUT_OF_RANGE;
 	}
 	
 	if (key) {
-		key[0] = this->key[index];
+		key[0] = DgArrayAt(&this->array, 2 * index);
 	}
 	
 	if (value) {
-		value[0] = this->value[index];
+		value[0] = DgArrayAt(&this->array, 2 * index + 1);
 	}
 	
 	return DG_ERROR_SUCCESSFUL;
@@ -398,5 +432,5 @@ size_t DgTableLength(DgTable * restrict this) {
 	 * @return Length of the table
 	 */
 	
-	return this->length;
+	return DgArrayLength(&this->array) / 2;
 }
