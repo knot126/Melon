@@ -35,7 +35,7 @@ static void DgTableLUTEntryInit(DgTableQuick *this) {
 	 * @param this Quick lookup entry
 	 */
 	
-	this->index = DG_TABLE_QUICK_NONE;
+	this->index = DG_TABLE_LUT_NIL;
 	this->next = NULL;
 }
 
@@ -76,7 +76,7 @@ static DgError DgTableQuickAdd(DgTableQuick *this, size_t index, size_t *depth) 
 		depth[0]++;
 		
 		// If we found one with a NIL index, we can just use that
-		if (cur->index == DG_TABLE_QUICK_NONE) {
+		if (cur->index == DG_TABLE_LUT_NIL) {
 			cur->index = index;
 			return DG_ERROR_SUCCESSFUL;
 		}
@@ -148,7 +148,7 @@ static size_t DgTableLUTIndexForKey(DgTable *this, DgValue *key) {
 	 * 
 	 * @param this Table to preform the lookup in
 	 * @param key Key to look for
-	 * @return Index if found, otherwise DG_TABLE_QUICK_NONE
+	 * @return Index if found, otherwise DG_TABLE_LUT_NIL
 	 */
 	
 	// Get the hash and trim it to size
@@ -158,7 +158,7 @@ static size_t DgTableLUTIndexForKey(DgTable *this, DgValue *key) {
 	DgTableQuick *cur = &this->lookup[qt_index];
 	
 	while (cur) {
-		if (cur->index != DG_TABLE_QUICK_NONE) {
+		if (cur->index != DG_TABLE_LUT_NIL) {
 			// see if the key value at that index matches, if so return it
 			DgValue *value = DgArrayAt(&this->array, cur->index);
 			
@@ -171,7 +171,7 @@ static size_t DgTableLUTIndexForKey(DgTable *this, DgValue *key) {
 		cur = cur->next;
 	}
 	
-	return DG_TABLE_QUICK_NONE;
+	return DG_TABLE_LUT_NIL;
 }
 
 static DgError DgTableLUTInsertIndexForKey(DgTable *this, DgValue *key, size_t index) {
@@ -259,7 +259,7 @@ bool DgTableHas(DgTable * restrict this, DgValue * restrict key) {
 	 * @return true if the table has an entry with `key`, false if not
 	 */
 	
-	return DgTableLUTIndexForKey(this, key) != DG_TABLE_QUICK_NONE;
+	return DgTableLUTIndexForKey(this, key) != DG_TABLE_LUT_NIL;
 }
 
 DgError DgTablePut(DgTable * restrict this, DgValue * restrict key, DgValue * restrict value) {
@@ -364,7 +364,7 @@ DgValue *DgTableAt(DgTable * restrict this, DgValue * restrict key) {
 	
 	size_t index = DgTableLUTIndexForKey(this, key);
 	
-	if (index == DG_TABLE_QUICK_NONE) {
+	if (index == DG_TABLE_LUT_NIL) {
 		return NULL;
 	}
 	

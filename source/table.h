@@ -47,7 +47,7 @@ typedef struct DgTableQuick {
 } DgTableQuick;
 
 enum {
-	DG_TABLE_QUICK_NONE = 0xFFffFFffFFffFFff,
+	DG_TABLE_LUT_NIL = 0xFFffFFffFFffFFff,
 };
 
 /**
