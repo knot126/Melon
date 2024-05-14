@@ -160,21 +160,13 @@ static size_t DgTableLUTIndexForKey(DgTable *this, DgValue *key) {
 	// Get the hash and trim it to size
 	size_t qt_index = DgTableLUTTrimHash(this, DgValueQuickHash(key));
 	
-	DgLog(DG_LOG_VERBOSE, "DgTableLUTIndexForKey(): qt_index = %d", qt_index);
-	
 	// Traverse the lookup table for possible matches
 	DgTableQuick *cur = &this->lookup[qt_index];
-	
-	DgTableLUTLogEntries(this);
 	
 	while (cur) {
 		if (cur->index != DG_TABLE_LUT_NIL) {
 			// see if the key at that index matches, if so return it
 			DgValue *cand_key = DgArrayAt(&this->array, 2 * cur->index);
-			
-			if (cand_key == NULL) {
-				DgLog(DG_LOG_ERROR, "candidate key is out of bounds for the array!!!??? index = %lld", 2 * cur->index);
-			}
 			
 			if (DgValueEqual(cand_key, key)) {
 				return cur->index;
@@ -201,9 +193,6 @@ static DgError DgTableLUTInsertIndexForKey(DgTable *this, DgValue *key, size_t i
 	// Get the hash and trim it to size
 	size_t qt_index = DgTableLUTTrimHash(this, DgValueQuickHash(key));
 	size_t depth;
-	
-	DgLog(DG_LOG_VERBOSE, "DgTableLUTInsertIndexForKey(): qt_index = %d", qt_index);
-	DgTableLUTLogEntries(this);
 	
 	return DgTableQuickAdd(&this->lookup[qt_index], index, &depth);
 }

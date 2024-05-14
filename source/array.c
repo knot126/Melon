@@ -42,7 +42,6 @@ DgError DgArrayFree(DgArray *this, bool deep) {
 	
 	if (deep) {
 		for (size_t i = 0; i < DgArrayLength(this); i++) {
-			DgLog(DG_LOG_VERBOSE, "[%d] Free value", i);
 			DgValue *value = DgArrayAt(this, i);
 			DgValueFree(value);
 		}
@@ -69,8 +68,6 @@ static DgError DgArrayPrepareForElements(DgArray *this, size_t n) {
 	while (new_alloced < (this->length + n)) {
 		new_alloced = 2 * new_alloced + 1;
 	}
-	
-	DgLog(DG_LOG_VERBOSE, "DgArray: Old size is %d, expect new size to be %d", this->allocated, new_alloced);
 	
 	// If we need more memory, realloc, otherwise just skip it
 	if (new_alloced != this->allocated) {
