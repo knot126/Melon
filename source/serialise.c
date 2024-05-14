@@ -85,6 +85,20 @@ DgError DgSerialiseWriteValue(DgStream * restrict stream, const DgValue * restri
 		case DG_TYPE_FLOAT64:
 			status = DgStreamWriteFloat64(stream, value->data.asFloat64);
 			break;
+		case DG_TYPE_BYTES: {
+			DgBytes *bytes = value->data.asBytes;
+			
+			size_t length = DgBytesLength(bytes);
+			DgByte *data = DgBytesRawBuffer(bytes);
+			
+			status = DgStreamWriteUInt64(stream, length);
+			
+			if (!status) {
+				status = DgStreamWrite(stream, length, data);
+			}
+			
+			break;
+		}
 		case DG_TYPE_ARRAY: {
 			DgArray *array = value->data.asArray;
 			size_t length = DgArrayLength(array);

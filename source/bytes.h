@@ -19,8 +19,8 @@
 typedef uint8_t DgByte;
 
 typedef struct DgBytes {
-	size_t length;
 	DgByte *data;
+	size_t length;
 } DgBytes;
 
 void DgBytesInit(DgBytes *this);
@@ -29,6 +29,7 @@ DgByte DgBytesAt_(DgBytes *this, size_t index, const char *debug_file, size_t de
 void DgBytesSet_(DgBytes *this, size_t index, DgByte byte, const char *debug_file, size_t debug_line);
 DgError DgBytesAppendBuffer(DgBytes *this, const size_t buffer_length, const void *buffer);
 size_t DgBytesLength(DgBytes *this);
+DgByte *DgBytesRawBuffer(DgBytes *this);
 bool DgBytesEqual(const DgBytes * const restrict bytes1, const DgBytes * const restrict bytes2);
 uint64_t DgBytesQuickHash(DgBytes *this);
 

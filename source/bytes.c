@@ -111,6 +111,17 @@ size_t DgBytesLength(DgBytes *this) {
 	return this->length;
 }
 
+DgByte *DgBytesRawBuffer(DgBytes *this) {
+	/**
+	 * Get a pointer to the data. This is the same as the internal pointer for the
+	 * bytes object and should not be freed.
+	 * 
+	 * @param this Bytes
+	 */
+	
+	return this->data;
+}
+
 bool DgBytesEqual(const DgBytes * const restrict bytes1, const DgBytes * const restrict bytes2) {
 	/**
 	 * Check if two bytes values are equal.

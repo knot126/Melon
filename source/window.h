@@ -19,10 +19,10 @@
 
 #ifdef DG_USE_SDL2
 	#include <SDL2/SDL.h>
-#elifdef DG_USE_X11
+#elif defined(DG_USE_X11)
 	#include <X11/Xlib.h>
 	#include <X11/Xutil.h>
-#elifdef DG_USE_WINDOWS_API
+#elif defined(DG_USE_WINDOWS_API)
 	#include <windows.h>
 #endif
 
@@ -47,10 +47,10 @@ typedef struct DgWindow {
 #ifdef DG_USE_SDL2
 	SDL_Window *window;
 	SDL_Surface *surface;
-#elifdef DG_USE_X11
+#elif defined(DG_USE_X11)
 	Display *display;
 	Window window;
-#elifdef DG_USE_WINDOWS_API
+#elif defined(DG_USE_WINDOWS_API)
 	WNDCLASS window_class;
 	HWND window_handle;
 #endif

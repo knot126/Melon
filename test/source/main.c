@@ -182,24 +182,47 @@ void TestTableAndSerialise(void) {
 	DgTablePut(&table, &key, &value);
 	
 	DgLog(DG_LOG_INFO, "Value 3");
+	DgValueStaticString(&key, "float32_test");
+	DgValueFloat32(&value, 1.5);
+	DgTablePut(&table, &key, &value);
+	
+	DgValueStaticString(&key, "float32_test");
+	DgValueFloat32(&value, 1.0);
+	DgTablePut(&table, &key, &value);
+	
+	DgLog(DG_LOG_INFO, "Value 4");
 	DgValueStaticString(&key, "nil_test");
 	DgValueNil(&value);
 	DgTablePut(&table, &key, &value);
 	
-	DgLog(DG_LOG_INFO, "Value 4");
+	DgLog(DG_LOG_INFO, "Value 5");
 	DgValueStaticString(&key, "ptr_test");
 	DgValuePointer(&value, &table);
 	DgTablePut(&table, &key, &value);
 	
-	DgLog(DG_LOG_INFO, "Value 5");
+	DgLog(DG_LOG_INFO, "Value 6");
 	DgValueStaticString(&key, "array_test");
 	
 	DgArray array;
 	DgArrayInit(&array);
 	DgArrayResize(&array, 5);
 	DgValueArray(&value, &array);
-	
 	DgTablePut(&table, &key, &value);
+	
+	DgLog(DG_LOG_INFO, "Value 7");
+	DgTable anTable;
+	DgTableInit(&anTable);
+	DgValueStaticString(&key, "subtable_test");
+	DgValueTable(&value, &anTable);
+	DgTablePut(&table, &key, &value);
+	
+	key = DgMakeStaticString("example");
+	value = DgMakeInt64(123456);
+	DgTablePut(&anTable, &key, &value);
+	
+	key = DgMakeStaticString("type");
+	value = DgMakeStaticString("number");
+	DgTablePut(&anTable, &key, &value);
 	
 	DgLog(DG_LOG_INFO, "Make table value for serialise test");
 	DgValue table_val;
