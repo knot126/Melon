@@ -43,8 +43,6 @@ DgError DgSerialiseWriteValue(DgStream * restrict stream, const DgValue * restri
 		return status;
 	}
 	
-	DgLog(DG_LOG_VERBOSE, "Type: %x", type);
-	
 	// Write the value
 	switch (type) {
 		case DG_TYPE_NIL:
@@ -98,11 +96,7 @@ DgError DgSerialiseWriteValue(DgStream * restrict stream, const DgValue * restri
 			}
 			
 			for (size_t i = 0; i < length; i++) {
-				DgLog(DG_LOG_VERBOSE, "[%d]", i);
-				
 				DgValue *item = DgArrayAt(array, i);
-				
-				DgLog(DG_LOG_VERBOSE, "[%d] <0x%llx>", i, item);
 				
 				status = DgSerialiseWriteValue(stream, item);
 				
