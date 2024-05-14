@@ -120,10 +120,6 @@ void TestCryptoRandom(void) {
 	DgLog(DG_LOG_SUCCESS, "TestCryptoRandom");
 }
 
-void TestError(void) {
-	DgLogError(DG_ERROR_FAILED);
-}
-
 void TestArray(void) {
 	DgError error;
 	
@@ -200,27 +196,23 @@ void TestTableAndSerialise(void) {
 	DgValueTable(&table_val, &table);
 	
 	DgLog(DG_LOG_INFO, "Serialise");
-	DgSerialiseWrite(NULL, "fs://test/ser_test.dat", &table_val);
+	if ((err = DgSerialiseWrite(NULL, "fs://ser_test.dat", &table_val))) {
+		DgLogError(err);
+	}
 	
 	DgLog(DG_LOG_INFO, "Free the table");
 	DgValueFree(&table_val);
-}
-
-void TestMemory(void) {
-	//DgLog(DG_LOG_VERBOSE, "Allocated 0x%x bytes of memory over lifetime", DgMemoryAllocatedCount());
 }
 
 int main(const int argc, const char *argv[]) {
 	DgLog(DG_LOG_INFO, "Hello, world!");
 	
 	// TestString();
-	// TestStorage();
-	// TestMemory();
+	TestStorage();
 	// TestCryptoRandom();
 	TestArray();
 	// TestTerminal();
 	TestTableAndSerialise();
-	// TestError();
 	// DgCryptoCubeHasher_Test();
 	// DgCryptoCubeHashBytes_Test();
 	

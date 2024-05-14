@@ -19,6 +19,8 @@
 
 #include "serialise.h"
 
+#define CHECK_STATUS(status, onfail) if (status) { goto onfail; }
+
 DgError DgSerialiseWriteValue(DgStream * restrict stream, const DgValue * restrict value) {
 	/**
 	 * Write out a value
@@ -137,21 +139,24 @@ DgError DgSerialiseWrite(DgStorage *storage, const char *path, DgValue * restric
 	DgError status = DgStreamOpen(storage, &stream, path, DG_STREAM_WRITE);
 	
 	if (status != DG_ERROR_SUCCESS) {
+		DgLog(DG_LOG_ERROR, "Serialise: Failed to open stream: '%s'", path);
 		return status;
 	}
 	
 	// Magic number
-	DgStreamWriteUInt32(&stream, 0xFC991E51); // FURRIES!
+	status = DgStreamWriteUInt32(&stream, 0xFC991E51); // FURRIES!
+	CHECK_STATUS(status, onfail);
 	
 	// Version
-	DgStreamWriteUInt16(&stream, 1);
-	DgStreamWriteUInt16(&stream, 0);
+	status = DgStreamWriteUInt16(&stream, 1); CHECK_STATUS(status, onfail);
+	status = DgStreamWriteUInt16(&stream, 0); CHECK_STATUS(status, onfail);
 	
 	// Serialise root value
-	DgSerialiseWriteValue(&stream, value);
+	status = DgSerialiseWriteValue(&stream, value);
 	
+	onfail:
 	// Close stream
 	DgStreamClose(&stream);
 	
-	return DG_ERROR_FAILED;
+	return status;
 }
