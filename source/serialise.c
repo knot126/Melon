@@ -81,6 +81,7 @@ DgError DgSerialiseWriteValue(DgStream * restrict stream, const DgValue * restri
 			break;
 		case DG_TYPE_STRING:
 			status = DgStreamWriteString(stream, value->data.asStaticString);
+			if (!status) { status = DgStreamWriteInt8(stream, 0); } // NUL terminator
 			break;
 		case DG_TYPE_FLOAT32:
 			status = DgStreamWriteFloat32(stream, value->data.asFloat32);
