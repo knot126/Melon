@@ -142,7 +142,6 @@ void TestArray(void) {
 }
 
 void TestTerminal(void) {
-	while (true) {
 	const char *line = DgReadLine(">> ");
 	
 	if (line) {
@@ -153,7 +152,6 @@ void TestTerminal(void) {
 	}
 	
 	DgMemoryFree(line);
-	}
 }
 
 void TestTableAndSerialise(void) {
