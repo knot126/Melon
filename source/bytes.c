@@ -95,9 +95,21 @@ DgError DgBytesAppendBuffer(DgBytes *this, const size_t buffer_length, const voi
 		return DG_ERROR_ALLOCATION_FAILED;
 	}
 	
-	DgMemoryCopy(buffer_length, buffer, &this->data[this->length]);
+	DgMemoryCopy(buffer_length, buffer, &this->data[this->length - buffer_length]);
 	
 	return DG_ERROR_SUCCESS;
+}
+
+DgError DgBytesAppendByte(DgBytes *this, DgByte byte) {
+	/**
+	 * Append a byte to the buffer
+	 * 
+	 * @param this Bytes object to append to
+	 * @param byte Byte to append
+	 * @return Same errors as DgBytesAppendBuffer()
+	 */
+	
+	return DgBytesAppendBuffer(this, 1, &byte);
 }
 
 size_t DgBytesLength(DgBytes *this) {
@@ -116,10 +128,35 @@ DgByte *DgBytesRawBuffer(DgBytes *this) {
 	 * Get a pointer to the data. This is the same as the internal pointer for the
 	 * bytes object and should not be freed.
 	 * 
+	 * @note This returns the raw buffer, and is only intended for reading and
+	 * writing to the current bytes object, not converting it to a raw buffer.
+	 * For that, see DgBytesToBuffer().
+	 * 
 	 * @param this Bytes
 	 */
 	
 	return this->data;
+}
+
+DgError DgBytesToBuffer(DgBytes *this, DgByte **buffer, size_t *buffer_length) {
+	/**
+	 * Get the bytes as a buffer and free any unused memory.
+	 * 
+	 * @note For now this is the same as DgBytesRawBuffer but if this ever
+	 * starts using preallocation it may trim the array.
+	 * 
+	 * @param this Bytes
+	 */
+	
+	if (buffer) {
+		buffer[0] = this->data;
+	}
+	
+	if (buffer_length) {
+		buffer_length[0] = this->length;
+	}
+	
+	return DG_ERROR_SUCCESS;
 }
 
 bool DgBytesEqual(const DgBytes * const restrict bytes1, const DgBytes * const restrict bytes2) {

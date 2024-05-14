@@ -14,7 +14,8 @@
 
 #pragma once
 
-#include <inttypes.h>
+#include "common.h"
+#include "error.h"
 
 typedef uint8_t DgByte;
 
@@ -28,8 +29,10 @@ void DgBytesFree(DgBytes *this);
 DgByte DgBytesAt_(DgBytes *this, size_t index, const char *debug_file, size_t debug_line);
 void DgBytesSet_(DgBytes *this, size_t index, DgByte byte, const char *debug_file, size_t debug_line);
 DgError DgBytesAppendBuffer(DgBytes *this, const size_t buffer_length, const void *buffer);
+DgError DgBytesAppendByte(DgBytes *this, DgByte byte);
 size_t DgBytesLength(DgBytes *this);
 DgByte *DgBytesRawBuffer(DgBytes *this);
+DgError DgBytesToBuffer(DgBytes *this, DgByte **buffer, size_t *buffer_length);
 bool DgBytesEqual(const DgBytes * const restrict bytes1, const DgBytes * const restrict bytes2);
 uint64_t DgBytesQuickHash(DgBytes *this);
 

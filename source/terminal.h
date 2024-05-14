@@ -16,4 +16,4 @@
 
 #include "common.h"
 
-char *DgReadLine(void);
+char *DgReadLine(const char *prompt);

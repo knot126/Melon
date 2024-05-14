@@ -142,7 +142,8 @@ void TestArray(void) {
 }
 
 void TestTerminal(void) {
-	const char *line = DgReadLine();
+	while (true) {
+	const char *line = DgReadLine(">> ");
 	
 	if (line) {
 		DgLog(DG_LOG_INFO, "Read a line: %s", line);
@@ -152,6 +153,7 @@ void TestTerminal(void) {
 	}
 	
 	DgMemoryFree(line);
+	}
 }
 
 void TestTableAndSerialise(void) {
@@ -244,7 +246,7 @@ int main(const int argc, const char *argv[]) {
 	TestStorage();
 	// TestCryptoRandom();
 	TestArray();
-	// TestTerminal();
+	TestTerminal();
 	TestTableAndSerialise();
 	// DgCryptoCubeHasher_Test();
 	// DgCryptoCubeHashBytes_Test();

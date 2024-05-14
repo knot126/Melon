@@ -12,56 +12,53 @@
  * Terminal interaction
  */
 
-#include "alloc.h"
+#include "bytes.h"
 #include "terminal.h"
 #include "log.h"
 
-char *DgReadLine(void) {
+char *DgReadLine(const char *prompt) {
 	/**
 	 * Read a line from the user
 	 * 
 	 * @todo make it work!!!
 	 */
 	
+	DgError error;
+	DgBytes line;
 	int ch;
 	
-	// Find the start of the current string
-	long start = ftell(stdin);
+	DgBytesInit(&line);
+	
+	printf("%s", prompt);
 	
 	// Read and wait for a terminating character
 	while (true) {
+		// Get the next character from the user
 		ch = fgetc(stdin);
 		
+		// If it's a terminal character, stop reading
 		if (ch == '\r' || ch == '\n' || ch == EOF) {
 			break;
 		}
+		
+		// Place the char into the buffer
+		error = DgBytesAppendByte(&line, ch);
+		
+		if (error) {
+			return NULL;
+		}
 	}
 	
-	// End of the string
-	long end = ftell(stdin);
-	unsigned long size = end - start;
+	// Append a NUL byte
+	error = DgBytesAppendByte(&line, '\0');
 	
-	// Get memory for it
-	char *line = DgMemoryAllocate(size + 1);
-	
-	if (!line) {
+	if (error) {
 		return NULL;
 	}
 	
-	// Seek back to the start
-	if (fseek(stdin, start, SEEK_SET) != 0) {
-		DgMemoryFree(line);
-		return NULL;
-	}
+	// Convert to string
+	char *out;
+	DgBytesToBuffer(&line, (DgByte **) &out, NULL);
 	
-	// Read the data in
-	if (fread(line, 1, size, stdin) != size) {
-		DgMemoryFree(line);
-		return NULL;
-	}
-	
-	// The null terminator
-	line[size] = '\0';
-	
-	return line;
+	return out;
 }
