@@ -139,7 +139,13 @@ static size_t DgTableLUTTrimHash(DgTable *this, uint64_t hash) {
 	 * Trim the hash to its proper size
 	 */
 	
-	return (size_t) (hash & ((this->lookup_alloc << 1) - 1));
+	return (size_t) (hash & ((this->lookup_alloc) - 1));
+}
+
+static void DgTableLUTLogEntries(DgTable *this) {
+	for (size_t i = 0; i < this->lookup_alloc; i++) {
+		DgLog(DG_LOG_VERBOSE, "[%d] <0x%llx> 0x%llx <0x%llx>", i, &this->lookup[i], this->lookup[i].index, this->lookup[i].next);
+	}
 }
 
 static size_t DgTableLUTIndexForKey(DgTable *this, DgValue *key) {
@@ -154,15 +160,23 @@ static size_t DgTableLUTIndexForKey(DgTable *this, DgValue *key) {
 	// Get the hash and trim it to size
 	size_t qt_index = DgTableLUTTrimHash(this, DgValueQuickHash(key));
 	
+	DgLog(DG_LOG_VERBOSE, "qt_index = %d", qt_index);
+	
 	// Traverse the lookup table for possible matches
 	DgTableQuick *cur = &this->lookup[qt_index];
 	
+	DgTableLUTLogEntries(this);
+	
 	while (cur) {
 		if (cur->index != DG_TABLE_LUT_NIL) {
-			// see if the key value at that index matches, if so return it
-			DgValue *value = DgArrayAt(&this->array, cur->index);
+			// see if the key at that index matches, if so return it
+			DgValue *cand_key = DgArrayAt(&this->array, 2 * cur->index);
 			
-			if (DgValueEqual(value, key)) {
+			if (cand_key == NULL) {
+				DgLog(DG_LOG_ERROR, "candidate key is out of bounds for the array!!!??? index = %lld", 2 * cur->index);
+			}
+			
+			if (DgValueEqual(cand_key, key)) {
 				return cur->index;
 			}
 		}

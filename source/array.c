@@ -14,6 +14,7 @@
 
 #include "alloc.h"
 #include "array.h"
+#include "log.h"
 
 /// @todo it all
 DgError DgArrayInit(DgArray *this) {
@@ -68,6 +69,8 @@ static DgError DgArrayPrepareForElements(DgArray *this, size_t n) {
 		new_alloced = 2 * new_alloced + 1;
 	}
 	
+	DgLog(DG_LOG_VERBOSE, "DgArray: Old size is %d, expect new size to be %d", this->allocated, new_alloced);
+	
 	// If we need more memory, realloc, otherwise just skip it
 	if (new_alloced != this->allocated) {
 		this->items = DgMemoryReallocate(this->items, new_alloced);
@@ -75,6 +78,8 @@ static DgError DgArrayPrepareForElements(DgArray *this, size_t n) {
 		if (!this->items) {
 			return DG_ERROR_ALLOCATION_FAILED;
 		}
+		
+		this->allocated = new_alloced;
 	}
 	
 	return DG_ERROR_SUCCESS;

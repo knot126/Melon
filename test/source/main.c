@@ -112,7 +112,7 @@ void TestCryptoRandom(void) {
 			return;
 		}
 		
-		const char *asBase16 = DgStringEncodeBase16(16, rand_bytes);
+		char *asBase16 = DgStringEncodeBase16(16, rand_bytes);
 		DgLog(DG_LOG_INFO, "Secure random bytes as base16: %s", asBase16);
 		DgFree(asBase16);
 	}
@@ -124,28 +124,76 @@ void TestError(void) {
 	DgLogError(DG_ERROR_FAILED);
 }
 
+void TestArray(void) {
+	DgError error;
+	
+	DgLog(DG_LOG_INFO, "TestArray()");
+	DgValue one = DgMakeInt64(1234);
+	
+	DgArray array;
+	DgArrayInit(&array);
+	DgArrayResize(&array, 20);
+	DgArrayPut(&array, 3, &one);
+	DgArrayResize(&array, 30);
+	DgArrayPut(&array, 25, &one);
+	DgArrayResize(&array, 40);
+	DgArrayPut(&array, 35, &one);
+	DgArrayResize(&array, 100);
+	DgArrayPut(&array, 97, &one);
+	DgArrayFree(&array, true);
+	
+	DgLog(DG_LOG_SUCCESS, "TestArray()");
+}
+
+void TestTerminal(void) {
+	const char *line = DgReadLine();
+	
+	if (line) {
+		DgLog(DG_LOG_INFO, "Read a line: %s", line);
+	}
+	else {
+		DgLog(DG_LOG_ERROR, "Read line failed! FUCK!");
+	}
+	
+	DgMemoryFree(line);
+}
+
 void TestTableAndSerialise(void) {
+	DgError err;
+	
+	DgLog(DG_LOG_INFO, "TestTableAndSerialise()");
+	
 	DgTable table;
 	
-	DgTableInit(&table);
+	DgLog(DG_LOG_INFO, "Initialise table");
+	
+	err = DgTableInit(&table);
+	
+	if (err) {
+		DgLog(DG_LOG_ERROR, "%d", err);
+	}
 	
 	DgValue key, value;
 	
+	DgLog(DG_LOG_INFO, "Value 1");
 	DgValueStaticString(&key, "int64_test");
 	DgValueInt64(&value, 324776765645);
-	DgTableSet(&table, &key, &value);
+	DgTablePut(&table, &key, &value);
 	
+	DgLog(DG_LOG_INFO, "Value 2");
 	DgValueStaticString(&key, "uint32_test");
 	DgValueUInt32(&value, 5001811);
-	DgTableSet(&table, &key, &value);
+	DgTablePut(&table, &key, &value);
 	
+	DgLog(DG_LOG_INFO, "Value 3");
 	DgValueStaticString(&key, "nil_test");
 	DgValueNil(&value);
-	DgTableSet(&table, &key, &value);
+	DgTablePut(&table, &key, &value);
 	
+	DgLog(DG_LOG_INFO, "Value 4");
 	DgValueStaticString(&key, "ptr_test");
 	DgValuePointer(&value, &table);
-	DgTableSet(&table, &key, &value);
+	DgTablePut(&table, &key, &value);
 	
 	DgValue table_val;
 	DgValueTable(&table_val, &table);
@@ -162,14 +210,16 @@ void TestMemory(void) {
 int main(const int argc, const char *argv[]) {
 	DgLog(DG_LOG_INFO, "Hello, world!");
 	
-	TestString();
-	TestStorage();
-	TestMemory();
-	TestCryptoRandom();
+	// TestString();
+	// TestStorage();
+	// TestMemory();
+	// TestCryptoRandom();
+	TestArray();
+	// TestTerminal();
 	TestTableAndSerialise();
-	TestError();
-	DgCryptoCubeHasher_Test();
-	DgCryptoCubeHashBytes_Test();
+	// TestError();
+	// DgCryptoCubeHasher_Test();
+	// DgCryptoCubeHashBytes_Test();
 	
 	return 0;
 }

@@ -23,6 +23,7 @@
 #include "stream.h"
 #include "string.h"
 #include "table.h"
+#include "terminal.h"
 #include "thread.h"
 #include "time.h"
 #include "window.h"
