@@ -121,8 +121,14 @@ DgError DgArrayResize(DgArray *this, size_t size) {
 		return error;
 	}
 	
+	// Save the old length
+	const size_t old_length = this->length;
+	
+	// Set the array length to new length
+	this->length = size;
+	
 	// Set any extras to nil
-	for (size_t i = this->length; i < size; i++) {
+	for (size_t i = old_length; i < size; i++) {
 		// HACK: This can't fail (unless I made some off by one error), but it
 		// returns an error code which for correctness really ought to be
 		// checked.

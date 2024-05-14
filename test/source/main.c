@@ -191,6 +191,16 @@ void TestTableAndSerialise(void) {
 	DgValuePointer(&value, &table);
 	DgTablePut(&table, &key, &value);
 	
+	DgLog(DG_LOG_INFO, "Value 5");
+	DgValueStaticString(&key, "array_test");
+	
+	DgArray array;
+	DgArrayInit(&array);
+	DgArrayResize(&array, 5);
+	DgValueArray(&value, &array);
+	
+	DgTablePut(&table, &key, &value);
+	
 	DgLog(DG_LOG_INFO, "Make table value for serialise test");
 	DgValue table_val;
 	DgValueTable(&table_val, &table);

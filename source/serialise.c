@@ -13,6 +13,7 @@
  */
 
 #include "storage.h"
+#include "array.h"
 #include "table.h"
 #include "error.h"
 #include "log.h"
@@ -32,16 +33,8 @@ DgError DgSerialiseWriteValue(DgStream * restrict stream, const DgValue * restri
 	
 	DgError status;
 	
-	DgValueType type = DG_TYPE_NIL;
-	
-	// Some types cannot be serialised in a way that makes sense. For static
-	// strings, it's better just to treat them as strings, and for pointers it
-	// makes no sense to store them since they will likely change by the time
-	// they are deserialised.
-	switch (value->type) {
-		case DG_TYPE_POINTER: type = DG_TYPE_NIL; break;
-		default: type = value->type; break;
-	}
+	// Temp store the type
+	DgValueType type = value->type;
 	
 	// Write the type ID
 	status = DgStreamWriteUInt16(stream, type);
@@ -49,6 +42,8 @@ DgError DgSerialiseWriteValue(DgStream * restrict stream, const DgValue * restri
 	if (status) {
 		return status;
 	}
+	
+	DgLog(DG_LOG_VERBOSE, "Type: %x", type);
 	
 	// Write the value
 	switch (type) {
@@ -79,6 +74,7 @@ DgError DgSerialiseWriteValue(DgStream * restrict stream, const DgValue * restri
 			status = DgStreamWriteInt64(stream, value->data.asInt64);
 			break;
 		case DG_TYPE_UINT64:
+		case DG_TYPE_POINTER:
 			status = DgStreamWriteUInt64(stream, value->data.asUInt64);
 			break;
 		case DG_TYPE_STRING:
@@ -91,6 +87,32 @@ DgError DgSerialiseWriteValue(DgStream * restrict stream, const DgValue * restri
 		case DG_TYPE_FLOAT64:
 			status = DgStreamWriteFloat64(stream, value->data.asFloat64);
 			break;
+		case DG_TYPE_ARRAY: {
+			DgArray *array = value->data.asArray;
+			size_t length = DgArrayLength(array);
+			
+			status = DgStreamWriteUInt64(stream, length);
+			
+			if (status) {
+				return status;
+			}
+			
+			for (size_t i = 0; i < length; i++) {
+				DgLog(DG_LOG_VERBOSE, "[%d]", i);
+				
+				DgValue *item = DgArrayAt(array, i);
+				
+				DgLog(DG_LOG_VERBOSE, "[%d] <0x%llx>", i, item);
+				
+				status = DgSerialiseWriteValue(stream, item);
+				
+				if (status) {
+					return status;
+				}
+			}
+			
+			break;
+		}
 		case DG_TYPE_TABLE: {
 			DgTable *table = value->data.asTable;
 			size_t length = DgTableLength(table);
