@@ -19,6 +19,8 @@
 char *DgReadLine(void) {
 	/**
 	 * Read a line from the user
+	 * 
+	 * @todo make it work!!!
 	 */
 	
 	int ch;

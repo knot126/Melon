@@ -160,7 +160,7 @@ static size_t DgTableLUTIndexForKey(DgTable *this, DgValue *key) {
 	// Get the hash and trim it to size
 	size_t qt_index = DgTableLUTTrimHash(this, DgValueQuickHash(key));
 	
-	DgLog(DG_LOG_VERBOSE, "qt_index = %d", qt_index);
+	DgLog(DG_LOG_VERBOSE, "DgTableLUTIndexForKey(): qt_index = %d", qt_index);
 	
 	// Traverse the lookup table for possible matches
 	DgTableQuick *cur = &this->lookup[qt_index];
@@ -201,6 +201,9 @@ static DgError DgTableLUTInsertIndexForKey(DgTable *this, DgValue *key, size_t i
 	// Get the hash and trim it to size
 	size_t qt_index = DgTableLUTTrimHash(this, DgValueQuickHash(key));
 	size_t depth;
+	
+	DgLog(DG_LOG_VERBOSE, "DgTableLUTInsertIndexForKey(): qt_index = %d", qt_index);
+	DgTableLUTLogEntries(this);
 	
 	return DgTableQuickAdd(&this->lookup[qt_index], index, &depth);
 }

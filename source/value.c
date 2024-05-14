@@ -522,7 +522,7 @@ DgError DgValueFree(DgValue * restrict this) {
 	 */
 	
 	// Free non-static string
-	if ((this->type == DG_TYPE_STRING) && (this->data.asString)) {
+	if ((this->type == DG_TYPE_STRING) && !(this->flags & DG_VALUE_STATIC) && (this->data.asString)) {
 		DgMemoryFree(this->data.asString);
 		return DG_ERROR_SUCCESSFUL;
 	}

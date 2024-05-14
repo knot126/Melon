@@ -195,11 +195,14 @@ void TestTableAndSerialise(void) {
 	DgValuePointer(&value, &table);
 	DgTablePut(&table, &key, &value);
 	
+	DgLog(DG_LOG_INFO, "Make table value for serialise test");
 	DgValue table_val;
 	DgValueTable(&table_val, &table);
 	
+	DgLog(DG_LOG_INFO, "Serialise");
 	DgSerialiseWrite(NULL, "fs://test/ser_test.dat", &table_val);
 	
+	DgLog(DG_LOG_INFO, "Free the table");
 	DgValueFree(&table_val);
 }
 
