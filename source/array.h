@@ -18,9 +18,7 @@
 #include "value.h"
 
 /**
- * Header part of the array memory block
- * 
- * @todo This needs to be implemented
+ * The main array structure
  */
 typedef struct DgArray {
 	DgValue *items;

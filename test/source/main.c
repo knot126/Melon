@@ -240,14 +240,19 @@ void TestTableAndSerialise(void) {
 int main(const int argc, const char *argv[]) {
 	DgLog(DG_LOG_INFO, "Hello, world!");
 	
-	// TestString();
-	TestStorage();
-	// TestCryptoRandom();
-	TestArray();
-	TestTerminal();
-	TestTableAndSerialise();
-	// DgCryptoCubeHasher_Test();
-	// DgCryptoCubeHashBytes_Test();
+	DgArgs args;
+	DgArgParse(&args, argc, argv);
+	
+	if (DgArgGetFlag(&args, "string")) TestString();
+	if (DgArgGetFlag(&args, "storage")) TestStorage();
+	if (DgArgGetFlag(&args, "crypto-random")) TestCryptoRandom();
+	if (DgArgGetFlag(&args, "array")) TestArray();
+	if (DgArgGetFlag(&args, "terminal")) TestTerminal();
+	if (DgArgGetFlag(&args, "table")) TestTableAndSerialise();
+	if (DgArgGetFlag(&args, "cubehash1")) DgCryptoCubeHasher_Test();
+	if (DgArgGetFlag(&args, "cubehash2")) DgCryptoCubeHashBytes_Test();
+	
+	DgArgFree(&args);
 	
 	return 0;
 }

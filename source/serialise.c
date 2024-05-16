@@ -13,6 +13,7 @@
  */
 
 #include "storage.h"
+#include "bytes.h"
 #include "array.h"
 #include "table.h"
 #include "error.h"

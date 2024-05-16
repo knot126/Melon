@@ -22,6 +22,7 @@
 // HACK HACK HACK This works thanks to #pragma once, though I wish it were eaiser for module to cross depend
 // on each other... what we give up for performance.
 // It's worth mentioning we need this for sizeof() of DgArray
+#include "bytes.h"
 #include "array.h"
 #include "table.h"
 

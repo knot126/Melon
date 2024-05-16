@@ -16,7 +16,6 @@
 
 #include "common.h"
 #include "error.h"
-#include "bytes.h"
 
 typedef uint32_t DgValueType;
 typedef uint32_t DgValueFlags;
@@ -62,6 +61,7 @@ enum {
 
 struct DgArray;
 struct DgTable;
+struct DgBytes;
 
 /**
  * Data value storage type
@@ -78,7 +78,7 @@ typedef union DgValueData {
 	void *asPointer;
 	struct DgArray *asArray;
 	struct DgTable *asTable;
-	DgBytes *asBytes;
+	struct DgBytes *asBytes;
 	char *asString;
 	const char *asStaticString;
 	uint8_t *asRawBytes;
