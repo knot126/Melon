@@ -19,6 +19,12 @@
 #include "alloc.h"
 #include "log.h"
 
+// HACK HACK HACK This works thanks to #pragma once, though I wish it were eaiser for module to cross depend
+// on each other... what we give up for performance.
+// It's worth mentioning we need this for sizeof() of DgArray
+#include "array.h"
+#include "table.h"
+
 DgError DgValueNil(DgValue * restrict value) {
 	/**
 	 * Create a NIL value.
@@ -264,7 +270,13 @@ DgError DgValueArray(DgValue * restrict value, struct DgArray *data) {
 	 * @return Error code
 	 */
 	
-	value->data.asArray = data;
+	value->data.asArray = DgMemoryAllocate(sizeof *data);
+	
+	if (!value->data.asArray) {
+		return DG_ERROR_ALLOCATION_FAILED;
+	}
+	
+	value->data.asArray[0] = data[0];
 	value->type = DG_TYPE_ARRAY;
 	
 	return DG_ERROR_SUCCESSFUL;
@@ -279,7 +291,13 @@ DgError DgValueTable(DgValue * restrict value, struct DgTable *data) {
 	 * @return Error code
 	 */
 	
-	value->data.asTable = data;
+	value->data.asTable = DgMemoryAllocate(sizeof *data);
+	
+	if (!value->data.asTable) {
+		return DG_ERROR_ALLOCATION_FAILED;
+	}
+	
+	value->data.asTable[0] = data[0];
 	value->type = DG_TYPE_TABLE;
 	
 	return DG_ERROR_SUCCESSFUL;
@@ -529,12 +547,24 @@ DgError DgValueFree(DgValue * restrict this) {
 	
 	// Free array
 	else if (this->type == DG_TYPE_ARRAY) {
-		return DgArrayFree(this->data.asArray, true);
+		DgError error = DgArrayFree(this->data.asArray, true);
+		
+		if (!error) {
+			DgMemoryFree(this->data.asArray);
+		}
+		
+		return error;
 	}
 	
 	// Free table
 	else if (this->type == DG_TYPE_TABLE) {
-		return DgTableFree(this->data.asTable, true);
+		DgError error = DgTableFree(this->data.asTable, true);
+		
+		if (!error) {
+			DgMemoryFree(this->data.asTable);
+		}
+		
+		return error;
 	}
 	
 	// Free bytes
@@ -585,7 +615,8 @@ bool DgValueEqual(const DgValue * const restrict value1, const DgValue * const r
 	// Compare based on the type
 	switch (type1) {
 		case DG_TYPE_NIL:
-		case DG_TYPE_NULL: {
+		case DG_TYPE_NULL:
+		case DG_TYPE_EMPTY: {
 			return true;
 		}
 		
@@ -643,6 +674,7 @@ uint64_t DgValueQuickHash(const DgValue * const restrict this) {
 	switch (type) {
 		case DG_TYPE_NIL: { return 0xbadf00d; }
 		case DG_TYPE_NULL: { return 0xdeadbeef; }
+		case DG_TYPE_EMPTY: { return 0x1455c0d; }
 		
 		case DG_TYPE_BOOL: { return this->data.asBool; }
 		

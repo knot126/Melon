@@ -28,6 +28,7 @@ enum {
 	// None class
 	DG_TYPE_NIL = 0x01,
 	DG_TYPE_NULL = 0x02,
+	DG_TYPE_EMPTY = 0x03,
 	// Boolean class
 	DG_TYPE_BOOL = 0x11,
 	// Integer class
@@ -56,7 +57,7 @@ enum {
  * Value flags
  */
 enum {
-	DG_VALUE_STATIC = (1 << 0),
+	DG_VALUE_STATIC = (1 << 0), // For strings, determines if it should be memory mangaged or not
 };
 
 struct DgArray;
