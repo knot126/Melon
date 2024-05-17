@@ -1,42 +1,49 @@
-KNOT'S SOFTWARE LICENSE 1.1
+MICROSOFT REFERENCE SOURCE LICENSE (MS-RSL)
 
-This Software is Copyright © 2023 Knot126
+This license governs use of the accompanying software. If you use the software,
+you accept this license. If you do not accept the license, do not use the
+software.
 
-Permission is hereby granted, free of charge, to any person or organization (the
-"User") obtaining a copy of this software and associated documentation files
-(the "Software"), to use, copy, modify, merge, distribute, and/or sell copies of
-the Software, subject to the following conditions:
+1. Definitions
 
-  1. The above copyright notice and this permission notice shall be included in
-     all copies or modified versions of the Software.
+The terms "reproduce," "reproduction" and "distribution" have the same meaning
+here as under U.S. copyright law.
 
-  2. The User is one of the following:
-    A. An individual person, working for themselves
-    B. A non-profit organization
-    C. An organization that seeks shared profit for all of its members, and
-       allows non-members to set the cost of their labor
+"You" means the licensee of the software.
 
-  3. If the User is an organization with owners, then all owners are workers and
-     all workers are owners with equal equity and/or equal vote.
+"Your company" means the company you worked for when you downloaded the software.
 
-  4. If the User is an organization, then the User must not be law enforcement,
-     military or any other government organisation, or working for or under
-     either.
+"Reference use" means use of the software within your company as a reference, in
+read only form, for the sole purposes of debugging your products, maintaining
+your products, or enhancing the interoperability of your products with the
+software, and specifically excludes the right to distribute the software outside
+of your company.
 
-  5. The Software and its source code may not be used for training or development
-     of any machine learning models, including but not limited to artificial
-     neural networks, deep learning, and reinforcement learning.
+"Licensed patents" means any Licensor patent claims which read directly on the
+software as distributed by the Licensor under this license.
 
-  6. This software shall be used for Good, and not for Evil. The copyright
-     holder has the right to decide what qualifies as "Good" and "Evil" for
-     every use of this software.
+2. Grant of Rights
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT EXPRESS OR IMPLIED WARRANTY OF ANY
-KIND, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS BE
-LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
-CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+(A) Copyright Grant- Subject to the terms of this license, the Licensor grants
+you a non-transferable, non-exclusive, worldwide, royalty-free copyright license
+to reproduce the software for reference use.
 
-Note: This licence has been derived from the Anti-Capitialist Software Licence,
-available at https://anticapitalist.software/.
+(B) Patent Grant- Subject to the terms of this license, the Licensor grants you
+a non-transferable, non-exclusive, worldwide, royalty-free patent license under
+licensed patents for reference use.
+
+3. Limitations
+
+(A) No Trademark License - This license does not grant you any rights to use the
+Licensor's name, logo, or trademarks.
+
+(B) If you begin patent litigation against the Licensor over patents that you
+think may apply to the software (including a cross-claim or counterclaim in a
+lawsuit), your license to the software ends automatically.
+
+(C) The software is licensed "as-is." You bear the risk of using it. The
+Licensor gives no express warranties, guarantees or conditions. You may have
+additional consumer rights under your local laws which this license cannot
+change. To the extent permitted under your local laws, the Licensor excludes the
+implied warranties of merchantability, fitness for a particular purpose and
+non-infringement.
