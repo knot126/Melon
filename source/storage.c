@@ -688,10 +688,10 @@ DgError DgStreamWriteString(DgStream * restrict context, const char * restrict d
 	 * @return Error code
 	 */
 	
-	return DgStreamWrite(context, DgStringLength(data), data);
+	return DgStreamWrite(context, DgStringLength(data), (void *) data);
 }
 
-DgError DgStreamWriteIntegerString(DgStream * restrict context, int64_t data) {
+DgError DgStreamWriteIntegerString(DgStream *context, int64_t data) {
 	/**
 	 * Write a stringified integer to a stream WITHOUT a null byte.
 	 * 
@@ -706,5 +706,9 @@ DgError DgStreamWriteIntegerString(DgStream * restrict context, int64_t data) {
 		return DG_ERROR_ALLOCATION_FAILED;
 	}
 	
-	return DgStreamWrite(context, DgStringLength(str), str);
+	DgError error = DgStreamWrite(context, DgStringLength(str), (void *) str);
+	
+	DgMemoryFree(str);
+	
+	return error;
 }

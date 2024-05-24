@@ -311,7 +311,7 @@ void DgCryptoCubeHashBytes_Test(void) {
 		return;
 	}
 	
-	const char *enchash = DgStringEncodeBase16(512/8, hash);
+	char *enchash = DgStringEncodeBase16(512/8, hash);
 	
 	DgLog(DG_LOG_INFO, "Cubehash of 'Hello': %s", enchash);
 	

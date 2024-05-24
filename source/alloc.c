@@ -155,5 +155,5 @@ void DgMemoryZero(const void *block, size_t length) {
 	 * Fill the memory starting at block with zero bytes.
 	 */
 	
-	memset(block, 0, length);
+	memset((void *) block, 0, length);
 }

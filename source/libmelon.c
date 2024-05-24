@@ -41,6 +41,8 @@ DgError DgMelonInit(void) {
 	 */
 	
 	DgInitTime();
+	
+	return DG_ERROR_SUCCESS;
 }
 
 void DgMelonFree(void) {
