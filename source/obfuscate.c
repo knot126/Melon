@@ -21,7 +21,6 @@
 
 #include "obfuscate.h"
 
-#ifdef DG_MELON_OBFUSCATE_EXTRA
 #define DG_POLYALPHABETIC_SHIFT() (key[i % key_length] + static_shift)
 
 void DgObfuscate_Rot13(size_t length, uint8_t * restrict data) {
