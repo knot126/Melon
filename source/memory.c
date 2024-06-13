@@ -21,6 +21,7 @@
 
 #include "memory.h"
 
+#if DG_MELON_OLD_MEMORY_FUNCTIONS
 void *DgAlloc(size_t size) {
 	/**
 	 * Allocate some memory, or return NULL on failure.
@@ -53,6 +54,7 @@ void *DgRealloc(void* block, size_t size) {
 	
 	return realloc(block, size);
 }
+#endif
 
 void *DgMemoryAllocate(size_t size) {
 	/**
@@ -62,7 +64,7 @@ void *DgMemoryAllocate(size_t size) {
 	 * @return Pointer to the allocated memory, or NULL if failed
 	 */
 	
-	return DgAlloc(size);
+	return malloc(size);
 }
 
 DgError DgMemoryFree(void *block) {
@@ -78,7 +80,7 @@ DgError DgMemoryFree(void *block) {
 		return DG_ERROR_NOT_SAFE;
 	}
 	
-	DgFree(block);
+	free(block);
 	
 	return DG_ERROR_SUCCESS;
 }
@@ -104,7 +106,7 @@ void *DgMemoryReallocate(void* block, size_t size) {
 		return DgMemoryAllocate(size);
 	}
 	else {
-		return DgRealloc(block, size);
+		return realloc(block, size);
 	}
 }
 
