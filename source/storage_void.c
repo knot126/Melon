@@ -239,7 +239,7 @@ DgStoragePool *DgVoidCreatePool(const char *protocol) {
 	 * @return Pointer to the storage pool (or NULL if failed)
 	 */
 	
-	DgStoragePool *pool = DgAlloc(sizeof *pool);
+	DgStoragePool *pool = DgMemoryAllocate(sizeof *pool);
 	
 	if (!pool) {
 		return NULL;

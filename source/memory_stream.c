@@ -39,7 +39,7 @@ static void DgMemoryStreamInit(DgMemoryStream *stream, void * restrict buffer, s
 	 */
 	
 	if (!buffer) {
-		stream->data = (uint8_t *) DgAlloc(prealloc);
+		stream->data = (uint8_t *) DgMemoryAllocate(prealloc);
 		
 		if (!stream->data) {
 			stream->error = DG_MEMORY_STREAM_ALLOC_ERROR;
@@ -60,7 +60,7 @@ DgMemoryStream *DgMemoryStreamCreate(void) {
 	 * Creates a stream in memory from no exsiting stream.
 	 */
 	
-	DgMemoryStream *stream = DgAlloc(sizeof *stream);
+	DgMemoryStream *stream = DgMemoryAllocate(sizeof *stream);
 	
 	if (!stream) {
 		return NULL;
@@ -77,7 +77,7 @@ DgMemoryStream *DgMemoryStreamFromBuffer(void *buffer, size_t size) {
 	 * memory will now be managed by the stream.
 	 */
 	
-	DgMemoryStream *stream = DgAlloc(sizeof *stream);
+	DgMemoryStream *stream = DgMemoryAllocate(sizeof *stream);
 	
 	if (!stream) {
 		return NULL;
@@ -94,10 +94,10 @@ void DgMemoryStreamFree(DgMemoryStream *stream) {
 	 */
 	
 	if (stream->data) {
-		DgFree(stream->data);
+		DgMemoryFree(stream->data);
 	}
 	
-	DgFree(stream);
+	DgMemoryFree(stream);
 }
 
 void DgBufferFromStream(DgMemoryStream *stream, void **pointer, size_t *size) {
@@ -106,16 +106,16 @@ void DgBufferFromStream(DgMemoryStream *stream, void **pointer, size_t *size) {
 	 * memory allocated for the management of the stream.
 	 * 
 	 * This will also resize the memory block to the requested size. Should this
-	 * fail, 'pointer' is set the fail result of DgRealloc, which is usually
+	 * fail, 'pointer' is set the fail result of DgMemoryReallocate, which is usually
 	 * NULL.
 	 */
 	
-	stream->data = DgRealloc(stream->data, stream->size);
+	stream->data = DgMemoryReallocate(stream->data, stream->size);
 	
 	*pointer = (void *) stream->data;
 	*size = stream->size;
 	
-	DgFree(stream);
+	DgMemoryFree(stream);
 }
 
 void DgMemoryStreamGetPointersAndSize(DgMemoryStream *stream, size_t *size, void **data) {
@@ -253,7 +253,7 @@ void DgMemoryStreamWrite(DgMemoryStream *stream, size_t size, void *buffer) {
 	// Reallocate memory while there is not enough to fit new data
 	while ((stream->head + 1 + size) > stream->allocated) {
 		stream->allocated *= 2;
-		stream->data = (uint8_t *) DgRealloc(stream->data, stream->allocated);
+		stream->data = (uint8_t *) DgMemoryReallocate(stream->data, stream->allocated);
 		
 		if (!stream->data) {
 			stream->error = DG_MEMORY_STREAM_ALLOC_ERROR;

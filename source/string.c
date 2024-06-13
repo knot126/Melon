@@ -35,7 +35,7 @@ char *DgStrcad(const char * const src1, const char * const src2) {
 	uint32_t len1 = strlen(src1);
 	uint32_t len2 = strlen(src2);
 	
-	char *ns = DgAlloc((len1 + len2 + 1) * sizeof(char));
+	char *ns = DgMemoryAllocate((len1 + len2 + 1) * sizeof(char));
 	
 	memcpy(ns, src1, len1);
 	memcpy(ns + len1, src2, len2);
@@ -51,7 +51,7 @@ char *DgStrcadf(char *src1, const char * const src2) {
 	 */
 	char *string = DgStrcad(src1, src2);
 	
-	DgFree(src1);
+	DgMemoryFree(src1);
 	
 	return string;
 }
@@ -61,7 +61,7 @@ char *DgStrdup(const char * const source) {
 	 * Duplicate a string
 	 */
 	
-	char *dest = DgAlloc(strlen(source) + 1);
+	char *dest = DgMemoryAllocate(strlen(source) + 1);
 	
 	if (!dest) {
 		return NULL;
@@ -82,7 +82,7 @@ char *DgStrdupl(const char * const source, size_t max) {
 	}
 	
 	// Allocate memory
-	char *dest = DgAlloc(len + 1);
+	char *dest = DgMemoryAllocate(len + 1);
 	
 	if (!dest) {
 		return NULL;
@@ -240,7 +240,7 @@ uint32_t *DgInt32ListFromString(char * restrict str, size_t * const restrict siz
 		}
 		
 		(*size)++;
-		list = DgRealloc(list, size[0] * sizeof(uint32_t));
+		list = DgMemoryReallocate(list, size[0] * sizeof(uint32_t));
 		
 		if (!list) {
 			return NULL;
@@ -296,7 +296,7 @@ char *DgStringConcatinate(const char * const string1, const char * const string2
 	size_t length1 = DgStringLength(string1);
 	size_t length2 = DgStringLength(string2);
 	
-	char *result = DgAlloc(length1 + length2 + 1);
+	char *result = DgMemoryAllocate(length1 + length2 + 1);
 	
 	if (!result) {
 		return NULL;
@@ -333,7 +333,7 @@ char *DgStringConcatinateL(const char * const string1, const char * const string
 	
 	char *result = DgStringConcatinate(string1, string2);
 	
-	DgFree((void *) string1);
+	DgMemoryFree((void *) string1);
 	
 	return result;
 }
@@ -353,7 +353,7 @@ char *DgStringConcatinateR(const char * const string1, const char * const string
 	
 	char *result = DgStringConcatinate(string1, string2);
 	
-	DgFree((void *) string2);
+	DgMemoryFree((void *) string2);
 	
 	return result;
 }
@@ -373,8 +373,8 @@ char *DgStringConcatinateLR(const char * const string1, const char * const strin
 	
 	char *result = DgStringConcatinate(string1, string2);
 	
-	DgFree((void *) string1);
-	DgFree((void *) string2);
+	DgMemoryFree((void *) string1);
+	DgMemoryFree((void *) string2);
 	
 	return result;
 }
@@ -419,7 +419,7 @@ char *DgStringDuplicate(const char * const string) {
 	size_t length = DgStringLength(string) + 1;
 	
 	// Allocate string memory
-	char *result = DgAlloc(length);
+	char *result = DgMemoryAllocate(length);
 	
 	if (!result) {
 		return NULL;

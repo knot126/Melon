@@ -48,7 +48,7 @@ DgError DgBitmapInit(DgBitmap *bitmap, DgVec2I size, const uint16_t chan) {
 	
 	size_t alloc_sz = size.x * size.y * chan;
 	
-	bitmap->src = DgAlloc(alloc_sz * sizeof *bitmap->src);
+	bitmap->src = DgMemoryAllocate(alloc_sz * sizeof *bitmap->src);
 	
 	if (!bitmap->src) {
 		return DG_ERROR_ALLOCATION_FAILED;
@@ -65,11 +65,11 @@ void DgBitmapFree(DgBitmap *bitmap) {
 	 */
 	
 	if (bitmap->src && !(bitmap->flags & DG_BITMAP_EXTERNAL_SOURCE)) {
-		DgFree(bitmap->src);
+		DgMemoryFree(bitmap->src);
 	}
 	
 	if (bitmap->depth) {
-		DgFree(bitmap->depth);
+		DgMemoryFree(bitmap->depth);
 	}
 }
 
@@ -84,7 +84,7 @@ void DgBitmapSetSource(DgBitmap * restrict this, uint8_t * restrict source, DgVe
 	 */
 	
 	if (this->src && !(this->flags & DG_BITMAP_EXTERNAL_SOURCE)) {
-		DgFree(this->src);
+		DgMemoryFree(this->src);
 	}
 	
 	this->src = source;
@@ -149,7 +149,7 @@ void DgBitmapSetDepthBuffer(DgBitmap *this, bool enable) {
 	// If depth buffer is not present and we want to enable
 	if (enable && !this->depth) {
 		// Allocate memory for the depth buffer
-		this->depth = DgAlloc(sizeof *this->depth * this->width * this->height);
+		this->depth = DgMemoryAllocate(sizeof *this->depth * this->width * this->height);
 		
 		// Fill the depth buffer with default values
 		for (size_t i = 0; i < this->width * this->height; i++) {
@@ -158,7 +158,7 @@ void DgBitmapSetDepthBuffer(DgBitmap *this, bool enable) {
 	}
 	// If depth buffer is present and we want to disable
 	else if (!enable && this->depth) {
-		DgFree(this->depth);
+		DgMemoryFree(this->depth);
 	}
 	// Otherwise nothing is needed
 }

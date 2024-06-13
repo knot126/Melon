@@ -54,7 +54,7 @@ static DgStorage *DgStorageInitGlobal(void) {
 	 * @return Default storage config (or NULL if failed to init)
 	 */
 	
-	gGlobalStorageConfig_ = DgAlloc(sizeof *gGlobalStorageConfig_);
+	gGlobalStorageConfig_ = DgMemoryAllocate(sizeof *gGlobalStorageConfig_);
 	
 	if (!gGlobalStorageConfig_) {
 		return NULL;
@@ -137,7 +137,7 @@ DgError DgStorageFree(DgStorage *this) {
 	DG_STORAGE_RESOLVE();
 	
 	if (this->pool) {
-		DgFree(this->pool);
+		DgMemoryFree(this->pool);
 	}
 	
 	return DG_ERROR_SUCCESSFUL;
@@ -186,7 +186,7 @@ DgError DgStorageAddPool(DgStorage *this, DgStoragePool *pool) {
 	this->pool[this->pool_count - 1] = *pool;
 	
 	// Clear temporary pool memory
-	DgFree(pool);
+	DgMemoryFree(pool);
 	
 	return DG_ERROR_SUCCESSFUL;
 }
@@ -338,7 +338,7 @@ DgError DgStorageGetPoolFromPath(DgStorage *this, DgStoragePath path, DgStorageP
 	}
 	
 	// Free temporary memory
-	DgFree(protocol);
+	DgMemoryFree(protocol);
 	
 	return DG_ERROR_SUCCESSFUL;
 }
@@ -493,7 +493,7 @@ DgError DgStoragePoolFree(DgStoragePool *pool) {
 	 */
 	
 	if (pool->protocol) {
-		DgFree((void *) pool->protocol);
+		DgMemoryFree((void *) pool->protocol);
 	}
 	
 	if (pool == NULL) {

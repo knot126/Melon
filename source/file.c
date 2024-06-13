@@ -55,7 +55,7 @@ DgError DgFileLoad(DgStorage *storage, DgStoragePath path, size_t *size, void **
 	DgStreamClose(&stream);
 	
 	if (status) {
-		DgFree(buffer[0]);
+		DgMemoryFree(buffer[0]);
 		return status;
 	}
 	

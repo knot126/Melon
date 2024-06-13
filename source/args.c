@@ -58,7 +58,7 @@ DgError DgArgParse(DgArgs * restrict this, const size_t argc, char ** const rest
 		}
 		
 		this->pairs_count++;
-		this->pairs = DgRealloc(this->pairs, sizeof(DgArgPair) * this->pairs_count);
+		this->pairs = DgMemoryReallocate(this->pairs, sizeof(DgArgPair) * this->pairs_count);
 		
 		if (!this->pairs) {
 			DgLog(DG_LOG_ERROR, "Memory allocation error whilst parsing command line arguments.");
@@ -89,15 +89,15 @@ void DgArgFree(DgArgs * restrict this) {
 	if (this->pairs) {
 		for (size_t i = 0; i < this->pairs_count; i++) {
 			if (this->pairs[i].key) {
-				DgFree(this->pairs[i].key);
+				DgMemoryFree(this->pairs[i].key);
 			}
 			
 			if (this->pairs[i].value) {
-				DgFree(this->pairs[i].value);
+				DgMemoryFree(this->pairs[i].value);
 			}
 		}
 		
-		DgFree(this->pairs);
+		DgMemoryFree(this->pairs);
 	}
 }
 

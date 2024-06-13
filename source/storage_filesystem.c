@@ -58,7 +58,7 @@ static const char *DgFilesystemRealPath(const char *basedir, DgStoragePath abstr
 	
 	char *result = DgStringConcatinate(basedir, path);
 	
-	DgFree((void *) path);
+	DgMemoryFree((void *) path);
 	
 	return result;
 }
@@ -98,7 +98,7 @@ DgError DgFilesystemMakedirs(const char *deepest, bool last) {
 		status = mkdir(path);
 	}
 	
-	DgFree((void *) path);
+	DgMemoryFree((void *) path);
 	
 	return status ? DG_ERROR_FAILED : DG_ERROR_SUCCESSFUL;
 }
@@ -121,8 +121,8 @@ static DgError DgFilesystem_Rename(DgStorage *storage, DgStoragePool *pool, DgSt
 	
 	rename(old_path, new_path);
 	
-	DgFree((void *) old_path);
-	DgFree((void *) new_path);
+	DgMemoryFree((void *) old_path);
+	DgMemoryFree((void *) new_path);
 	
 	return DG_ERROR_SUCCESSFUL;
 }
@@ -141,7 +141,7 @@ static DgError DgFilesystem_Delete(DgStorage *storage, DgStoragePool *pool, DgSt
 	
 	remove(path);
 	
-	DgFree((void *) path);
+	DgMemoryFree((void *) path);
 	
 	return DG_ERROR_SUCCESSFUL;
 }
@@ -163,7 +163,7 @@ static DgError DgFilesystem_CreateFile(DgStorage *storage, DgStoragePool *pool, 
 	// Touch the file
 	FILE *f = fopen(path, "w");
 	
-	DgFree((void *) path);
+	DgMemoryFree((void *) path);
 	
 	if (f) {
 		fclose(f);
@@ -189,7 +189,7 @@ static DgError DgFilesystem_CreateFolder(DgStorage *storage, DgStoragePool *pool
 	
 	DgError status = DgFilesystemMakedirs(path, true);
 	
-	DgFree((void *) path);
+	DgMemoryFree((void *) path);
 	
 	return status;
 }
@@ -246,7 +246,7 @@ static DgError DgFilesystem_Open(DgStorage *storage, DgStoragePool *pool, DgStre
 		}
 	}
 	else {
-		DgFree((void *) path);
+		DgMemoryFree((void *) path);
 		return DG_ERROR_NOT_SUPPORTED;
 	}
 	
@@ -254,7 +254,7 @@ static DgError DgFilesystem_Open(DgStorage *storage, DgStoragePool *pool, DgStre
 	
 	context->context = (void *) fopen(path, mode);
 	
-	DgFree((void *) path);
+	DgMemoryFree((void *) path);
 	
 	if (!context->context) {
 		return DG_ERROR_FAILED;
@@ -391,8 +391,8 @@ static DgError DgFilesystem_Seek(DgStorage *storage, DgStoragePool *pool, DgStre
 }
 
 static DgError DgFilesystem_FreeSpecificConfig(DgStoragePool *pool) {
-	DgFree((void *) ((DgFilesytem_SpecificConfig *) pool->specific_config)->basedir);
-	DgFree(pool->specific_config);
+	DgMemoryFree((void *) ((DgFilesytem_SpecificConfig *) pool->specific_config)->basedir);
+	DgMemoryFree(pool->specific_config);
 	
 	return DG_ERROR_SUCCESSFUL;
 }
@@ -424,7 +424,7 @@ DgStoragePool *DgFilesystemCreatePool(const char *protocol, const char *basedir)
 	 * @return Pointer to the storage pool (or NULL if failed)
 	 */
 	
-	DgStoragePool *pool = DgAlloc(sizeof *pool);
+	DgStoragePool *pool = DgMemoryAllocate(sizeof *pool);
 	
 	if (!pool) {
 		return NULL;
@@ -432,10 +432,10 @@ DgStoragePool *DgFilesystemCreatePool(const char *protocol, const char *basedir)
 	
 	pool->protocol = DgStringDuplicate(protocol);
 	pool->functions = &gStorageFilesystemFunctions;
-	pool->specific_config = DgAlloc(sizeof *pool->specific_config);
+	pool->specific_config = DgMemoryAllocate(sizeof *pool->specific_config);
 	
 	if (!pool->specific_config) {
-		DgFree(pool);
+		DgMemoryFree(pool);
 		return NULL;
 	}
 	
