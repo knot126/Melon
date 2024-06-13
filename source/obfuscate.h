@@ -9,7 +9,6 @@
 
 #include <inttypes.h>
 
-#ifdef DG_MELON_OBFUSCATE_EXTRA
 enum {
 	DG_OBFUSCATE_NONE = 0,
 	DG_OBFUSCATE_ROT13,
@@ -35,7 +34,3 @@ void DgObfuscate_SEA2(const char * restrict key, size_t length, uint8_t * restri
 
 void DgObfuscateData(DgObfuscateAlgorithm algorithm, const char * restrict key, size_t length, uint8_t * restrict data);
 void DgDeobfuscateData(DgObfuscateAlgorithm algorithm, const char * restrict key, size_t length, uint8_t * restrict data);
-#else
-void DgObfuscateData(const char * restrict key, size_t length, uint8_t * restrict data);
-void DgDeobfuscateData(const char * restrict key, size_t length, uint8_t * restrict data);
-#endif

@@ -170,7 +170,6 @@ void DgObfuscate_SEA1(const char * restrict key, size_t length, uint8_t * restri
 	}
 }
 
-#ifdef DG_MELON_OBFUSCATE_EXTRA
 void DgObfuscate_SEA2(const char * restrict key, size_t length, uint8_t * restrict data) {
 	/**
 	 * Obfuscate a message using the 2nd Stupid Encryption Algorithm.
@@ -306,12 +305,3 @@ void DgDeobfuscateData(DgObfuscateAlgorithm algorithm, const char * restrict key
 		}
 	}
 }
-#else
-void DgObfuscateData(const char * restrict key, size_t length, uint8_t * restrict data) {
-	DgObfuscate_SEA1(key, length, data);
-}
-
-void DgDeobfuscateData(const char * restrict key, size_t length, uint8_t * restrict data) {
-	DgObfuscate_SEA1(key, length, data);
-}
-#endif
