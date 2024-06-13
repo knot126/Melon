@@ -304,7 +304,8 @@ uint8_t *DgCryptoCubeHashBytes(const size_t length, const uint8_t *block, uint32
 }
 
 void DgCryptoCubeHashBytes_Test(void) {
-	uint8_t *hash = DgCryptoCubeHashBytes(5, "Hello", 80, 8, 1, 80, 512);
+	// Don't question casting a string to const uint8_t *
+	uint8_t *hash = DgCryptoCubeHashBytes(5, (const uint8_t *) "Hello", 80, 8, 1, 80, 512);
 	
 	if (!hash) {
 		DgLog(DG_LOG_ERROR, "Failed to get CubeHash-80+8/1+80-512 hash for string 'Hello'");

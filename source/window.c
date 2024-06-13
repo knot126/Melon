@@ -33,7 +33,7 @@
 #include <SDL2/SDL.h>
 
 static uint32_t gWindowCount_ = 0;
-#elifdef DG_USE_X11
+#elif defined(DG_USE_X11)
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <signal.h>
@@ -56,7 +56,7 @@ DgError DgWindowInit(DgWindow *this, const char *title, DgVec2I size) {
 	
 	this->window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, size.x, size.y, 0);
 	this->surface = SDL_GetWindowSurface(this->window);
-#elifdef DG_USE_X11
+#elif defined(DG_USE_X11)
 	this->display = XOpenDisplay(NULL);
 	
 	if (!this->display) {
@@ -103,7 +103,7 @@ void DgWindowFree(DgWindow *this) {
 	if (gWindowCount_ == 0) {
 		SDL_Quit();
 	}
-#elifdef DG_USE_X11
+#elif defined(DG_USE_X11)
 	XDestroyWindow(this->display, this->window);
 	XCloseDisplay(this->display);
 #endif
@@ -153,7 +153,7 @@ DgWindowStatus DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
 	}
 	
 	return SDL_UpdateWindowSurface(this->window) ? DG_WINDOW_DRAW_FAILED : DG_WINDOW_CONTINUE;
-#elifdef DG_USE_X11
+#elif defined(DG_USE_X11)
 	while (XPending(this->display)) {
 		XEvent event;
 		

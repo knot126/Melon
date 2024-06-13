@@ -700,7 +700,7 @@ DgError DgStreamWriteIntegerString(DgStream *context, int64_t data) {
 	 * @return Error code
 	 */
 	
-	const char *str = DgIntegerToString(10, data);
+	char *str = DgIntegerToString(10, data);
 	
 	if (!str) {
 		return DG_ERROR_ALLOCATION_FAILED;
