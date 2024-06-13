@@ -1,6 +1,7 @@
 /**
- * Copyright (C) 2021 - 2023 Knot126 and Descentix Software
- * ========================================================
+ * Melon Software Framework is Copyright (C) 2021 - 2024 Knot126
+ * 
+ * =============================================================================
  * 
  * Data Obfuscation (aka weak encryption)
  */
