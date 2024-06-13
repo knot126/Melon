@@ -15,7 +15,6 @@
 #include "error.h"
 #include "log.h"
 
-#ifdef MELON_CRYPTOGRAPHY_RANDOM
 #ifdef _WIN32
 	#include <windows.h>
 	/// @hack someone is an idiot
@@ -97,4 +96,3 @@ DgError DgRandom(size_t size, void *buffer) {
 	return DG_ERROR_NOT_IMPLEMENTED;
 #endif
 }
-#endif
