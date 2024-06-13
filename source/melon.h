@@ -1,4 +1,4 @@
-#include "memory.h"
+#include "bits.h"
 #include "args.h"
 #include "value.h"
 #include "array.h"
@@ -14,7 +14,6 @@
 #include "libmelon.h"
 #include "log.h"
 #include "maths.h"
-#include "memory.h"
 #include "obfuscate.h"
 #include "pseudorandom.h"
 #include "serialise.h"

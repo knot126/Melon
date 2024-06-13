@@ -12,7 +12,7 @@
  * Memory and bit-level access
  */
 
-#include "memory.h"
+#include "bits.h"
 
 bool DgBitRead(void *base, size_t bit) {
 	/**
