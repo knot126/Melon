@@ -14,7 +14,7 @@
  * @note This can be used as a basis for other storage classes.
  */
 
-#include "alloc.h"
+#include "memory.h"
 #include "string.h"
 #include "storage.h"
 #include "log.h"

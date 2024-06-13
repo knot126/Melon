@@ -16,7 +16,7 @@
  * array in the order they were inserted.
  */
 
-#include "alloc.h"
+#include "memory.h"
 #include "error.h"
 #include "log.h"
 

@@ -15,7 +15,7 @@
 #include "common.h"
 
 #include "error.h"
-#include "alloc.h"
+#include "memory.h"
 #include "string.h"
 #include "log.h"
 

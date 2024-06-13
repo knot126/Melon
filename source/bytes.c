@@ -14,7 +14,7 @@
 
 #include <stdlib.h>
 
-#include "alloc.h"
+#include "memory.h"
 #include "log.h"
 #include "checksum.h"
 

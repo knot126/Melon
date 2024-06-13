@@ -16,7 +16,7 @@
 
 #include "string.h"
 #include "checksum.h"
-#include "alloc.h"
+#include "memory.h"
 #include "log.h"
 
 // HACK HACK HACK This works thanks to #pragma once, though I wish it were eaiser for module to cross depend

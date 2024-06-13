@@ -18,7 +18,7 @@
 #include <string.h>
 #include <math.h>
 
-#include "alloc.h"
+#include "memory.h"
 #include "maths.h"
 #include "log.h"
 #include "storage.h"

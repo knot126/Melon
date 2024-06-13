@@ -19,7 +19,7 @@
 
 #include "error.h"
 
-#include "alloc.h"
+#include "memory.h"
 
 void *DgAlloc(size_t size) {
 	/**

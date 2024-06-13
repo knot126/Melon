@@ -24,7 +24,7 @@
 	#define mkdir(path) _mkdir(path)
 #endif
 
-#include "alloc.h"
+#include "memory.h"
 #include "string.h"
 #include "storage.h"
 #include "log.h"

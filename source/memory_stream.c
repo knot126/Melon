@@ -18,7 +18,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "alloc.h"
+#include "memory.h"
 #include "log.h"
 
 #include "memory_stream.h"

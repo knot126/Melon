@@ -19,7 +19,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include "alloc.h"
+#include "memory.h"
 #include "bits.h"
 #include "log.h"
 

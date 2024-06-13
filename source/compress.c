@@ -14,7 +14,7 @@
  * @note Currently some custom Huffman tree based compression
  */
 
-#include "alloc.h"
+#include "memory.h"
 #include "string.h"
 #include "log.h"
 

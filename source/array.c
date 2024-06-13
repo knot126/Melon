@@ -12,7 +12,7 @@
  * Generic, bounds checked value arrays
  */
 
-#include "alloc.h"
+#include "memory.h"
 #include "array.h"
 #include "log.h"
 

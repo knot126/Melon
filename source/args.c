@@ -15,7 +15,7 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "alloc.h"
+#include "memory.h"
 #include "string.h"
 #include "log.h"
 
