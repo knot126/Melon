@@ -28,19 +28,19 @@ void TestString(void) {
 	
 	a = DgStringEncodeBase64(13, "Hello, world!");
 	DgLog(DG_LOG_INFO, "Base64 test 1: %s", a);
-	DgFree(a);
+	DgMemoryFree(a);
 	
 	a = DgStringEncodeBase64(14, "Hello, world!!");
 	DgLog(DG_LOG_INFO, "Base64 test 2: %s", a);
-	DgFree(a);
+	DgMemoryFree(a);
 	
 	a = DgStringEncodeBase16(13, "Hello, world!");
 	DgLog(DG_LOG_INFO, "Base16 test 1: %s", a);
-	DgFree(a);
+	DgMemoryFree(a);
 	
 	a = DgStringEncodeBase16(14, "Hello, world!!");
 	DgLog(DG_LOG_INFO, "Base16 test 2: %s", a);
-	DgFree(a);
+	DgMemoryFree(a);
 	
 	DgLog(DG_LOG_SUCCESS, "TestString()");
 }
@@ -48,57 +48,104 @@ void TestString(void) {
 void TestStorage(void) {
 	DgLog(DG_LOG_INFO, "TestStorage()");
 	
-	char *proto, *file;
-	
 	// TEST 1
 	DgLog(DG_LOG_INFO, "Testing path splitting function...");
 	
-	DgStorageSplitPathIntoParts("assets://stage/canyon.xml", &proto, &file);
+	///
+	const char *paths[] = {
+		"assets://test1.txt",
+		"assets://test/test2.txt",
+		"assets://levels/canyon/canyon.lua",
+		"assets://",
+		"fs://other/test.bmp",
+		"://blank/proto/test.nif",
+		"://",
+		"shouldHave/aNullProtocol.txt",
+		NULL,
+	};
 	
-	DgLog(DG_LOG_INFO, "Path: %s %s", proto, file);
-	
-	DgFree(proto);
-	DgFree(file);
-	
-	DgStorageSplitPathIntoParts("fs://what/the/shit.fuck", &proto, NULL);
-	
-	DgLog(DG_LOG_INFO, "Path: %s", proto);
-	
-	DgFree(proto);
-	
-	DgLog(DG_LOG_SUCCESS, "TestStorage() - 1");
+	for (size_t i = 0; paths[i]; i++) {
+		// Nither is NULL
+		char *proto, *file;
+		
+		DgStorageSplitPathIntoParts(paths[i], &proto, &file);
+		DgLog(DG_LOG_VERBOSE, "'%s' => '%s' '%s'", paths[i], proto ? proto : "<null>", file ? file : "<null>");
+		
+		DgMemoryFree(proto);
+		DgMemoryFree(file);
+		
+		// File is NULL
+		file = NULL; proto = NULL;
+		
+		DgStorageSplitPathIntoParts(paths[i], &proto, NULL);
+		DgLog(DG_LOG_VERBOSE, "'%s' => '%s' '%s'", paths[i], proto ? proto : "<null>", file ? file : "<null>");
+		
+		DgMemoryFree(proto);
+		
+		// Proto are NULL
+		file = NULL; proto = NULL;
+		
+		DgStorageSplitPathIntoParts(paths[i], NULL, &file);
+		DgLog(DG_LOG_VERBOSE, "'%s' => '%s' '%s'", paths[i], proto ? proto : "<null>", file ? file : "<null>");
+		
+		DgMemoryFree(file);
+	}
 	
 	// TEST 2
 	DgLog(DG_LOG_INFO, "Adding a void pool and testing it...");
 	
-	DgLog(DG_LOG_INFO, "%x", DgStorageAddPool(NULL, DgVoidCreatePool("void")));
-	
-	DgLog(DG_LOG_INFO, "%x", DgStorageDelete(NULL, "void://help.txt"));
+	DgLog(DG_LOG_INFO, "Result code %x", DgStorageAddPool(NULL, DgVoidCreatePool("void")));
 	
 	DgStream s;
 	
-	if (DgStreamOpen(NULL, &s, "void://help.txt", DG_STREAM_READ | DG_STREAM_WRITE)) {
-		DgLog(DG_LOG_INFO, "Failed to open file stream!");
-		return;
+	if (!DgStreamOpen(NULL, &s, "void://help.txt", DG_STREAM_READ | DG_STREAM_WRITE)) {
+		DgStreamRead(&s, 0, NULL);
+		DgStreamWrite(&s, 0, NULL);
+		DgStreamClose(&s);
+	}
+	else {
+		DgLog(DG_LOG_ERROR, "Failed to open file stream in void test!");
 	}
 	
-	DgStreamRead(&s, 0, NULL);
-	DgStreamWrite(&s, 0, NULL);
+	DgStorageObjectType ot;
 	
-	DgStreamClose(&s);
+	DgLogError(DgStorageDelete(NULL, "void://progress.xml"));
+	DgLogError(DgStorageRename(NULL, "void://progress.xml", "void://test.xml"));
+	DgLogError(DgStorageCreateFile(NULL, "void://progress.xml"));
+	DgLogError(DgStorageCreateFolder(NULL, "void://more"));
+	DgLogError(DgStorageType(NULL, "void://progress.xml", &ot));
 	
-	DgLog(DG_LOG_SUCCESS, "TestStorage() - 2");
+	/// NULL protocol test
+	DgLog(DG_LOG_INFO, "Adding a void pool with NULL protocol and testing...");
+	DgLog(DG_LOG_INFO, "Result code %x", DgStorageAddPool(NULL, DgVoidCreatePool(NULL)));
+	DgLogError(DgStorageType(NULL, "progress.xml", &ot));
 	
 	// TEST 3
-	DgLog(DG_LOG_INFO, "Real filesystem test...");
+	DgLog(DG_LOG_INFO, "Partially testing a filesystem pool...");
 	
 	DgLogError(DgStorageAddPool(NULL, DgFilesystemCreatePool("fs", ".")));
 	
-	char sample[] = "This is my lovely document! It's very nice!\n\n";
+	char sample[] = "This is my *lovely* document! It's very nice!\n";
 	
-	DgFileAppend(NULL, "fs://hello.txt", sizeof(sample) - 1, sample);
+	DgLog(DG_LOG_INFO, "Create folder");
+	DgLogError(DgStorageCreateFolder(NULL, "fs://testFiles/"));
 	
-	DgLog(DG_LOG_SUCCESS, "TestStorage() - 3");
+	DgError error;
+	
+	DgLog(DG_LOG_INFO, "Basic write stream");
+	if (!(error = DgStreamOpen(NULL, &s, "fs://testFiles/mytest.txt", DG_STREAM_READ | DG_STREAM_WRITE))) {
+		DgStreamWrite(&s, DgStringLength(sample), sample);
+		DgStreamClose(&s);
+	}
+	else {
+		DgLog(DG_LOG_ERROR, "Failed to open filesystem stream %x", error);
+	}
+	
+	DgLog(DG_LOG_INFO, "Create blank file");
+	DgLogError(DgStorageCreateFile(NULL, "fs://testFiles/hyper_test/blank.txt"));
+	
+	DgLog(DG_LOG_INFO, "Delete test folder");
+	DgLogError(DgStorageDelete(NULL, "fs://testFiles"));
 }
 
 void TestCryptoRandom(void) {
@@ -114,7 +161,7 @@ void TestCryptoRandom(void) {
 		
 		char *asBase16 = DgStringEncodeBase16(16, rand_bytes);
 		DgLog(DG_LOG_INFO, "Secure random bytes as base16: %s", asBase16);
-		DgFree(asBase16);
+		DgMemoryFree(asBase16);
 	}
 	
 	DgLog(DG_LOG_SUCCESS, "TestCryptoRandom");
@@ -237,8 +284,6 @@ void TestTableAndSerialise(void) {
 	DgValueFree(&table_val);
 }
 
-void DgCompressRLE_Test(void);
-
 int main(const int argc, const char *argv[]) {
 	DgLog(DG_LOG_INFO, "Hello, world!");
 	
@@ -253,7 +298,6 @@ int main(const int argc, const char *argv[]) {
 	if (DgArgGetFlag(&args, "table")) TestTableAndSerialise();
 	if (DgArgGetFlag(&args, "cubehash1")) DgCryptoCubeHasher_Test();
 	if (DgArgGetFlag(&args, "cubehash2")) DgCryptoCubeHashBytes_Test();
-	if (DgArgGetFlag(&args, "compress-rle")) DgCompressRLE_Test();
 	
 	DgArgFree(&args);
 	

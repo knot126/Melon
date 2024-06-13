@@ -27,6 +27,7 @@
 
 typedef struct {
 	const char *basedir;
+	bool sanitise; /// @todo
 } DgFilesytem_SpecificConfig;
 
 static const char *DgFilesystemRealPath(const char *basedir, DgStoragePath abstract) {
@@ -406,7 +407,7 @@ DgStorageFunctions gStorageFilesystemFunctions = {
 	.get_position = &DgFilesystem_GetPosition,
 	.set_position = &DgFilesystem_SetPosition,
 	.seek = &DgFilesystem_Seek,
-	.free_specific_config = &DgFilesystem_FreeSpecificConfig,
+	.free_pool = &DgFilesystem_FreeSpecificConfig,
 };
 
 DgStoragePool *DgFilesystemCreatePool(const char *protocol, const char *basedir) {
@@ -437,6 +438,7 @@ DgStoragePool *DgFilesystemCreatePool(const char *protocol, const char *basedir)
 	
 	// We also pre-append the / if there isn't one already
 	config->basedir = DgStringConcatinate(basedir, "/");
+	config->sanitise = false;
 	
 	return pool;
 }

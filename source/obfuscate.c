@@ -113,7 +113,6 @@ void DgDeobfuscate_Polyalphabetic(const char * restrict key, char static_shift, 
 }
 
 #undef DG_POLYALPHABETIC_SHIFT
-#endif
 
 void DgObfuscate_SEA1(const char * restrict key, size_t length, uint8_t * restrict data) {
 	/**

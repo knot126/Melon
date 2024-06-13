@@ -276,23 +276,29 @@ DgError DgStorageSplitPathIntoParts(DgStoragePath path, char **protocol, char **
 	
 	int64_t seperator_index = DgStringFind(path, "://", 0);
 	
-	if (seperator_index == -1) {
-		return DG_ERROR_FILE_NOT_FOUND;
-	}
-	
 	// Store the protocol string
 	if (protocol) {
-		char *protocol_ = DgStringDuplicateUntil(path, seperator_index);
-		
-		if (!protocol_) {
-			return DG_ERROR_OUT_OF_MEMORY;
+		if (seperator_index == -1) {
+			protocol[0] = NULL;
 		}
-		
-		protocol[0] = protocol_;
+		else {
+			char *protocol_ = DgStringDuplicateUntil(path, seperator_index);
+			
+			if (!protocol_) {
+				return DG_ERROR_OUT_OF_MEMORY;
+			}
+			
+			protocol[0] = protocol_;
+		}
 	}
 	
 	// Store the other part of the path
 	if (filename) {
+		// We need to copy the whole filename as-is if protocol == NULL
+		if (seperator_index == -1) {
+			seperator_index = -3;
+		}
+		
 		char *filename_ = DgStringDuplicate(&path[seperator_index + 3]);
 		
 		if (!filename_) {
@@ -454,7 +460,7 @@ DgError DgStorageCreateFolder(DgStorage *this, DgStoragePath path) {
 	return pool->functions->create_folder(this, pool, path);
 }
 
-DgStorageObjectType DgStorageType(DgStorage *this, DgStoragePath path, DgStorageObjectType *type) {
+DgError DgStorageType(DgStorage *this, DgStoragePath path, DgStorageObjectType *type) {
 	/**
 	 * Return the type of the object at `path`.
 	 * 
@@ -494,11 +500,11 @@ DgError DgStoragePoolFree(DgStoragePool *pool) {
 		return DG_ERROR_NOT_SAFE;
 	}
 	
-	if (!pool->functions->free_specific_config) {
+	if (!pool->functions->free_pool) {
 		return DG_ERROR_SUCCESSFUL;
 	}
 	
-	return pool->functions->free_specific_config(pool);
+	return pool->functions->free_pool(pool);
 }
 
 /* Stream functions and similar */

@@ -68,7 +68,7 @@ typedef DgError (*DgStorageCreateFolderFunction)(DgStorage *storage, DgStoragePo
 typedef DgError (*DgStorageTypeFunction)(DgStorage *storage, DgStoragePool *pool, DgStoragePath path, DgStorageObjectType *type);
 
 // Specific config destruction
-typedef DgError (*DgStorageFreeSpecificConfigFunction)(DgStoragePool *pool);
+typedef DgError (*DgStorageFreePoolFunction)(DgStoragePool *pool);
 
 /**
  * The storage function array/pointer.
@@ -91,7 +91,7 @@ typedef struct DgStorageFunctions {
 	DgStorageSeekFunction seek;
 	
 	// Specific config destruction
-	DgStorageFreeSpecificConfigFunction free_specific_config;
+	DgStorageFreePoolFunction free_pool;
 } DgStorageFunctions;
 
 /**
@@ -100,6 +100,7 @@ typedef struct DgStorageFunctions {
  */
 typedef struct DgStoragePool {
 	// example: = "fs", "info", "ramdisk0", "assets", "http" etc
+	// NEW: may also be NULL
 	DgStoragePath protocol;
 	
 	// Function pointer array
@@ -137,7 +138,7 @@ DgError DgStorageDelete(DgStorage *this, DgStoragePath path);
 DgError DgStorageRename(DgStorage *this, DgStoragePath old_path, DgStoragePath new_path);
 DgError DgStorageCreateFile(DgStorage *this, DgStoragePath path);
 DgError DgStorageCreateFolder(DgStorage *this, DgStoragePath path);
-DgStorageObjectType DgStorageType(DgStorage *this, DgStoragePath path, DgStorageObjectType *type);
+DgError DgStorageType(DgStorage *this, DgStoragePath path, DgStorageObjectType *type);
 
 // Generic pool free function
 DgError DgStoragePoolFree(DgStoragePool *pool);

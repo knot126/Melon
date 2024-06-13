@@ -472,7 +472,8 @@ bool DgStringEqual(const char * const string1, const char * const string2) {
 	/**
 	 * Check if the two strings are equal.
 	 * 
-	 * @todo Define behaviour when !string1 or !string2
+	 * @note If either string is NULL, then this function returns if the
+	 * pointers are equal.
 	 * 
 	 * @param string1 First string
 	 * @param string2 Second string
@@ -480,8 +481,7 @@ bool DgStringEqual(const char * const string1, const char * const string2) {
 	 */
 	
 	if (!string1 || !string2) {
-		DgLog(DG_LOG_WARNING, "DgStringEqual(<0x%x>, <0x%x>): Got a NULL string; please make sure to check for NULL strings before comparing! Returning false.", string1, string2);
-		return false;
+		return string1 == string2;
 	}
 	
 	for (size_t i = 0;; i++) {

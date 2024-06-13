@@ -222,7 +222,7 @@ DgStorageFunctions gVoidFunctions = {
 	.get_position = &DgVoid_GetPosition,
 	.set_position = &DgVoid_SetPosition,
 	.seek = &DgVoid_Seek,
-	.free_specific_config = NULL,
+	.free_pool = NULL,
 };
 
 DgStoragePool *DgVoidCreatePool(const char *protocol) {
