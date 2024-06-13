@@ -168,3 +168,8 @@ size_t DgStreamLength(DgStream *context);
 
 DgError DgStreamWriteString(DgStream * restrict context, const char * restrict data);
 DgError DgStreamWriteIntegerString(DgStream *context, int64_t data);
+
+DgError DgStorageLoad(DgStorage *storage, DgStoragePath path, size_t *size, void **buffer);
+DgError DgStorageSave(DgStorage *storage, DgStoragePath path, size_t size, void *buffer);
+DgError DgStorageAppend(DgStorage *storage, DgStoragePath path, size_t size, void *buffer);
+

@@ -11,6 +11,3 @@
 #include "storage.h"
 #include "error.h"
 
-DgError DgFileLoad(DgStorage *storage, DgStoragePath path, size_t *size, void **buffer);
-DgError DgFileSave(DgStorage *storage, DgStoragePath path, size_t size, void *buffer);
-DgError DgFileAppend(DgStorage *storage, DgStoragePath path, size_t size, void *buffer);
