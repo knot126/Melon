@@ -43,12 +43,12 @@ DgError DgLibraryInit(DgLibrary * const restrict this, const char * const restri
 	char *status = dlerror();
 	
 	if (status) {
-		DgLog(DG_LOG_ERROR, "Failed to load library %s: %s", path, status);
+		DgLog(DG_LOG_ERROR, "DgLibraryInit(): Failed to load library %s: %s", path ? path : "(self)", status);
 	}
 	
 	return (status) ? DG_ERROR_FAILED : DG_ERROR_SUCCESS;
 #else
-	return DG_ERROR_FAILED;
+	return DG_ERROR_NOT_IMPLEMENTED;
 #endif
 }
 
@@ -84,11 +84,38 @@ DgError DgLibraryFree(DgLibrary * const restrict this) {
 	char *status = dlerror();
 	
 	if (status) {
-		DgLog(DG_LOG_ERROR, "Failed to unload library: %s", status);
+		DgLog(DG_LOG_ERROR, "DgLibraryFree(): Failed to unload library: %s", status);
 	}
 	
 	return (status) ? DG_ERROR_FAILED : DG_ERROR_SUCCESS;
 #else
-	return DG_ERROR_FAILED;
+	return DG_ERROR_NOT_IMPLEMENTED;
 #endif
+}
+
+void *DgGetSymbol(const char * const symbol) {
+	/**
+	 * Get a function in the current program with the given symbol name.
+	 * 
+	 * @param symbol Name of the symbol
+	 * @return Pointer to the symbol
+	 */
+	
+	DgLibrary library;
+	
+	DgError error = DgLibraryInit(&library, DG_LIBRARY_OWN_MODULE);
+	
+	if (error) {
+		return NULL;
+	}
+	
+	void *func = DgLibraryGetSymbol(&library, symbol);
+	
+	error = DgLibraryFree(&library);
+	
+	if (error) {
+		DgLog(DG_LOG_WARNING, "DgGetSymbol(): Could not unload main program handle.");
+	}
+	
+	return func;
 }
