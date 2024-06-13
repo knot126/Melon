@@ -604,6 +604,36 @@ int64_t DgStringFindFirst(const char * const string, const char * const what) {
 	return DgStringFind(string, what, 0);
 }
 
+size_t DgStringCountConsecutiveWithMax(const uint8_t * const data, size_t length, size_t max) {
+	/**
+	 * Count the number of bytes that equal the first byte are at the start of
+	 * the given data.
+	 * 
+	 * Ex: AAAAABBBAA returns 5 since there are five A's
+	 * 
+	 * @param data Data to use
+	 * @param length Length of data
+	 * @param max Max number of bytes to count
+	 * @return Bytes equal to the first byte at the start of the data
+	 */
+	
+	if (!length) {
+		return 0;
+	}
+	
+	size_t count = 0;
+	
+	for (size_t i = 0; i < length && i <= max; i++) {
+		if (data[0] != data[i]) {
+			break;
+		}
+		
+		count++;
+	}
+	
+	return count;
+}
+
 uint32_t DgStringSeminise(const char *string) {
 	/**
 	 * Take the "sem" (our word for small, non-cryptographic hash) of a string.

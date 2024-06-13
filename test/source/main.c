@@ -237,6 +237,8 @@ void TestTableAndSerialise(void) {
 	DgValueFree(&table_val);
 }
 
+void DgCompressRLE_Test(void);
+
 int main(const int argc, const char *argv[]) {
 	DgLog(DG_LOG_INFO, "Hello, world!");
 	
@@ -251,6 +253,7 @@ int main(const int argc, const char *argv[]) {
 	if (DgArgGetFlag(&args, "table")) TestTableAndSerialise();
 	if (DgArgGetFlag(&args, "cubehash1")) DgCryptoCubeHasher_Test();
 	if (DgArgGetFlag(&args, "cubehash2")) DgCryptoCubeHashBytes_Test();
+	if (DgArgGetFlag(&args, "compress-rle")) DgCompressRLE_Test();
 	
 	DgArgFree(&args);
 	
