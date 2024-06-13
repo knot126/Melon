@@ -17,7 +17,7 @@
 #include <stdlib.h>
 #include "error.h"
 
-#if DG_MELON_OLD_MEMORY_FUNCTIONS
+#ifdef DG_MELON_OLD_MEMORY_FUNCTIONS
 void *DgAlloc(size_t size);
 void DgFree(void *block);
 void *DgRealloc(void *block, size_t size);
