@@ -21,7 +21,7 @@
 #include "alloc.h"
 #include "log.h"
 
-#include "stream.h"
+#include "memory_stream.h"
 
 _Static_assert(sizeof(uint8_t) == 1, "wot");
 
