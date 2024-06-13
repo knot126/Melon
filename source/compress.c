@@ -17,6 +17,9 @@
 #include "alloc.h"
 #include "string.h"
 #include "log.h"
+#include "storage.h"
+#include "storage_filesystem.h"
+#include "file.h"
 
 #include "compress.h"
 
@@ -66,6 +69,8 @@ DgError DgCompressRLE(const uint8_t *data, size_t length, uint8_t **output_data,
 	 * @return Error while compressing
 	 */
 	
+	DgLog(DG_LOG_VERBOSE, "~~~ find output length ~~~");
+	
 	output_length[0] = 0;
 	
 	// Calculate the output length
@@ -76,11 +81,13 @@ DgError DgCompressRLE(const uint8_t *data, size_t length, uint8_t **output_data,
 		DgLog(DG_LOG_VERBOSE, "-> asr = %d", asr);
 		DgLog(DG_LOG_VERBOSE, "-> action = %s %d", (asr < 0) ? "expand" : "copy", (asr < 0) ? -asr : asr + 1);
 		
+		// >= 0 means we copy the next N + 1 bytes
 		if (asr >= 0) {
 			// asr + 1 is the number of bytes to copy + the command bit
 			output_length[0] += (size_t) asr + 1 + 1;
 			i += (size_t) asr + 1;
 		}
+		// < 0 means we expand the next -N bytes
 		else {
 			// only need a control bit and the bit to copy
 			output_length[0] += 2;
@@ -88,20 +95,55 @@ DgError DgCompressRLE(const uint8_t *data, size_t length, uint8_t **output_data,
 		}
 	}
 	
+	output_data[0] = DgMemoryAllocate(output_length[0]);
+	
+	if (output_data[0] == NULL) {
+		return DG_ERROR_ALLOCATION_FAILED;
+	}
+	
 	DgLog(DG_LOG_VERBOSE, "DgCompressRLE(): input is 0x%llx and output is 0x%llx bytes", length, output_length[0]);
+	
+	DgLog(DG_LOG_VERBOSE, "~~~ compute output ~~~");
+	
+	// i is input position, j is output position
+	for (size_t i = 0, j = 0; i < length;) {
+		// Analyse the stream at this point
+		int8_t asr = DgCompressRLE_AnalyseStream(data, length, i);
+		
+		((int8_t **) output_data)[0][j] = asr;
+		
+		if (asr < 0) {
+			output_data[0][j + 1] = data[i];
+			j += 2;
+			i += -asr;
+		}
+		else {
+			// Copy the memory as is
+			DgMemoryCopy((size_t) asr + 1, &data[i], &output_data[0][j + 1]);
+			
+			// (N + 1) bytes + command bit
+			j += asr + 2;
+			i += (size_t) asr + 1;
+		}
+	}
 	
 	return DG_ERROR_SUCCESS;
 }
 
 void DgCompressRLE_Test(void) {
 	const char *sample1 = "BBBBBBABBAAAAAAAAABCDEFFFGGAGAGAABAAAAA";
+	uint8_t *out;
 	size_t outlen;
 	
-	DgError error = DgCompressRLE((uint8_t *) sample1, DgStringLength(sample1), NULL, &outlen);
+	DgError error = DgCompressRLE((uint8_t *) sample1, DgStringLength(sample1), &out, &outlen);
 	
 	if (error) {
 		DgLogError(error);
 	}
+	
+	DgStorageAddPool(NULL, DgFilesystemCreatePool("file", "."));
+	
+	DgFileSave(NULL, "file://test.rle", outlen, out);
 }
 
 typedef struct DgCompress_ByteProbabilityTable {
