@@ -65,10 +65,8 @@ DgError DgCompressRLE(uint8_t *in_data, size_t in_size, uint8_t **out_data, size
 		cons = DgStringCountConsecutiveWithMax(in_data + i, in_size - i, 0x80);
 		
 		if (cons > 2) {
-			int8_t out1 = -cons;
-			DgMemoryStreamWriteInt8(output, &out1);
-			uint8_t out2 = in_data[i];
-			DgMemoryStreamWriteUInt8(output, &out2);
+			DgMemoryStreamWriteInt8(output, -cons);
+			DgMemoryStreamWriteUInt8(output, in_data[i]);
 			i += cons;
 		}
 		else if (cons == 0) {
@@ -76,8 +74,7 @@ DgError DgCompressRLE(uint8_t *in_data, size_t in_size, uint8_t **out_data, size
 		}
 		else {
 			cons = DgCompressRLE_CountBytesUntilConsecutiveWithMinimumWithMax(in_data + i, in_size - i, 2, 0x80);
-			int8_t out1 = cons - 1;
-			DgMemoryStreamWriteInt8(output, &out1);
+			DgMemoryStreamWriteInt8(output, cons - 1);
 			DgMemoryStreamWrite(output, cons, &in_data[i]);
 			i += cons;
 		}

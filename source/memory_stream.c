@@ -336,42 +336,42 @@ double DgMemoryStreamReadDouble(DgMemoryStream *stream) {
  * Functions for writing common integer and floting point types.
  */
 
-void DgMemoryStreamWriteInt8(DgMemoryStream *stream, int8_t *data) {
-	DgMemoryStreamWrite(stream, sizeof(int8_t), data);
+void DgMemoryStreamWriteInt8(DgMemoryStream *stream, int8_t data) {
+	DgMemoryStreamWrite(stream, sizeof(int8_t), &data);
 }
 
-void DgMemoryStreamWriteUInt8(DgMemoryStream *stream, uint8_t *data) {
-	DgMemoryStreamWrite(stream, sizeof(uint8_t), data);
+void DgMemoryStreamWriteUInt8(DgMemoryStream *stream, uint8_t data) {
+	DgMemoryStreamWrite(stream, sizeof(uint8_t), &data);
 }
 
-void DgMemoryStreamWriteInt16(DgMemoryStream *stream, int16_t *data) {
-	DgMemoryStreamWrite(stream, sizeof(int16_t), data);
+void DgMemoryStreamWriteInt16(DgMemoryStream *stream, int16_t data) {
+	DgMemoryStreamWrite(stream, sizeof(int16_t), &data);
 }
 
-void DgMemoryStreamWriteUInt16(DgMemoryStream *stream, uint16_t *data) {
-	DgMemoryStreamWrite(stream, sizeof(uint16_t), data);
+void DgMemoryStreamWriteUInt16(DgMemoryStream *stream, uint16_t data) {
+	DgMemoryStreamWrite(stream, sizeof(uint16_t), &data);
 }
 
-void DgMemoryStreamWriteInt32(DgMemoryStream *stream, int32_t *data) {
-	DgMemoryStreamWrite(stream, sizeof(int32_t), data);
+void DgMemoryStreamWriteInt32(DgMemoryStream *stream, int32_t data) {
+	DgMemoryStreamWrite(stream, sizeof(int32_t), &data);
 }
 
-void DgMemoryStreamWriteUInt32(DgMemoryStream *stream, uint32_t *data) {
-	DgMemoryStreamWrite(stream, sizeof(uint32_t), data);
+void DgMemoryStreamWriteUInt32(DgMemoryStream *stream, uint32_t data) {
+	DgMemoryStreamWrite(stream, sizeof(uint32_t), &data);
 }
 
-void DgMemoryStreamWriteInt64(DgMemoryStream *stream, int64_t *data) {
-	DgMemoryStreamWrite(stream, sizeof(int64_t), data);
+void DgMemoryStreamWriteInt64(DgMemoryStream *stream, int64_t data) {
+	DgMemoryStreamWrite(stream, sizeof(int64_t), &data);
 }
 
-void DgMemoryStreamWriteUInt64(DgMemoryStream *stream, uint64_t *data) {
-	DgMemoryStreamWrite(stream, sizeof(uint64_t), data);
+void DgMemoryStreamWriteUInt64(DgMemoryStream *stream, uint64_t data) {
+	DgMemoryStreamWrite(stream, sizeof(uint64_t), &data);
 }
 
-void DgMemoryStreamWriteFloat(DgMemoryStream *stream, float *data) {
-	DgMemoryStreamWrite(stream, sizeof(float), data);
+void DgMemoryStreamWriteFloat(DgMemoryStream *stream, float data) {
+	DgMemoryStreamWrite(stream, sizeof(float), &data);
 }
 
-void DgMemoryStreamWriteDouble(DgMemoryStream *stream, double *data) {
-	DgMemoryStreamWrite(stream, sizeof(double), data);
+void DgMemoryStreamWriteDouble(DgMemoryStream *stream, double data) {
+	DgMemoryStreamWrite(stream, sizeof(double), &data);
 }
