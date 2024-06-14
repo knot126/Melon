@@ -21,10 +21,10 @@ size_t DgCompressRLE_CountBytesUntilConsecutiveWithMinimumWithMax(const uint8_t 
 	 * Count the number of bytes until there is a consecutive seqence of a least
 	 * min_cons + 1 bytes, of up to max bytes.
 	 * 
-	 * @param data
-	 * @param length
-	 * @param min_cons
-	 * @param max
+	 * @param data Data
+	 * @param length Length of data
+	 * @param min_cons Minimum number of consecutive bytes to break the count
+	 * @param max Max bytes to count
 	 */
 	
 	size_t cons, i;
@@ -46,10 +46,11 @@ DgError DgCompressRLE(uint8_t *in_data, size_t in_size, uint8_t **out_data, size
 	/**
 	 * (Try to) compress the input using run-length coding
 	 * 
-	 * @param in_data
-	 * @param in_size
-	 * @param out_data
-	 * @param out_size
+	 * @param in_data Input data
+	 * @param in_size Size of the input data
+	 * @param out_data Pointer to where to store the pointer to the output
+	 * @param out_size Pointer to where to store the output's size
+	 * @return Any error while processing
 	 */
 	
 	DgMemoryStream *output = DgMemoryStreamCreate();
