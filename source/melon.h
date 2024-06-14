@@ -10,6 +10,7 @@
 #include "fixed.h"
 #include "flags.h"
 #include "checksum.h"
+#include "compress.h"
 #include "library.h"
 #include "libmelon.h"
 #include "log.h"

@@ -9,10 +9,84 @@
  */
 
 #include "memory.h"
+#include "memory_stream.h"
+#include "bytes.h"
 #include "string.h"
 #include "log.h"
 
 #include "compress.h"
+
+size_t DgCompressRLE_CountBytesUntilConsecutiveWithMinimumWithMax(const uint8_t * const data, size_t length, size_t min_cons, size_t max) {
+	/**
+	 * Count the number of bytes until there is a consecutive seqence of a least
+	 * min_cons + 1 bytes, of up to max bytes.
+	 * 
+	 * @param data
+	 * @param length
+	 * @param min_cons
+	 * @param max
+	 */
+	
+	size_t cons, i;
+	
+	for (i = 0; i < length;) {
+		cons = DgStringCountConsecutiveWithMax(data + i, length - i, min_cons + 1);
+		
+		if (cons > min_cons || (i + cons) > max) {
+			return i;
+		}
+		
+		i += cons;
+	}
+	
+	return i;
+}
+
+DgError DgCompressRLE(uint8_t *in_data, size_t in_size, uint8_t **out_data, size_t *out_size) {
+	/**
+	 * (Try to) compress the input using run-length coding
+	 * 
+	 * @param in_data
+	 * @param in_size
+	 * @param out_data
+	 * @param out_size
+	 */
+	
+	DgMemoryStream *output = DgMemoryStreamCreate();
+	
+	if (!output) {
+		return DG_ERROR_ALLOCATION_FAILED;
+	}
+	
+	// Kept out here for speed
+	size_t cons;
+	
+	for (size_t i = 0; i < in_size;) {
+		cons = DgStringCountConsecutiveWithMax(in_data + i, in_size - i, 0x80);
+		
+		if (cons > 2) {
+			int8_t out1 = -cons;
+			DgMemoryStreamWriteInt8(output, &out1);
+			uint8_t out2 = in_data[i];
+			DgMemoryStreamWriteUInt8(output, &out2);
+			i += cons;
+		}
+		else if (cons == 0) {
+			DgLog(DG_LOG_WARNING, "WTF condition: cons == 0");
+		}
+		else {
+			cons = DgCompressRLE_CountBytesUntilConsecutiveWithMinimumWithMax(in_data + i, in_size - i, 2, 0x80);
+			int8_t out1 = cons - 1;
+			DgMemoryStreamWriteInt8(output, &out1);
+			DgMemoryStreamWrite(output, cons, &in_data[i]);
+			i += cons;
+		}
+	}
+	
+	DgBufferFromStream(output, (void **) out_data, out_size);
+	
+	return (*out_data) ? DG_ERROR_SUCCESS : DG_ERROR_FAILED;
+}
 
 typedef struct DgCompress_ByteProbabilityTable {
 	size_t probs[0x100];

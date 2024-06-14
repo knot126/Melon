@@ -12,3 +12,4 @@
 
 #include "common.h"
 
+DgError DgCompressRLE(uint8_t *in_data, size_t in_size, uint8_t **out_data, size_t *out_size);

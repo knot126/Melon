@@ -284,6 +284,22 @@ void TestTableAndSerialise(void) {
 	DgValueFree(&table_val);
 }
 
+void TestCompressRLE(void) {
+	DgStorageAddPool(NULL, DgFilesystemCreatePool(NULL, "."));
+	
+	DgLog(DG_LOG_INFO, "Test RLE compress");
+	
+	uint64_t example[] = {'E', 'x', 'a', 'm', 'p', 'l', 'e', 123456789014, '\x00'};
+	size_t example_size = 8 * 9;
+	size_t out_len; uint8_t *out_data;
+	
+	DgLogError(DgCompressRLE((uint8_t *) example, example_size, &out_data, &out_len));
+	
+	DgLog(DG_LOG_VERBOSE, "example_size = 0x%llx, out_len = 0x%llx, diff = 0x%llx", example_size, out_len, example_size - out_len);
+	
+	DgStorageSave(NULL, "example.rle", out_len, out_data);
+}
+
 int main(const int argc, const char *argv[]) {
 	DgLog(DG_LOG_INFO, "Hello, world!");
 	
@@ -298,6 +314,7 @@ int main(const int argc, const char *argv[]) {
 	if (DgArgGetFlag(&args, "table")) TestTableAndSerialise();
 	if (DgArgGetFlag(&args, "cubehash1")) DgCryptoCubeHasher_Test();
 	if (DgArgGetFlag(&args, "cubehash2")) DgCryptoCubeHashBytes_Test();
+	if (DgArgGetFlag(&args, "compress-rle")) TestCompressRLE();
 	
 	DgArgFree(&args);
 	
