@@ -20,10 +20,10 @@ typedef enum DgScriptTokenType {
 	DG_SCRIPT_TOKEN_BOOLEAN, // true|false
 	DG_SCRIPT_TOKEN_ID, // (<letter>|$|_)(<digit>|<letter>|$|_)*
 	DG_SCRIPT_TOKEN_SYMBOL, // #<id>
-	DG_SCRIPT_TOKEN_NUMBER, // <digits>(.<digits>)?([Ee]<digits>)?|0[Xx]<hexdigits>|0[Bb]<bits>|<digits>[Rr]
+	DG_SCRIPT_TOKEN_NUMBER, // <digits>(.<digits>)?([Ee][+-]?<digits>)?|0[Xx]<hexdigits>|0[Bb]<bits>|<digits>[Rr](<digit>|<letter>)
 	DG_SCRIPT_TOKEN_STRING, // "([^"\\]|\\.)*"
 	DG_SCRIPT_TOKEN_KEYWORD, // if, else, while, for, throw, function, etc.
-	DG_SCRIPT_TOKEN_FIX, // <spec>+ -- !, +, -, *, /, %, =, !=, ==, &, {, }, [, ], (, ), etc.
+	DG_SCRIPT_TOKEN_OP, // +|-|*|/|%|\\|\||^|&|~|<<|>>|+=|-=|*=|/=|%=|\\=|\|=|^=|&=|~=|<<=|>>=|=|:|,|?|@|!|==|!=|<|>|<>|<=|>=|(|)|[|]|{|}|->|<-|=>|<=
 } DgScriptTokenType;
 
 /**
@@ -34,7 +34,7 @@ typedef struct DgScriptToken {
 	union {
 		char *asText; // strings, symbols
 		bool asBool; // booleans
-		int64_t asInt; // integer numbers
+		int64_t asInt; // integer numbers, op
 		double asDouble; // decimal numbers
 	};
 	size_t start, end;
@@ -117,7 +117,7 @@ DgScriptToken DgScriptLexerAccept(DgScriptLexer *this, DgScriptTokenType type) {
 			token.asText = DgStringDuplicateUntil(&this->source[this->start], this->head - this->start);
 			break;
 		}
-		case DG_SCRIPT_TOKEN_FIX: {
+		case DG_SCRIPT_TOKEN_OP: {
 			// HACK spooky
 			int64_t value = 0;
 			
@@ -150,8 +150,7 @@ DgScriptToken DgScriptLexerAccept(DgScriptLexer *this, DgScriptTokenType type) {
 #define readChar() DgScriptLexerReadChar(this)
 #define peekChar() DgScriptLexerPeekChar(this)
 #define accept(TYPE) return DgScriptLexerAccept(this, TYPE)
-#define is_alpha(c) ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c == '_'))
-#define is_num(c) (c >= '0' && c <= '9')
+#define inRange(LOW, VAL, HIGH) ((VAL >= LOW) && (VAL <= HIGH))
 
 DgScriptToken DgScriptLexerNextToken(DgScriptLexer *this) {
 	/**
@@ -160,18 +159,7 @@ DgScriptToken DgScriptLexerNextToken(DgScriptLexer *this) {
 	
 	char c = peekChar();
 	
-	if (is_alpha(c)) {
-		while ((c = peekChar()), (is_alpha(c) || is_num(c))) {
-			readChar();
-		}
-		
-		// TODO check for kw's
-		
-		accept(DG_SCRIPT_TOKEN_ID);
-	}
-	else if (is_num(c)) {
-		// TODO
-	}
+	// This is based on a transition diagram, should scan it in if I've got time.
 	
-	return DgScriptLexerAccept(this, DG_SCRIPT_TOKEN_NIL);
+	return accept(DG_SCRIPT_TOKEN_NIL);
 }
