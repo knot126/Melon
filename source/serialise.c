@@ -169,11 +169,7 @@ DgError DgSerialiseWrite(DgStorage *storage, const char *path, DgValue * restric
 		return status;
 	}
 	
-	DgLog(DG_LOG_INFO, "IsSwappingEndian = %d", DgStreamIsSwappingEndian(&stream));
-	
 	DgStreamSetEndian(&stream, DG_ENDIAN_BIG);
-	
-	DgLog(DG_LOG_INFO, "IsSwappingEndian = %d", DgStreamIsSwappingEndian(&stream));
 	
 	// Magic number
 	status = DgStreamWriteUInt32(&stream, 0xFC991E51); // FURRIES!
