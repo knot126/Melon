@@ -660,7 +660,7 @@ const char gIntegerToStringTable[] = {
 	'u', 'v', 'w', 'x', 'y', 'z',
 };
 
-const char *DgIntegerToString(uint8_t base, int64_t data) {
+char *DgIntegerToString(uint8_t base, int64_t data) {
 	/**
 	 * Convert an integer to a string
 	 * 

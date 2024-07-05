@@ -6,11 +6,10 @@
  * MelonScript
  */
 
-#include "script.h"
-
 #include "log.h"
 #include "string.h"
-#include "storage.h"
+
+#include "script.h"
 
 /**
  * Various types of tokens
@@ -24,7 +23,12 @@ typedef enum DgScriptTokenType {
 	DG_SCRIPT_TOKEN_STRING, // "([^"\\]|\\.)*"
 	DG_SCRIPT_TOKEN_KEYWORD, // if, else, while, for, throw, function, etc.
 	DG_SCRIPT_TOKEN_OP, // +|-|*|/|%|\\|\||^|&|~|<<|>>|+=|-=|*=|/=|%=|\\=|\|=|^=|&=|~=|<<=|>>=|=|:|,|?|@|!|==|!=|<|>|<>|<=|>=|(|)|[|]|{|}|->|<-|=>|<=
+	DG_SCRIPT_TOKEN_ERROR, // Not a token - there was an error.
 } DgScriptTokenType;
+
+enum : uint8_t {
+	DG_SCRIPT_EOF = 0xff, // End of file magic marker
+};
 
 /**
  * A single source token
@@ -62,17 +66,19 @@ void DgScriptLexerInit(DgScriptLexer *this, const char *code) {
 char DgScriptLexerReadChar(DgScriptLexer *this) {
 	/**
 	 * Read the next character and icrement the head
+	 *
+	 * @param this Script lexer instance
 	 */
+	
+	if (this->head >= DgStringLength(this->source)) {
+		return DG_SCRIPT_EOF;
+	}
 	
 	return this->source[this->head++];
 }
 
-char DgScriptLexerPeekChar(DgScriptLexer *this) {
-	/**
-	 * Peek at the next char
-	 */
-	
-	return this->source[this->head];
+void DgScriptLexerUnread(DgScriptLexer *this) {
+	this->head--;
 }
 
 DgScriptToken DgScriptLexerAccept(DgScriptLexer *this, DgScriptTokenType type) {
@@ -80,6 +86,10 @@ DgScriptToken DgScriptLexerAccept(DgScriptLexer *this, DgScriptTokenType type) {
 	 * Accepts a token of the given type. This is where most of the magic of
 	 * getting from a matched string to a token happens. Also advances the start
 	 * of token offset to match the current head.
+	 *
+	 * @param this Script lexer instance
+	 * @param type The type of token to accept; for example, DG_SCRIPT_TOKEN_ID for an identifier
+	 * @return Resultant token
 	 */
 	
 	DgScriptToken token;
@@ -129,6 +139,13 @@ DgScriptToken DgScriptLexerAccept(DgScriptLexer *this, DgScriptTokenType type) {
 			value >>= 8;
 			
 			token.asInt = value;
+			
+			break;
+		}
+		case DG_SCRIPT_TOKEN_ERROR: {
+			// Does not really do anything
+			
+			break;
 		}
 		default: {
 			DgLog(DG_LOG_WARNING, "lexer: unknown token type %d", type);
@@ -148,18 +165,42 @@ DgScriptToken DgScriptLexerAccept(DgScriptLexer *this, DgScriptTokenType type) {
 }
 
 #define readChar() DgScriptLexerReadChar(this)
-#define peekChar() DgScriptLexerPeekChar(this)
 #define accept(TYPE) return DgScriptLexerAccept(this, TYPE)
+#define unread() DgScriptLexerUnread(this)
 #define inRange(LOW, VAL, HIGH) ((VAL >= LOW) && (VAL <= HIGH))
+
+#define isLetter(C) (inRange('a', C, 'z') || inRange('A', C, 'Z'))
+#define isNumber(C) inRange('0', C, '9')
+#define isHexdigit(C) (inRange('0', C, '9') || inRange('a', C, 'f') || inRange('A', C, 'F'))
+#define isBit(C) (c == '0' || c == '1')
 
 DgScriptToken DgScriptLexerNextToken(DgScriptLexer *this) {
 	/**
 	 * Get the next token
+	 * 
+	 * @note This function only needs to recognise the tokens and doesn't need
+	 * to worry about the actual contents of the token; that will be handled by
+	 * accept().
 	 */
 	
-	char c = peekChar();
+	char c = readChar();
 	
-	// This is based on a transition diagram, should scan it in if I've got time.
+	// Read all whitespace
+	do {
+		if (!(c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\f' || c == '\v')) {
+			break;
+		}
+		
+		c = readChar();
+	} while (true);
 	
-	return accept(DG_SCRIPT_TOKEN_NIL);
+	if (isLetter(c) || c == '_' || c == '$') {
+		// Start of an identifier
+	}
+	else if (isNumber(c)) {
+		// Start of some type of numerical constant
+	}
+	
+	// Cannot accept any token like that.
+	accept(DG_SCRIPT_TOKEN_ERROR);
 }

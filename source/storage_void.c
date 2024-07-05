@@ -94,7 +94,7 @@ static DgError DgVoid_Type(DgStorage *storage, DgStoragePool *pool, DgStoragePat
 	return DG_ERROR_SUCCESSFUL;
 }
 
-static DgError DgVoid_Open(DgStorage *storage, DgStoragePool *pool, DgStream *context, DgStoragePath path, DgStorageFlags flags) {
+static DgError DgVoid_Open(DgStorage *storage, DgStoragePool *pool, DgStream *context, DgStoragePath path, DgStreamOpenFlags flags) {
 	/**
 	 * Open a file stream
 	 * 

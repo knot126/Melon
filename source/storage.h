@@ -12,6 +12,7 @@
 #include <stdlib.h>
 
 #include "error.h"
+#include "machine.h"
 
 // String type for the path
 typedef const char *DgStoragePath;
@@ -37,12 +38,13 @@ typedef enum DgStorageSeekBase {
 } DgStorageSeekBase;
 
 // File open flags
-typedef enum DgStorageFlags {
+typedef enum DgStreamOpenFlags : uint64_t {
 	DG_STREAM_READ = (1 << 0),
 	DG_STREAM_WRITE = (1 << 1),
 	DG_STREAM_START_AT_END = (1 << 2),
 	DG_STREAM_DONT_OVERWRITE = (1 << 3),
-} DgStorageFlags;
+	DG_STREAM_ENDIAN_BIG = (1 << 4),
+} DgStreamOpenFlags;
 
 /** Function pointers for various storage and stream operations */
 /** @note Please update the wiki if any of these things change! */
@@ -50,7 +52,7 @@ typedef struct DgStorage DgStorage;
 typedef struct DgStoragePool DgStoragePool;
 
 // Streams (only primitive operations on which others can be built)
-typedef DgError (*DgStorageOpenFunction)(DgStorage *storage, DgStoragePool *pool, DgStream *context, DgStoragePath path, DgStorageFlags flags);
+typedef DgError (*DgStorageOpenFunction)(DgStorage *storage, DgStoragePool *pool, DgStream *context, DgStoragePath path, DgStreamOpenFlags flags);
 typedef DgError (*DgStorageCloseFunction)(DgStorage *storage, DgStoragePool *pool, DgStream *context);
 
 typedef DgError (*DgStorageReadFunction)(DgStorage *storage, DgStoragePool *pool, DgStream *context, size_t size, void *buffer);
@@ -144,13 +146,19 @@ DgError DgStorageType(DgStorage *this, DgStoragePath path, DgStorageObjectType *
 DgError DgStoragePoolFree(DgStoragePool *pool);
 
 /* Abstract stream API */
+// Generic flags that are implemented by DgStorage
+typedef uint64_t DgStreamFlags;
+
+// Abstract stream structure
 typedef struct DgStream {
-	DgStorage *storage;
-	DgStoragePool *pool;
-	void *context;
+	DgStorage *storage; // The storage instance this stream was opened with
+	DgStoragePool *pool; // The pool this stream has opened a file with
+	void *context; // The stream's pool-specific context
+	DgStreamFlags swap_endian : 1; // If the endianness of integers and floats shoud be swapped
+	DgStreamFlags _rest : 63; // Unused
 } DgStream;
 
-DgError DgStreamOpen(DgStorage *this, DgStream *context, DgStoragePath path, DgStorageFlags flags);
+DgError DgStreamOpen(DgStorage *this, DgStream *context, DgStoragePath path, DgStreamOpenFlags flags);
 DgError DgStreamClose(DgStream *context);
 
 DgError DgStreamRead(DgStream *context, size_t size, void *buffer);
@@ -160,11 +168,13 @@ DgError DgStreamGetPosition(DgStream *context, size_t *position);
 DgError DgStreamSetPosition(DgStream *context, size_t position);
 DgError DgStreamSeek(DgStream *context, DgStorageSeekBase base, int64_t offset);
 
-// Extra functions
+void DgStreamSetEndian(DgStream *context, bool endianness);
+bool DgStreamGetEndian(DgStream *context);
+bool DgStreamIsSwappingEndian(DgStream *context);
+
 size_t DgStreamLength(DgStream *context);
 
-// Even more functions!
-#include "storage_generated.h"
+#include "storage_generated.h.part"
 
 DgError DgStreamWriteString(DgStream * restrict context, const char * restrict data);
 DgError DgStreamWriteIntegerString(DgStream *context, int64_t data);

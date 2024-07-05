@@ -205,7 +205,7 @@ static DgError DgFilesystem_Type(DgStorage *storage, DgStoragePool *pool, DgStor
 	return DG_ERROR_NOT_IMPLEMENTED;
 }
 
-static DgError DgFilesystem_Open(DgStorage *storage, DgStoragePool *pool, DgStream *context, DgStoragePath path, DgStorageFlags flags) {
+static DgError DgFilesystem_Open(DgStorage *storage, DgStoragePool *pool, DgStream *context, DgStoragePath path, DgStreamOpenFlags flags) {
 	/**
 	 * Open a file stream
 	 * 

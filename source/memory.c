@@ -153,3 +153,26 @@ void DgMemoryZero(const void *block, size_t length) {
 	
 	memset((void *) block, 0, length);
 }
+
+void DgMemorySwapEndian(void *block, size_t length) {
+	/**
+	 * Swap the endianness of the given block.
+	 * 
+	 * @note This code is ugly but that's more because of the signature being
+	 * (void *) and not (uint8_t *).
+	 * 
+	 * @warning This function may be a macro in a future implementation.
+	 * 
+	 * @param block Block of memory to swap
+	 * @param length Length of block
+	 */
+	
+	uint8_t *block_ = (uint8_t *) block;
+	size_t half_len = length / 2;
+	
+	for (size_t i = 0; i < half_len; i++) {
+		uint8_t temp = block_[i];
+		block_[i] = block_[length - 1 - i];
+		block_[length - 1 - i] = temp;
+	}
+}

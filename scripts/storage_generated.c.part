@@ -10,7 +10,13 @@ DgError DgStreamReadInt8(DgStream *context, int8_t* data) {
 	 * @return Int8 Error code
 	 */
 	
-	return DgStreamRead(context, sizeof *data, data);
+	DgError error = DgStreamRead(context, sizeof *data, data);
+	
+	if (DgStreamIsSwappingEndian(context)) {
+		DgMemorySwapEndian(data, sizeof *data);
+	}
+	
+	return error;
 }
 
 
@@ -23,7 +29,13 @@ DgError DgStreamReadUInt8(DgStream *context, uint8_t* data) {
 	 * @return UInt8 Error code
 	 */
 	
-	return DgStreamRead(context, sizeof *data, data);
+	DgError error = DgStreamRead(context, sizeof *data, data);
+	
+	if (DgStreamIsSwappingEndian(context)) {
+		DgMemorySwapEndian(data, sizeof *data);
+	}
+	
+	return error;
 }
 
 
@@ -36,7 +48,13 @@ DgError DgStreamReadInt16(DgStream *context, int16_t* data) {
 	 * @return Int16 Error code
 	 */
 	
-	return DgStreamRead(context, sizeof *data, data);
+	DgError error = DgStreamRead(context, sizeof *data, data);
+	
+	if (DgStreamIsSwappingEndian(context)) {
+		DgMemorySwapEndian(data, sizeof *data);
+	}
+	
+	return error;
 }
 
 
@@ -49,7 +67,13 @@ DgError DgStreamReadUInt16(DgStream *context, uint16_t* data) {
 	 * @return UInt16 Error code
 	 */
 	
-	return DgStreamRead(context, sizeof *data, data);
+	DgError error = DgStreamRead(context, sizeof *data, data);
+	
+	if (DgStreamIsSwappingEndian(context)) {
+		DgMemorySwapEndian(data, sizeof *data);
+	}
+	
+	return error;
 }
 
 
@@ -62,7 +86,13 @@ DgError DgStreamReadInt32(DgStream *context, int32_t* data) {
 	 * @return Int32 Error code
 	 */
 	
-	return DgStreamRead(context, sizeof *data, data);
+	DgError error = DgStreamRead(context, sizeof *data, data);
+	
+	if (DgStreamIsSwappingEndian(context)) {
+		DgMemorySwapEndian(data, sizeof *data);
+	}
+	
+	return error;
 }
 
 
@@ -75,7 +105,13 @@ DgError DgStreamReadUInt32(DgStream *context, uint32_t* data) {
 	 * @return UInt32 Error code
 	 */
 	
-	return DgStreamRead(context, sizeof *data, data);
+	DgError error = DgStreamRead(context, sizeof *data, data);
+	
+	if (DgStreamIsSwappingEndian(context)) {
+		DgMemorySwapEndian(data, sizeof *data);
+	}
+	
+	return error;
 }
 
 
@@ -88,7 +124,13 @@ DgError DgStreamReadInt64(DgStream *context, int64_t* data) {
 	 * @return Int64 Error code
 	 */
 	
-	return DgStreamRead(context, sizeof *data, data);
+	DgError error = DgStreamRead(context, sizeof *data, data);
+	
+	if (DgStreamIsSwappingEndian(context)) {
+		DgMemorySwapEndian(data, sizeof *data);
+	}
+	
+	return error;
 }
 
 
@@ -101,7 +143,13 @@ DgError DgStreamReadUInt64(DgStream *context, uint64_t* data) {
 	 * @return UInt64 Error code
 	 */
 	
-	return DgStreamRead(context, sizeof *data, data);
+	DgError error = DgStreamRead(context, sizeof *data, data);
+	
+	if (DgStreamIsSwappingEndian(context)) {
+		DgMemorySwapEndian(data, sizeof *data);
+	}
+	
+	return error;
 }
 
 
@@ -114,7 +162,13 @@ DgError DgStreamReadFloat32(DgStream *context, float* data) {
 	 * @return Float32 Error code
 	 */
 	
-	return DgStreamRead(context, sizeof *data, data);
+	DgError error = DgStreamRead(context, sizeof *data, data);
+	
+	if (DgStreamIsSwappingEndian(context)) {
+		DgMemorySwapEndian(data, sizeof *data);
+	}
+	
+	return error;
 }
 
 
@@ -127,10 +181,17 @@ DgError DgStreamReadFloat64(DgStream *context, double* data) {
 	 * @return Float64 Error code
 	 */
 	
-	return DgStreamRead(context, sizeof *data, data);
+	DgError error = DgStreamRead(context, sizeof *data, data);
+	
+	if (DgStreamIsSwappingEndian(context)) {
+		DgMemorySwapEndian(data, sizeof *data);
+	}
+	
+	return error;
 }
 
 // Writes
+
 DgError DgStreamWriteInt8(DgStream *context, int8_t data) {
 	/**
 	 * Write a Int8 to a stream.
@@ -139,6 +200,10 @@ DgError DgStreamWriteInt8(DgStream *context, int8_t data) {
 	 * @param data The Int8 to write
 	 * @return Error code
 	 */
+	 
+	if (DgStreamIsSwappingEndian(context)) {
+		DgMemorySwapEndian(&data, sizeof data);
+	}
 	
 	return DgStreamWrite(context, sizeof data, &data);
 }
@@ -152,6 +217,10 @@ DgError DgStreamWriteUInt8(DgStream *context, uint8_t data) {
 	 * @param data The UInt8 to write
 	 * @return Error code
 	 */
+	 
+	if (DgStreamIsSwappingEndian(context)) {
+		DgMemorySwapEndian(&data, sizeof data);
+	}
 	
 	return DgStreamWrite(context, sizeof data, &data);
 }
@@ -165,6 +234,10 @@ DgError DgStreamWriteInt16(DgStream *context, int16_t data) {
 	 * @param data The Int16 to write
 	 * @return Error code
 	 */
+	 
+	if (DgStreamIsSwappingEndian(context)) {
+		DgMemorySwapEndian(&data, sizeof data);
+	}
 	
 	return DgStreamWrite(context, sizeof data, &data);
 }
@@ -178,6 +251,10 @@ DgError DgStreamWriteUInt16(DgStream *context, uint16_t data) {
 	 * @param data The UInt16 to write
 	 * @return Error code
 	 */
+	 
+	if (DgStreamIsSwappingEndian(context)) {
+		DgMemorySwapEndian(&data, sizeof data);
+	}
 	
 	return DgStreamWrite(context, sizeof data, &data);
 }
@@ -191,6 +268,10 @@ DgError DgStreamWriteInt32(DgStream *context, int32_t data) {
 	 * @param data The Int32 to write
 	 * @return Error code
 	 */
+	 
+	if (DgStreamIsSwappingEndian(context)) {
+		DgMemorySwapEndian(&data, sizeof data);
+	}
 	
 	return DgStreamWrite(context, sizeof data, &data);
 }
@@ -204,6 +285,10 @@ DgError DgStreamWriteUInt32(DgStream *context, uint32_t data) {
 	 * @param data The UInt32 to write
 	 * @return Error code
 	 */
+	 
+	if (DgStreamIsSwappingEndian(context)) {
+		DgMemorySwapEndian(&data, sizeof data);
+	}
 	
 	return DgStreamWrite(context, sizeof data, &data);
 }
@@ -217,6 +302,10 @@ DgError DgStreamWriteInt64(DgStream *context, int64_t data) {
 	 * @param data The Int64 to write
 	 * @return Error code
 	 */
+	 
+	if (DgStreamIsSwappingEndian(context)) {
+		DgMemorySwapEndian(&data, sizeof data);
+	}
 	
 	return DgStreamWrite(context, sizeof data, &data);
 }
@@ -230,6 +319,10 @@ DgError DgStreamWriteUInt64(DgStream *context, uint64_t data) {
 	 * @param data The UInt64 to write
 	 * @return Error code
 	 */
+	 
+	if (DgStreamIsSwappingEndian(context)) {
+		DgMemorySwapEndian(&data, sizeof data);
+	}
 	
 	return DgStreamWrite(context, sizeof data, &data);
 }
@@ -243,6 +336,10 @@ DgError DgStreamWriteFloat32(DgStream *context, float data) {
 	 * @param data The Float32 to write
 	 * @return Error code
 	 */
+	 
+	if (DgStreamIsSwappingEndian(context)) {
+		DgMemorySwapEndian(&data, sizeof data);
+	}
 	
 	return DgStreamWrite(context, sizeof data, &data);
 }
@@ -256,6 +353,10 @@ DgError DgStreamWriteFloat64(DgStream *context, double data) {
 	 * @param data The Float64 to write
 	 * @return Error code
 	 */
+	 
+	if (DgStreamIsSwappingEndian(context)) {
+		DgMemorySwapEndian(&data, sizeof data);
+	}
 	
 	return DgStreamWrite(context, sizeof data, &data);
 }

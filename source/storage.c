@@ -9,6 +9,7 @@
 #include "common.h"
 
 #include "error.h"
+#include "machine.h"
 #include "memory.h"
 #include "string.h"
 #include "log.h"
@@ -509,7 +510,7 @@ DgError DgStoragePoolFree(DgStoragePool *pool) {
 
 /* Stream functions and similar */
 
-DgError DgStreamOpen(DgStorage *this, DgStream *context, DgStoragePath path, DgStorageFlags flags) {
+DgError DgStreamOpen(DgStorage *this, DgStream *context, DgStoragePath path, DgStreamOpenFlags flags) {
 	/**
 	 * Open a stream
 	 * 
@@ -534,6 +535,9 @@ DgError DgStreamOpen(DgStorage *this, DgStream *context, DgStoragePath path, DgS
 	// Pre-set the stream storage and pool
 	context->storage = this;
 	context->pool = pool;
+	
+	// Set endianess
+	DgStreamSetEndian(context, ((flags & DG_STREAM_ENDIAN_BIG) ? DG_ENDIAN_BIG : DG_ENDIAN_LITTLE));
 	
 	// Call its function
 	return pool->functions->open(this, pool, context, path, flags);
@@ -631,10 +635,53 @@ DgError DgStreamSeek(DgStream *context, DgStorageSeekBase base, int64_t offset) 
 	return pool->functions->seek(this, pool, context, base, offset);
 }
 
-// Undefine resolve macro just to be clean
+// We don't need it anymore, so undefine resolve macro just to be clean
 #undef DG_STORAGE_RESOLVE
 
-/* Extra and conviecne functions */
+void DgStreamSetEndian(DgStream *context, bool endianness) {
+	/**
+	 * Set the endianness of the given stream.
+	 * 
+	 * @note Setting endianness only controls integers and floats using the read
+	 * and write functions.
+	 * 
+	 * @param context Context to set endianness of
+	 * @param endianness What to set the endianess to. Either DG_ENDIAN_BIG or
+	 * DG_ENDIAN_LITTLE.
+	 */
+	
+	// I dobut ?: is needed
+	context->swap_endian = (endianness != DgMachineEndian()) ? true : false;
+}
+
+bool DgStreamGetEndian(DgStream *context) {
+	/**
+	 * Get the current endianness of the stream.
+	 * 
+	 * @param context Stream to get the endianness of
+	 * @return DG_ENDIAN_LITTLE or DG_ENDIAN_BIG
+	 */
+	
+	bool me = DgMachineEndian();
+	
+	if (me == DG_ENDIAN_LITTLE) {
+		return (context->swap_endian) ? DG_ENDIAN_BIG : DG_ENDIAN_LITTLE;
+	}
+	else {
+		return (context->swap_endian) ? DG_ENDIAN_LITTLE : DG_ENDIAN_BIG;
+	}
+}
+
+bool DgStreamIsSwappingEndian(DgStream *context) {
+	/**
+	 * Return if the endian is being swapped on the stream.
+	 * 
+	 * @param context Context to check
+	 * @return true if swapping endian, false if not
+	 */
+	
+	return context->swap_endian;
+}
 
 size_t DgStreamLength(DgStream *context) {
 	/**
@@ -677,7 +724,7 @@ size_t DgStreamLength(DgStream *context) {
 
 // Some extra storage functions that are automatically generated and for which
 // there are too many of to put in this file directly.
-#include "storage_generated.part"
+#include "storage_generated.c.part"
 
 DgError DgStreamWriteString(DgStream * restrict context, const char * restrict data) {
 	/**

@@ -28,3 +28,4 @@
 #include "time.h"
 #include "window.h"
 #include "memory.h"
+#include "machine.h"
