@@ -1,5 +1,7 @@
 /**
  * Run a function from a shared object.
+ * 
+ * clang -o invoke invoke.c -ldl
  */
 
 #include <stdio.h>
