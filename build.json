@@ -3,7 +3,7 @@
 		"prebuild": [],
 		"shared": true,
 		"includes": [],
-		"links": ["m", "pthread", "SDL2"],
+		"links": ["m", "pthread"],
 		"defines": ["MELON_CRYPTOGRAPHY_RANDOM"],
 		"output": "libmelon.so"
 	}
