@@ -233,16 +233,37 @@ def read_symbols(path):
 	
 	# parse out symbol names!
 	for sym in symbols:
-		fs.setpos(strtab_offset + sym.name)
-		sym.name = fs.readString()
-		symbol_names.append(sym.name)
-	
-	print(symbol_names)
+		if ((sym.info & 0xf) == 2):
+			fs.setpos(strtab_offset + sym.name)
+			sym.name = fs.readString()
+			symbol_names.append(sym.name)
 	
 	return symbol_names
 
+def filter_test_symbols(allsyms):
+	testsyms = []
+	
+	for s in allsyms:
+		if (s.startswith("Dg") and s.endswith("_Test")):
+			testsyms.append(s)
+	
+	return testsyms
+
+def run_test(binary_path, function_name):
+	print(f"\x1b[1;38;5;69mRun test: {function_name}\x1b[0m")
+	
+	result = os.system(f"{INVOKE_PATH} {binary_path} {function_name}")
+	
+	if (not result):
+		print(f"\x1b[1;38;5;34mPASS\x1b[0m")
+	else:
+		print(f"\x1b[1;38;5;161mFAIL\x1b[0m")
+
 def main():
-	read_symbols(find_binary())
+	binary_path = find_binary()
+	
+	for symbol in filter_test_symbols(read_symbols(binary_path)):
+		run_test(binary_path, symbol)
 
 if (__name__ == "__main__"):
 	main()
