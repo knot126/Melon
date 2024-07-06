@@ -695,7 +695,7 @@ char *DgIntegerToString(uint8_t base, int64_t data) {
 	
 	// Find if it's negative
 	bool negative = data < 0;
-		
+	
 	// Find the amount of memory needed for our string.
 	size_t string_length = 0;
 	
@@ -757,7 +757,7 @@ void DgIntegerToString_Test(void) {
 	
 	for (size_t i = 0; tests[2 * i]; i++) {
 		char *output = DgIntegerToString(tests[2 * i], tests[2 * i + 1]);
-		DgLog(DG_LOG_INFO, "%lld as a string in base %d is '%s'", tests[2 * i], tests[2 * i + 1], output);
+		DgLog(DG_LOG_INFO, "%lld as a string in base %d is '%s'", tests[2 * i + 1], tests[2 * i], output);
 		DgMemoryFree(output);
 	}
 }
