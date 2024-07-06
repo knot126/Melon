@@ -262,7 +262,12 @@ def run_test(binary_path, function_name):
 def main():
 	binary_path = find_binary()
 	
-	for symbol in filter_test_symbols(read_symbols(binary_path)):
+	test_symbols = filter_test_symbols(read_symbols(binary_path))
+	
+	if (len(test_symbols) == 0):
+		print("No tests! Make sure you compiled with -rdynamic. Or maybe implement a better symbol table parser.")
+	
+	for symbol in test_symbols:
 		run_test(binary_path, symbol)
 
 if (__name__ == "__main__"):
