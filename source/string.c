@@ -312,6 +312,24 @@ char *DgStringConcatinate(const char * const string1, const char * const string2
 	return result;
 }
 
+void DgStringConcatinate_Test(void) {
+	const char *tests[] = {
+		"first", "second",
+		"another ... ", "test!",
+		NULL
+	};
+	
+	for (size_t i = 0; tests[i * 2] != NULL; i++) {
+		char *result = DgStringConcatinate(tests[i * 2], tests[i * 2 + 1]);
+		DgLog(DG_LOG_VERBOSE, "'%s' + '%s' = '%s'", tests[i * 2], tests[i * 2 + 1], result);
+		DgMemoryFree(result);
+	}
+	
+	DgLog(DG_LOG_VERBOSE, "%s", DgStringConcatinate("test", NULL));
+	DgLog(DG_LOG_VERBOSE, "%s", DgStringConcatinate(NULL, "test"));
+	DgLog(DG_LOG_VERBOSE, "%s", DgStringConcatinate(NULL, NULL));
+}
+
 char *DgStringConcatinateL(const char * const string1, const char * const string2) {
 	/**
 	 * Concatinate string1 and string2 and then free string1
@@ -677,11 +695,11 @@ char *DgIntegerToString(uint8_t base, int64_t data) {
 	
 	// Find if it's negative
 	bool negative = data < 0;
-	
+		
 	// Find the amount of memory needed for our string.
 	size_t string_length = 0;
 	
-	if (negative) { string_length++; }
+	if (negative) { string_length++; data = -data; }
 	
 	int64_t temp = data;
 	
@@ -711,6 +729,37 @@ char *DgIntegerToString(uint8_t base, int64_t data) {
 	out[string_length] = '\0';
 	
 	return out;
+}
+
+void DgIntegerToString_Test(void) {
+	int64_t tests[] = {
+		10, 100,
+		12, 100,
+		16, 255,
+		36, 23456789,
+		22, 1049,
+		10, 10,
+		6, 10,
+		3, 156,
+		7, 100,
+		8, 100,
+		9, 100,
+		11, 100,
+		10, 0,
+		12, 0,
+		8, 0,
+		10, -100,
+		10, -123456,
+		16, -130,
+		24, -11111,
+		0
+	};
+	
+	for (size_t i = 0; tests[2 * i]; i++) {
+		char *output = DgIntegerToString(tests[2 * i], tests[2 * i + 1]);
+		DgLog(DG_LOG_INFO, "%lld as a string in base %d is '%s'", tests[2 * i], tests[2 * i + 1], output);
+		DgMemoryFree(output);
+	}
 }
 
 const char gBase64EncodeTable[] = {
