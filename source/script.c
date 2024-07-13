@@ -174,6 +174,15 @@ DgScriptToken DgScriptLexerAccept(DgScriptLexer *this, DgScriptTokenType type) {
 #define isHexdigit(C) (inRange('0', C, '9') || inRange('a', C, 'f') || inRange('A', C, 'F'))
 #define isBit(C) (c == '0' || c == '1')
 
+const char *gScriptKeywords[] = {
+	"if",
+	NULL,
+};
+
+const char *gScriptOps[] = {
+	NULL,
+};
+
 DgScriptToken DgScriptLexerNextToken(DgScriptLexer *this) {
 	/**
 	 * Get the next token
@@ -199,6 +208,12 @@ DgScriptToken DgScriptLexerNextToken(DgScriptLexer *this) {
 	}
 	else if (isNumber(c)) {
 		// Start of some type of numerical constant
+	}
+	else if (c == '#') {
+		// Start of a symbol
+	}
+	else {
+		// An operator or an error of some kind
 	}
 	
 	// Cannot accept any token like that.

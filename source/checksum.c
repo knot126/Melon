@@ -52,18 +52,3 @@ uint32_t DgChecksumU32_DJB2(size_t length, const char *data) {
 	
 	return hash;
 }
-
-uint32_t DgChecksumStringU32(const char * str) {
-	/**
-	 * Get a 32-bit hash of a string using the preferred fast algorithm.
-	 * 
-	 * @deprecated Any new code should use DgStringSeminise for hashing. If you
-	 * need to use the specific hashing algorithm that was used for this
-	 * function, use DgChecksumStringU32_DJB2.
-	 * 
-	 * @param str String to hash
-	 * @return Hashed value
-	 */
-	
-	return DgChecksumStringU32_DJB2(str);
-}

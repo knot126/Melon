@@ -33,14 +33,3 @@ size_t DgStringCountConsecutiveWithMax(const uint8_t * const data, size_t length
 char *DgIntegerToString(uint8_t base, int64_t data);
 char *DgStringEncodeBase64(size_t length, const void *input_);
 char *DgStringEncodeBase16(size_t length, const void *input_);
-
-#if defined(DG_MELON_OLD_STRING_FUNCTIONS)
-	char *DgStrcad(const char * const src1, const char * const src2);
-	char *DgStrcadf(char *src1, const char * const src2);
-	char *DgStrdup(const char * const source);
-	char *DgStrdupl(const char * const source, size_t max);
-	size_t DgStrspn(const char * restrict src, const char * const restrict delim);
-	size_t DgStrcspn(const char * restrict src, const char * const restrict delim);
-	char *DgStrtokr(char *src, const char * const restrict delim, char **saveptr);
-	uint32_t *DgInt32ListFromString(char * restrict str, size_t * const restrict size);
-#endif
