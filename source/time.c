@@ -63,14 +63,6 @@ uint32_t DgNsecTime(void) {
 	return t.tv_nsec;
 }
 
-double DgTimeUntilEveryoneDies(void) {
-	/**
-	 * Return the time until something bad happens and everyone on Earth dies.
-	 */
-	
-	return 1710402698.0 - DgTime();
-}
-
 #ifdef __linux__
 void DgSleep(double length) {
 	/**
