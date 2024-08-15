@@ -6,7 +6,7 @@
  * String utilities
  * 
  * @todo Unicode, strings without null terminators
- */ 
+ */
 
 #include <inttypes.h>
 #include <string.h>

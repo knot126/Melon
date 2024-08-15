@@ -31,6 +31,8 @@ DgError DgArrayPut(DgArray *this, size_t index, DgValue *value);
 DgError DgArraySet(DgArray *this, size_t index, DgValue *value);
 DgError DgArrayAppend(DgArray *this, DgValue *value);
 DgError DgArrayAdd(DgArray *this, DgValue *value);
+DgError DgArrayRemoveND(DgArray *this, size_t index, size_t amount, bool deep);
+DgError DgArrayRemove(DgArray *this, size_t index);
 
 DgError DgArrayConcat(DgArray *this, DgArray *other);
 bool DgArrayEqual(DgArray *this, DgArray *other);

@@ -6,9 +6,11 @@
  * Generic, bounds checked value arrays
  */
 
+#include "error.h"
 #include "memory.h"
 #include "array.h"
 #include "log.h"
+#include "value.h"
 
 /// @todo it all
 DgError DgArrayInit(DgArray *this) {
@@ -229,6 +231,43 @@ DgError DgArrayAdd(DgArray *this, DgValue *value) {
 	 */
 	
 	return DG_ERROR_NOT_IMPLEMENTED;
+}
+
+DgError DgArrayRemoveND(DgArray *this, size_t index, size_t amount, bool deep) {
+	/**
+	 * Remove `amount` elements from the array `this` starting at `index`.
+	 * 
+	 * @param this Array to remove from
+	 * @param index Starting index of elements to remove
+	 * @param amount Number of elements to remove
+	 * @param deep If the elements should be freed or not
+	 * @return DG_ERROR_OUT_OF_RANGE if index + amount - 1 is not a valid index in the array,
+	 * DG_ERROR_SUCCESS if removing items are successful
+	 */
+	
+	if (!DgArrayInRange(this, index + amount - 1)) {
+		return DG_ERROR_OUT_OF_RANGE;
+	}
+	
+	if (deep) {
+		for (size_t i = index; i < index + amount; i++) {
+			DgValueFree(&this->items[i]);
+		}
+	}
+	
+	DgMemoryCopy(sizeof *this->items * ((this->length - index) - amount), &this->items[index + amount], &this->items[index]);
+	
+	this->length -= amount;
+	
+	return DG_ERROR_SUCCESS;
+}
+
+DgError DgArrayRemove(DgArray *this, size_t index) {
+	/**
+	 * Remove one element at the given index.
+	 */
+	
+	return DgArrayRemoveND(this, index, 1, false);
 }
 
 DgError DgArrayConcat(DgArray *this, DgArray *other) {

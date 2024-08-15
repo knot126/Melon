@@ -18,13 +18,15 @@ typedef enum DgScriptTokenType {
 	DG_SCRIPT_TOKEN_NIL, // nil
 	DG_SCRIPT_TOKEN_BOOLEAN, // true|false
 	DG_SCRIPT_TOKEN_ID, // (<letter>|$|_)(<digit>|<letter>|$|_)*
-	DG_SCRIPT_TOKEN_SYMBOL, // #<id>
 	DG_SCRIPT_TOKEN_NUMBER, // <digits>(.<digits>)?([Ee][+-]?<digits>)?|0[Xx]<hexdigits>|0[Bb]<bits>|<digits>[Rr](<digit>|<letter>)
 	DG_SCRIPT_TOKEN_STRING, // "([^"\\]|\\.)*"
 	DG_SCRIPT_TOKEN_KEYWORD, // if, else, while, for, throw, function, etc.
-	DG_SCRIPT_TOKEN_OP, // +|-|*|/|%|\\|\||^|&|~|<<|>>|+=|-=|*=|/=|%=|\\=|\|=|^=|&=|~=|<<=|>>=|=|:|,|?|@|!|==|!=|<|>|<>|<=|>=|(|)|[|]|{|}|->|<-|=>|<=
+	DG_SCRIPT_TOKEN_OP, // +|-|*|/|%|\\|\||^|&|~|#|<<|>>|+=|-=|*=|/=|%=|\\=|\|=|^=|&=|~=|<<=|>>=|=|:|,|?|@|!|==|!=|<|>|<>|<=|>=|(|)|[|]|{|}|->|<-|=>|<=
 	DG_SCRIPT_TOKEN_ERROR, // Not a token - there was an error.
 } DgScriptTokenType;
+
+// Whitespace: <space>|\t|\r|\b|\f|\v
+// Comments: //[^\n]*|/\*.*\*/
 
 enum : uint8_t {
 	DG_SCRIPT_EOF = 0xff, // End of file magic marker
@@ -109,10 +111,6 @@ DgScriptToken DgScriptLexerAccept(DgScriptLexer *this, DgScriptTokenType type) {
 			token.asText = DgStringDuplicateUntil(&this->source[this->start], this->head - this->start);
 			break;
 		}
-		case DG_SCRIPT_TOKEN_SYMBOL: {
-			token.asText = DgStringDuplicateUntil(&this->source[this->start + 1], this->head - this->start);
-			break;
-		}
 		case DG_SCRIPT_TOKEN_NUMBER: {
 			// TODO: oh fuck it's another unimplemented thing
 			DgLog(DG_LOG_WARNING, "lexer: can't parse numbers (heh)");
@@ -165,7 +163,7 @@ DgScriptToken DgScriptLexerAccept(DgScriptLexer *this, DgScriptTokenType type) {
 }
 
 #define readChar() DgScriptLexerReadChar(this)
-#define accept(TYPE) return DgScriptLexerAccept(this, TYPE)
+#define accept(TYPE) (*result = DgScriptLexerAccept(this, TYPE)); goto done
 #define unread() DgScriptLexerUnread(this)
 #define inRange(LOW, VAL, HIGH) ((VAL >= LOW) && (VAL <= HIGH))
 
@@ -179,11 +177,61 @@ const char *gScriptKeywords[] = {
 	NULL,
 };
 
+// NOTE: Longer tokens with the same prefix must come BEFORE shorter ones!
+// Bet you can't guess how I've implemented this :TailsHeh:
 const char *gScriptOps[] = {
+	"+",
+	"-",
+	"*",
+	"/",
+	"%",
+	"\\",
+	"|",
+	"^",
+	"&",
+	"~",
+	"#",
+	"<<",
+	">>",
+	"+=",
+	"-=",
+	"*=",
+	"/=",
+	"%=",
+	"\\=",
+	"|=",
+	"^=",
+	"&=",
+	"~=",
+	"<<=",
+	">>=",
+	"=",
+	":",
+	",",
+	"?",
+	"@",
+	"!",
+	"==",
+	"!=",
+	"<",
+	">",
+	"<>",
+	"<=",
+	">=",
+	"(",
+	")",
+	"[",
+	"]",
+	"{",
+	"}",
+	"->",
+	"<-",
+	"=>",
+	"<=",
 	NULL,
 };
 
-DgScriptToken DgScriptLexerNextToken(DgScriptLexer *this) {
+DgError DgScriptLexerNextToken(DgScriptLexer *this, DgScriptToken *result) {
 	/**
 	 * Get the next token
 	 * 
@@ -205,17 +253,24 @@ DgScriptToken DgScriptLexerNextToken(DgScriptLexer *this) {
 	
 	if (isLetter(c) || c == '_' || c == '$') {
 		// Start of an identifier
+		while (true) {
+			c = readChar();
+			
+			if (!(isLetter(c) || isNumber(c) || c == '_' || c == '$')) {
+				unread();
+				accept(DG_SCRIPT_TOKEN_ID);
+			}
+		}
 	}
 	else if (isNumber(c)) {
 		// Start of some type of numerical constant
-	}
-	else if (c == '#') {
-		// Start of a symbol
 	}
 	else {
 		// An operator or an error of some kind
 	}
 	
 	// Cannot accept any token like that.
-	accept(DG_SCRIPT_TOKEN_ERROR);
+	return DG_ERROR_FAILED;
+	
+	done: return DG_ERROR_SUCCESS;
 }
