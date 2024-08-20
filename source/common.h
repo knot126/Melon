@@ -13,3 +13,7 @@
 #include <stdbool.h>
 #include <inttypes.h>
 #include <string.h>
+
+#ifdef __linux__
+#include <errno.h>
+#endif

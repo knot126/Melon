@@ -3,7 +3,7 @@
  * 
  * =============================================================================
  * 
- * Raw network sockets
+ * TCP sockets
  */
 
 #pragma once
@@ -11,24 +11,35 @@
 #include <inttypes.h>
 #include <stdlib.h>
 
+#include "memory_stream.h"
+
 #ifdef __linux__
 	#include <sys/socket.h>
 #elif defined(_WIN32)
 	#include <winsock2.h>
 #endif
 
-typedef struct DgSocket {
+enum {
+	DG_TCP_SOCKET_ANY_PORT = 0x10000,
+};
+
+typedef uint32_t DgTCPSocketStatus;
+enum {
+	DG_TCP_SOCKET_INITIALISING = (1 << 0),
+	DG_TCP_SOCKET_READY = (1 << 1),
+	DG_TCP_SOCKET_FAILED = (1 << 2),
+	DG_TCP_SOCKET_READING = (1 << 3),
+	DG_TCP_SOCKET_WRITING = (1 << 4),
+};
+
+typedef struct DgTCPSocket {
+	DgMemoryStream *in;
+	DgMemoryStream *out;
 #ifdef __linux__
-	int handle;
+	int socket;
+	bool connected;
 #elif defined(_WIN32)
 	SOCKET handle;
 #endif
-} DgSocket;
-
-typedef struct DgSocketIPv4Address {
-	char host[4];
-	uint16_t port;
-} DgSocketIPv4Address;
-
-typedef struct sockaddr_in Dg_sockaddr_in;
-typedef struct in_addr Dg_in_addr;
+	DgTCPSocketStatus status;
+} DgTCPSocket;

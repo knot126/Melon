@@ -18,6 +18,10 @@ enum {
 	DG_ERROR_SUCCESSFUL = 0,
 	DG_ERROR_SUCCESS = 0,
 	
+	// Nonfatal errors
+	DG_ERROR_WAITING = 0x10,
+	
+	// Possibly fatal errors
 	DG_ERROR_OUT_OF_MEMORY = -0x10, // Out of memory (only when really out)
 	DG_ERROR_ALLOCATION_FAILED = -0x11, // Allocation of memory failed
 	
@@ -36,6 +40,9 @@ enum {
 	
 	DG_ERROR_NOT_IMPLEMENTED = -0x40, // Feature not implemented yet
 	DG_ERROR_NOT_SUPPORTED = -0x41, // Platform does not support this feature
+	
+	DG_ERROR_NAME_LOOKUP_FAILED = -0x50,
+	DG_ERROR_CONNECTION_FAILED = -0x51,
 	
 	DG_ERROR_FAILED = -0x7fffffff,
 };

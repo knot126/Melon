@@ -264,6 +264,29 @@ DgError DgScriptLexerNextToken(DgScriptLexer *this, DgScriptToken *result) {
 	}
 	else if (isNumber(c)) {
 		// Start of some type of numerical constant
+		// TODO uses closure instead of positive closure everywhere and 
+		while (true) {
+			c = readChar();
+			if (!isNumber(c)) { break; }
+		}
+		
+		if (c == '.') {
+			while (true) {
+				c = readChar();
+				if (!isNumber(c)) { break; }
+			}
+		}
+		
+		if (c == 'e' || c == 'E') {
+			c = readChar();
+			
+			if (c == '+' || c == '-') { c = readChar(); }
+			
+			while (true) {
+				c = readChar();
+				if (!isNumber(c)) { break; }
+			}
+		}
 	}
 	else {
 		// An operator or an error of some kind
