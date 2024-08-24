@@ -104,6 +104,8 @@ static short DgTCPSocket_abstrct_poll(int socket) {
 			return poll_info.revents;
 		}
 	} while (errno == EINTR); // UNIX sucks
+	
+	return POLLERR;
 }
 
 static bool DgTCPSocket_IsReady(DgTCPSocket *this, bool read, bool write) {
@@ -117,7 +119,7 @@ static bool DgTCPSocket_IsReady(DgTCPSocket *this, bool read, bool write) {
 }
 
 static DgError DgTCPSocket_IsConnected(DgTCPSocket *this) {
-	if (!this->connected && DgTCPSocket_IsReady(this, read, write)) {
+	if (!this->connected && DgTCPSocket_IsReady(this, false, true)) {
 		int status;
 		socklen_t status_size = sizeof status;
 		int gso_status = getsockopt(this->socket, SOL_SOCKET, SO_ERROR, &status, &status_size);

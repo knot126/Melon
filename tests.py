@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import struct
 import json
 import pathlib
@@ -257,7 +259,7 @@ def run_test(binary_path, function_name):
 	if (not result):
 		print(f"\x1b[1;38;5;34mPASS\x1b[0m")
 	else:
-		print(f"\x1b[1;38;5;161mFAIL\x1b[0m")
+		print(f"\x1b[1;38;5;161mFAIL ({result})\x1b[0m")
 
 def main():
 	binary_path = find_binary()

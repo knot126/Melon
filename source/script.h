@@ -56,6 +56,8 @@ typedef enum DgScriptOpcode : uint8_t {
 	DG_SCRIPT_OPCODE_CALL, // Call a function
 } DgScriptOpcode;
 
+typedef uint32_t DgVMInstruction;
+
 typedef struct DgScriptClosure {
 	uint8_t *bytecode;
 	size_t bytecode_size;

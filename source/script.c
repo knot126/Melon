@@ -28,9 +28,15 @@ typedef enum DgScriptTokenType {
 // Whitespace: <space>|\t|\r|\b|\f|\v
 // Comments: //[^\n]*|/\*.*\*/
 
-enum : uint8_t {
-	DG_SCRIPT_EOF = 0xff, // End of file magic marker
+enum : uint16_t {
+	DG_SCRIPT_EOF = 0x100, // End of file magic marker
 };
+
+typedef enum {
+	DG_SCRIPT_LEX_OKAY = 1,
+	DG_SCRIPT_LEX_NOT_MATCHED,
+	DG_SCRIPT_LEX_EOF,
+} DgScriptLexerStatus;
 
 /**
  * A single source token
@@ -65,7 +71,7 @@ void DgScriptLexerInit(DgScriptLexer *this, const char *code) {
 	this->head = 0;
 }
 
-char DgScriptLexerReadChar(DgScriptLexer *this) {
+uint16_t DgScriptLexerReadChar(DgScriptLexer *this) {
 	/**
 	 * Read the next character and icrement the head
 	 *
@@ -81,6 +87,14 @@ char DgScriptLexerReadChar(DgScriptLexer *this) {
 
 void DgScriptLexerUnread(DgScriptLexer *this) {
 	this->head--;
+}
+
+const char *DgScriptLexerRemainingString(DgScriptLexer *this) {
+	/**
+	 * Get the remaining string to lex relative to the head.
+	 */
+	
+	return &this->source[this->head];
 }
 
 DgScriptToken DgScriptLexerAccept(DgScriptLexer *this, DgScriptTokenType type) {
@@ -112,8 +126,7 @@ DgScriptToken DgScriptLexerAccept(DgScriptLexer *this, DgScriptTokenType type) {
 			break;
 		}
 		case DG_SCRIPT_TOKEN_NUMBER: {
-			// TODO: oh fuck it's another unimplemented thing
-			DgLog(DG_LOG_WARNING, "lexer: can't parse numbers (heh)");
+			token.asText = DgStringDuplicateUntil(&this->source[this->start], this->head - this->start);
 			break;
 		}
 		case DG_SCRIPT_TOKEN_STRING: {
@@ -180,58 +193,58 @@ const char *gScriptKeywords[] = {
 // NOTE: Longer tokens with the same prefix must come BEFORE shorter ones!
 // Bet you can't guess how I've implemented this :TailsHeh:
 const char *gScriptOps[] = {
+	"+=",
 	"+",
+	"->",
+	"-=",
 	"-",
+	"*=",
 	"*",
+	"/=",
 	"/",
+	"%=",
 	"%",
+	"\\=",
 	"\\",
+	"|=",
 	"|",
+	"^=",
 	"^",
+	"&=",
 	"&",
+	"~=",
 	"~",
 	"#",
-	"<<",
-	">>",
-	"+=",
-	"-=",
-	"*=",
-	"/=",
-	"%=",
-	"\\=",
-	"|=",
-	"^=",
-	"&=",
-	"~=",
 	"<<=",
+	"<<",
 	">>=",
+	">>",
+	"==",
+	"=>",
 	"=",
+	":=",
 	":",
 	",",
 	"?",
 	"@",
-	"!",
-	"==",
 	"!=",
-	"<",
-	">",
-	"<>",
+	"!",
+	"<-",
 	"<=",
+	"<>",
+	"<",
 	">=",
+	">",
 	"(",
 	")",
 	"[",
 	"]",
 	"{",
 	"}",
-	"->",
-	"<-",
-	"=>",
-	"<=",
 	NULL,
 };
 
-DgError DgScriptLexerNextToken(DgScriptLexer *this, DgScriptToken *result) {
+DgScriptLexerStatus DgScriptLexerNextToken(DgScriptLexer *this, DgScriptToken *result) {
 	/**
 	 * Get the next token
 	 * 
@@ -240,7 +253,7 @@ DgError DgScriptLexerNextToken(DgScriptLexer *this, DgScriptToken *result) {
 	 * accept().
 	 */
 	
-	char c = readChar();
+	uint16_t c = readChar();
 	
 	// Read all whitespace
 	do {
@@ -250,6 +263,10 @@ DgError DgScriptLexerNextToken(DgScriptLexer *this, DgScriptToken *result) {
 		
 		c = readChar();
 	} while (true);
+	
+	if (c == DG_SCRIPT_EOF) {
+		return DG_SCRIPT_LEX_EOF;
+	}
 	
 	if (isLetter(c) || c == '_' || c == '$') {
 		// Start of an identifier
@@ -271,29 +288,100 @@ DgError DgScriptLexerNextToken(DgScriptLexer *this, DgScriptToken *result) {
 		}
 		
 		if (c == '.') {
-			while (true) {
-				c = readChar();
-				if (!isNumber(c)) { break; }
+			c = readChar();
+			
+			// Need to read at least one
+			if (isNumber(c)) {
+				while (true) {
+					c = readChar();
+					if (!isNumber(c)) { break; }
+				}
+			}
+			else {
+				unread();
 			}
 		}
 		
+		// This isn't very correct but whatever for now
 		if (c == 'e' || c == 'E') {
 			c = readChar();
 			
+			// Optional + or -
 			if (c == '+' || c == '-') { c = readChar(); }
 			
-			while (true) {
-				c = readChar();
-				if (!isNumber(c)) { break; }
+			if (isNumber(c)) {
+				while (true) {
+					c = readChar();
+					if (!isNumber(c)) { break; }
+				}
+			}
+			else {
+				unread();
 			}
 		}
+		
+		unread(); // Revert last char which doesn't count as a number
+		accept(DG_SCRIPT_TOKEN_NUMBER);
 	}
 	else {
 		// An operator or an error of some kind
+		const char *remaining = DgScriptLexerRemainingString(this);
+		
+		for (size_t i = 0; gScriptOps[i]; i++) {
+			if (DgStringStartsWith(remaining, gScriptOps[i])) {
+				size_t size = DgStringLength(gScriptOps[i]);
+				for (size_t j = 0; j < size; j++) { readChar(); }
+				accept(DG_SCRIPT_TOKEN_OP);
+			}
+		}
 	}
 	
 	// Cannot accept any token like that.
-	return DG_ERROR_FAILED;
+	return DG_SCRIPT_LEX_NOT_MATCHED;
 	
-	done: return DG_ERROR_SUCCESS;
+	done: return DG_SCRIPT_LEX_OKAY;
+}
+
+static void DgScriptTokenPrint(DgScriptToken *this) {
+	switch (this->type) {
+		case DG_SCRIPT_TOKEN_BOOLEAN:
+			DgLog(DG_LOG_VERBOSE, "boolean %d %d:%d", this->asBool, this->start, this->end);
+			break;
+		case DG_SCRIPT_TOKEN_ID:
+			DgLog(DG_LOG_VERBOSE, "id      %s %d:%d", this->asText, this->start, this->end);
+			break;
+		case DG_SCRIPT_TOKEN_KEYWORD:
+			DgLog(DG_LOG_VERBOSE, "keyword %s %d:%d", this->asText, this->start, this->end);
+			break;
+		case DG_SCRIPT_TOKEN_NIL:
+			DgLog(DG_LOG_VERBOSE, "nil     %d:%d", this->start, this->end);
+			break;
+		case DG_SCRIPT_TOKEN_NUMBER:
+			DgLog(DG_LOG_VERBOSE, "number  %s %d:%d", this->asText, this->start, this->end);
+			break;
+		case DG_SCRIPT_TOKEN_OP:
+			DgLog(DG_LOG_VERBOSE, "op      %s %d:%d", this->asInt, this->start, this->end);
+			break;
+		case DG_SCRIPT_TOKEN_STRING:
+			DgLog(DG_LOG_VERBOSE, "string  %s %d:%d", this->asText, this->start, this->end);
+			break;
+		default:
+			DgLog(DG_LOG_VERBOSE, "error   %d:%d", this->start, this->end);
+			break;
+	}
+}
+
+void DgScript_LexString_Test(void) {
+	DgScriptLexer lexer;
+	const char *code = "1234 ( nil );\n\tx += y;\n\t\"string\".selectAll();";
+	
+	DgScriptLexerInit(&lexer, code);
+	
+	DgScriptToken curtoken;
+	DgScriptLexerStatus status = DG_SCRIPT_LEX_OKAY;
+	
+	while (status == DG_SCRIPT_LEX_OKAY) {
+		DgScriptLexerNextToken(&lexer, &curtoken);
+		DgScriptTokenPrint(&curtoken);
+	}
 }
