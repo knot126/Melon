@@ -82,11 +82,23 @@ uint16_t DgScriptLexerReadChar(DgScriptLexer *this) {
 		return DG_SCRIPT_EOF;
 	}
 	
+	DgLog(DG_LOG_VERBOSE, "read char: %c", this->source[this->head]);
+	
 	return this->source[this->head++];
 }
 
 void DgScriptLexerUnread(DgScriptLexer *this) {
+	DgLog(DG_LOG_VERBOSE, "unread char");
+	
 	this->head--;
+}
+
+void DgScriptLexerSync(DgScriptLexer *this) {
+	/**
+	 * Sync the start with the head
+	 */
+	
+	this->start = this->head;
 }
 
 const char *DgScriptLexerRemainingString(DgScriptLexer *this) {
@@ -131,7 +143,7 @@ DgScriptToken DgScriptLexerAccept(DgScriptLexer *this, DgScriptTokenType type) {
 		}
 		case DG_SCRIPT_TOKEN_STRING: {
 			// TODO: This string should be escaped!
-			token.asText = DgStringDuplicateUntil(&this->source[this->start + 1], this->head - this->start - 1);
+			token.asText = DgStringDuplicateUntil(&this->source[this->start + 1], this->head - this->start - 2);
 			break;
 		}
 		case DG_SCRIPT_TOKEN_KEYWORD: {
@@ -178,6 +190,7 @@ DgScriptToken DgScriptLexerAccept(DgScriptLexer *this, DgScriptTokenType type) {
 #define readChar() DgScriptLexerReadChar(this)
 #define accept(TYPE) (*result = DgScriptLexerAccept(this, TYPE)); goto done
 #define unread() DgScriptLexerUnread(this)
+#define sync() DgScriptLexerSync(this)
 #define inRange(LOW, VAL, HIGH) ((VAL >= LOW) && (VAL <= HIGH))
 
 #define isLetter(C) (inRange('a', C, 'z') || inRange('A', C, 'Z'))
@@ -224,8 +237,10 @@ const char *gScriptOps[] = {
 	"=",
 	":=",
 	":",
+	".",
 	",",
 	"?",
+	";",
 	"@",
 	"!=",
 	"!",
@@ -264,6 +279,10 @@ DgScriptLexerStatus DgScriptLexerNextToken(DgScriptLexer *this, DgScriptToken *r
 		c = readChar();
 	} while (true);
 	
+	unread();
+	sync();
+	readChar();
+	
 	if (c == DG_SCRIPT_EOF) {
 		return DG_SCRIPT_LEX_EOF;
 	}
@@ -276,6 +295,24 @@ DgScriptLexerStatus DgScriptLexerNextToken(DgScriptLexer *this, DgScriptToken *r
 			if (!(isLetter(c) || isNumber(c) || c == '_' || c == '$')) {
 				unread();
 				accept(DG_SCRIPT_TOKEN_ID);
+			}
+		}
+	}
+	else if (c == '"') {
+		while (true) {
+			c = readChar();
+			
+			if (c == '"') {
+				// Accept the string :D
+				accept(DG_SCRIPT_TOKEN_STRING);
+			}
+			else if (c == '\\') {
+				// skip char regardless of what it is, if preceeded by forward
+				readChar();
+			}
+			else if (c == DG_SCRIPT_EOF) {
+				// fallthrough to failure
+				break;
 			}
 		}
 	}
@@ -325,10 +362,15 @@ DgScriptLexerStatus DgScriptLexerNextToken(DgScriptLexer *this, DgScriptToken *r
 	}
 	else {
 		// An operator or an error of some kind
+		unread(); // need to unread unknown char
+		
 		const char *remaining = DgScriptLexerRemainingString(this);
+		
+		DgLog(DG_LOG_VERBOSE, "remaining = '%s'", remaining);
 		
 		for (size_t i = 0; gScriptOps[i]; i++) {
 			if (DgStringStartsWith(remaining, gScriptOps[i])) {
+				DgLog(DG_LOG_VERBOSE, "matched %s", gScriptOps[i]);
 				size_t size = DgStringLength(gScriptOps[i]);
 				for (size_t j = 0; j < size; j++) { readChar(); }
 				accept(DG_SCRIPT_TOKEN_OP);
@@ -348,22 +390,22 @@ static void DgScriptTokenPrint(DgScriptToken *this) {
 			DgLog(DG_LOG_VERBOSE, "boolean %d %d:%d", this->asBool, this->start, this->end);
 			break;
 		case DG_SCRIPT_TOKEN_ID:
-			DgLog(DG_LOG_VERBOSE, "id      %s %d:%d", this->asText, this->start, this->end);
+			DgLog(DG_LOG_VERBOSE, "id      '%s' %d:%d", this->asText, this->start, this->end);
 			break;
 		case DG_SCRIPT_TOKEN_KEYWORD:
-			DgLog(DG_LOG_VERBOSE, "keyword %s %d:%d", this->asText, this->start, this->end);
+			DgLog(DG_LOG_VERBOSE, "keyword '%s' %d:%d", this->asText, this->start, this->end);
 			break;
 		case DG_SCRIPT_TOKEN_NIL:
 			DgLog(DG_LOG_VERBOSE, "nil     %d:%d", this->start, this->end);
 			break;
 		case DG_SCRIPT_TOKEN_NUMBER:
-			DgLog(DG_LOG_VERBOSE, "number  %s %d:%d", this->asText, this->start, this->end);
+			DgLog(DG_LOG_VERBOSE, "number  '%s' %d:%d", this->asText, this->start, this->end);
 			break;
 		case DG_SCRIPT_TOKEN_OP:
-			DgLog(DG_LOG_VERBOSE, "op      %s %d:%d", this->asInt, this->start, this->end);
+			DgLog(DG_LOG_VERBOSE, "op      %d %d:%d", this->asInt, this->start, this->end);
 			break;
 		case DG_SCRIPT_TOKEN_STRING:
-			DgLog(DG_LOG_VERBOSE, "string  %s %d:%d", this->asText, this->start, this->end);
+			DgLog(DG_LOG_VERBOSE, "string  '%s' %d:%d", this->asText, this->start, this->end);
 			break;
 		default:
 			DgLog(DG_LOG_VERBOSE, "error   %d:%d", this->start, this->end);
@@ -381,7 +423,13 @@ void DgScript_LexString_Test(void) {
 	DgScriptLexerStatus status = DG_SCRIPT_LEX_OKAY;
 	
 	while (status == DG_SCRIPT_LEX_OKAY) {
-		DgScriptLexerNextToken(&lexer, &curtoken);
-		DgScriptTokenPrint(&curtoken);
+		status = DgScriptLexerNextToken(&lexer, &curtoken);
+		
+		if (status == DG_SCRIPT_LEX_OKAY) {
+			DgScriptTokenPrint(&curtoken);
+		}
+		else {
+			DgLog(DG_LOG_VERBOSE, "lexing terminated with status %d", status);
+		}
 	}
 }
