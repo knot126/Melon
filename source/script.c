@@ -82,13 +82,13 @@ uint16_t DgScriptLexerReadChar(DgScriptLexer *this) {
 		return DG_SCRIPT_EOF;
 	}
 	
-	DgLog(DG_LOG_VERBOSE, "read char: %c", this->source[this->head]);
+	// DgLog(DG_LOG_VERBOSE, "read char: %c", this->source[this->head]);
 	
 	return this->source[this->head++];
 }
 
 void DgScriptLexerUnread(DgScriptLexer *this) {
-	DgLog(DG_LOG_VERBOSE, "unread char");
+	// DgLog(DG_LOG_VERBOSE, "unread char");
 	
 	this->head--;
 }
@@ -366,11 +366,11 @@ DgScriptLexerStatus DgScriptLexerNextToken(DgScriptLexer *this, DgScriptToken *r
 		
 		const char *remaining = DgScriptLexerRemainingString(this);
 		
-		DgLog(DG_LOG_VERBOSE, "remaining = '%s'", remaining);
+		// DgLog(DG_LOG_VERBOSE, "remaining = '%s'", remaining);
 		
 		for (size_t i = 0; gScriptOps[i]; i++) {
 			if (DgStringStartsWith(remaining, gScriptOps[i])) {
-				DgLog(DG_LOG_VERBOSE, "matched %s", gScriptOps[i]);
+				// DgLog(DG_LOG_VERBOSE, "matched %s", gScriptOps[i]);
 				size_t size = DgStringLength(gScriptOps[i]);
 				for (size_t j = 0; j < size; j++) { readChar(); }
 				accept(DG_SCRIPT_TOKEN_OP);
@@ -415,7 +415,7 @@ static void DgScriptTokenPrint(DgScriptToken *this) {
 
 void DgScript_LexString_Test(void) {
 	DgScriptLexer lexer;
-	const char *code = "1234 ( nil );\n\tx += y;\n\t\"string\".selectAll();";
+	const char *code = "{\n\tmagic(1234, nil);\n\tx += y;\n\t\"very cool\".split(\" \");\n}";
 	
 	DgScriptLexerInit(&lexer, code);
 	
