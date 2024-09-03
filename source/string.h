@@ -25,6 +25,7 @@ char *DgStringDuplicate(const char * const string);
 char *DgStringDuplicateUntil(const char * const string, size_t length);
 bool DgStringEqual(const char * const string1, const char * const string2);
 bool DgStringStartsWith(const char * restrict base, const char * restrict what);
+bool DgStringEndsWith(const char * restrict base, const char * restrict what);
 size_t DgStringLength(const char * const string);
 char *DgStringSlice(const char *base, size_t start, size_t end);
 int64_t DgStringFind(const char * const string, const char * const what, const size_t which);

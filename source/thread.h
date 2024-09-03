@@ -6,6 +6,8 @@
  * Thread abstraction
  */
 
+#pragma once
+
 #ifndef _WIN32
 	#include <pthread.h>
 #endif

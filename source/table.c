@@ -13,6 +13,7 @@
 #include "memory.h"
 #include "error.h"
 #include "log.h"
+#include "value.h"
 
 #include "table.h"
 
@@ -436,4 +437,25 @@ size_t DgTableLength(DgTable * restrict this) {
 	 */
 	
 	return DgArrayLength(&this->array) / 2;
+}
+
+DgError DgTableSetPointer(DgTable * restrict this, const char *key, void *value) {
+	DgValue k = DgMakeString(key);
+	DgValue v = DgMakePointer(value);
+	return DgTablePut(this, &k, &v);
+}
+
+void *DgTableGetPointer(DgTable * restrict this, const char *key) {
+	DgValue k = DgMakeStaticString(key);
+	DgValue *v = DgTableAt(this, &k);
+	
+	if (!v) { return NULL; }
+	
+	DgValueType t = DgValueGetType(v);
+	
+	if (t != DG_TYPE_POINTER) {
+		return NULL;
+	}
+	
+	return v->data.asPointer;
 }

@@ -314,6 +314,25 @@ bool DgStringStartsWith(const char * restrict base, const char * restrict what) 
 	return true;
 }
 
+bool DgStringEndsWith(const char * restrict base, const char * restrict what) {
+	/**
+	 * Check if `what` is a suffix of `base`.
+	 * 
+	 * @param base String to check the suffix of
+	 * @param what Suffix to match
+	 * @return true if base ends with what and false if not
+	 */
+	
+	size_t base_length = DgStringLength(base);
+	size_t what_length = DgStringLength(what);
+	
+	if (base_length < what_length) {
+		return false;
+	}
+	
+	return DgStringEqual(base + (base_length - what_length), what);
+}
+
 char *DgStringSlice(const char *base, size_t start, size_t end) {
 	/**
 	 * Allocate a slice of a string given a string.

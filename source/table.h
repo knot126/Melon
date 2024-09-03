@@ -70,3 +70,6 @@ DgError DgTableRemove(DgTable * restrict this, const DgValue * const restrict ke
 DgError DgTablePairAt(DgTable * restrict this, size_t index, DgValue ** const restrict key, DgValue ** const restrict value);
 
 size_t DgTableLength(DgTable * restrict this);
+
+DgError DgTableSetPointer(DgTable * restrict this, const char *key, void *value);
+void *DgTableGetPointer(DgTable * restrict this, const char *key);
