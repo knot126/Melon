@@ -428,6 +428,131 @@ size_t DgStringCountConsecutiveWithMax(const uint8_t * const data, size_t length
 	return count;
 }
 
+static bool DgCharInCharset(const char *charset, char chr) {
+	/**
+	 * Check if chr is in charset.
+	 * 
+	 * @param charset The set of characters that cause a match
+	 * @param chr The character to check
+	 * @return true if chr in charset, false otherwise
+	 */
+	
+	size_t charset_length = DgStringLength(charset);
+	
+	for (size_t i = 0; i < charset_length; i++) {
+		if (charset[i] == chr) {
+			return true;
+		}
+	}
+	
+	return false;
+}
+
+DgCStringArray DgCStringSplitByWhitespace(const char * restrict string) {
+	/**
+	 * Split C-style string into words using whitespace as delimiters.
+	 * 
+	 * @param string String to split
+	 * @return Strings that `string` was split into
+	 */
+	
+	const char *whitespace = " \r\n\t\f\v";
+	
+	const size_t string_length = DgStringLength(string);
+	size_t result_count = 0;
+	size_t i = 0;
+	
+	while (true) {
+		// Skip whitespace
+		while (DgCharInCharset(whitespace, string[i])) {
+			i++;
+			
+			if (!string[i]) {
+				break;
+			}
+		}
+		
+		if (!string[i]) {
+			break;
+		}
+		
+		// Valid chars (maybe)!
+		while (!DgCharInCharset(whitespace, string[i])) {
+			i++;
+			
+			if (!string[i]) {
+				break;
+			}
+		}
+		
+		result_count++;
+		
+		if (!string[i]) {
+			break;
+		}
+	}
+	
+	DgCStringArray result = DgMemoryAllocate(sizeof *result * (result_count + 1));
+	
+	if (!result) {
+		return NULL;
+	}
+	
+	i = 0;
+	size_t j = 0; // Current number of results
+	
+	while (true) {
+		// Ignore whitespace
+		while (DgCharInCharset(whitespace, string[i])) {
+			i++;
+			
+			if (!string[i]) {
+				break;
+			}
+		}
+		
+		if (!string[i]) {
+			break;
+		}
+		
+		// Recognise a non-WS string and split it into another string
+		size_t start = i;
+		
+		while (!DgCharInCharset(whitespace, string[i])) {
+			i++;
+			
+			if (!string[i]) {
+				break;
+			}
+		}
+		
+		// (end of string) - (start of string) = length of string
+		size_t len = i - start;
+		
+		// HACK: Yes this might fail, no i don't really care atm.
+		result[j] = DgStringDuplicateUntil(&string[start], len);
+		
+		j++;
+		
+		if (!string[i]) {
+			break;
+		}
+	}
+	
+	// NULL to signal end of array
+	result[result_count] = NULL;
+	
+	return result;
+}
+
+void DgCStringSplitByWhitespace_Test(void) {
+	DgCStringArray result = DgCStringSplitByWhitespace("This is  some test\n\t... of my  cool thing!\n");
+	
+	for (size_t i = 0; result[i]; i++) {
+		DgLog(DG_LOG_INFO, "result[%d] = '%s'", i, result[i]);
+	}
+}
+
 uint32_t DgStringSeminise(const char *string) {
 	/**
 	 * Take the "sem" (our word for small, non-cryptographic hash) of a string.
@@ -636,44 +761,6 @@ char *DgStringEncodeBase64(size_t length, const void *input_) {
 	output[output_length - 1] = '\0';
 	
 	return output;
-}
-
-const char gStringEncodeBase32TableRfc[] = {
-	'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q',
-	'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '2', '3', '4', '5', '6', '7',
-};
-
-const char gStringEncodeBase32TableHex[] = {
-	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g',
-	'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-};
-
-char *DgStringEncodeBase32(DgBase32Type type, size_t length, const void *input_) {
-	/**
-	 * Encode bytes to base32 or base32hex
-	 * 
-	 * @note You should really use either Base64 for compactness or Base16 for
-	 * readability. This functions are only implemented for fun. :)
-	 * 
-	 * @param type The type of Base32 encoding (RFC 4648 or Hex)
-	 * @param length The length of the data to encode
-	 * @param input The data to encode
-	 * @return Base32 encoded string
-	 */
-	
-#if 0
-	const uint8_t *input = (const uint8_t *) input_;
-	
-	const char *alphabet = (type == DG_BASE32_TYPE_RFC) ? gStringEncodeBase32TableRfc : gStringEncodeBase32TableHex;
-	
-	size_t leftover = length % 5;
-	
-	for (size_t i = 0; i < length; i++) {
-		// unfinsihed
-	}
-#endif
-	
-	return NULL;
 }
 
 const char gStringEncodeBase16Table[] = {
