@@ -15,6 +15,8 @@
 
 #include "memory.h"
 
+DgMemoryErrorHandler gMemoryErrorFunc;
+
 void *DgMemoryAllocate(size_t size) {
 	/**
 	 * Allocate some memory, or return NULL on failure.
@@ -23,7 +25,13 @@ void *DgMemoryAllocate(size_t size) {
 	 * @return Pointer to the allocated memory, or NULL if failed
 	 */
 	
-	return malloc(size);
+	void *block = malloc(size);
+	
+	if (gMemoryErrorFunc && !block) {
+		return gMemoryErrorFunc(NULL, NULL);
+	}
+	
+	return block;
 }
 
 DgError DgMemoryFree(void *block) {
@@ -65,8 +73,24 @@ void *DgMemoryReallocate(void* block, size_t size) {
 		return DgMemoryAllocate(size);
 	}
 	else {
-		return realloc(block, size);
+		void *block = realloc(block, size);
+		
+		if (gMemoryErrorFunc && !block) {
+			return gMemoryErrorFunc(NULL, NULL);
+		}
+		
+		return block;
 	}
+}
+
+void DgMemorySetErrorHandler(DgMemoryErrorHandler handler) {
+	/**
+	 * Set the optional global memory error handler function to `handler`.
+	 * 
+	 * @param handler Function which handles memory errors
+	 */
+	
+	gMemoryErrorFunc = handler;
 }
 
 void *DgMemoryCopy(size_t length, const void *from, void *to) {
