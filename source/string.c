@@ -57,7 +57,7 @@ static DgString DgStringAllocate(size_t size) {
 	return string;
 }
 
-static DgString DgStringFill(DgString string, size_t index, size_t buffer_size, void *buffer) {
+static DgString DgStringFill(DgString string, size_t index, size_t buffer_size, const void *buffer) {
 	/**
 	 * Fills the contents of the string using contents from the given buffer.
 	 * 
@@ -78,6 +78,8 @@ static DgString DgStringFill(DgString string, size_t index, size_t buffer_size, 
 	}
 	
 	DgMemoryCopy(buffer_size, buffer, (void *)(string + index));
+	
+	return string;
 }
 
 DgString DgStringFromCString(const char * const restrict from) {
@@ -91,7 +93,7 @@ DgString DgStringFromCString(const char * const restrict from) {
 	size_t size = DgCStringLength(from);
 	
 	DgString string = DgStringAllocate(size);
-	 
+	
 	if (!string) {
 		return NULL;
 	}
@@ -556,7 +558,6 @@ DgCStringArray DgCStringSplitByWhitespace(const char * restrict string) {
 	
 	const char *whitespace = " \r\n\t\f\v";
 	
-	const size_t string_length = DgStringLength(string);
 	size_t result_count = 0;
 	size_t i = 0;
 	
