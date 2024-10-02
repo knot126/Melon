@@ -61,7 +61,7 @@ typedef struct DgScriptLexer {
 	size_t head; // Head pointer
 } DgScriptLexer;
 
-void DgScriptLexerInit(DgScriptLexer *this, const char *code) {
+static void DgScriptLexerInit(DgScriptLexer *this, const char *code) {
 	/**
 	 * Initialise the lexer given the source code string to lex
 	 */
@@ -71,7 +71,7 @@ void DgScriptLexerInit(DgScriptLexer *this, const char *code) {
 	this->head = 0;
 }
 
-uint16_t DgScriptLexerReadChar(DgScriptLexer *this) {
+static uint16_t DgScriptLexerReadChar(DgScriptLexer *this) {
 	/**
 	 * Read the next character and icrement the head
 	 *
@@ -87,13 +87,13 @@ uint16_t DgScriptLexerReadChar(DgScriptLexer *this) {
 	return this->source[this->head++];
 }
 
-void DgScriptLexerUnread(DgScriptLexer *this) {
+static void DgScriptLexerUnread(DgScriptLexer *this) {
 	// DgLog(DG_LOG_VERBOSE, "unread char");
 	
 	this->head--;
 }
 
-void DgScriptLexerSync(DgScriptLexer *this) {
+static void DgScriptLexerSync(DgScriptLexer *this) {
 	/**
 	 * Sync the start with the head
 	 */
@@ -101,7 +101,7 @@ void DgScriptLexerSync(DgScriptLexer *this) {
 	this->start = this->head;
 }
 
-const char *DgScriptLexerRemainingString(DgScriptLexer *this) {
+static const char *DgScriptLexerRemainingString(DgScriptLexer *this) {
 	/**
 	 * Get the remaining string to lex relative to the head.
 	 */
@@ -109,7 +109,7 @@ const char *DgScriptLexerRemainingString(DgScriptLexer *this) {
 	return &this->source[this->head];
 }
 
-DgScriptToken DgScriptLexerAccept(DgScriptLexer *this, DgScriptTokenType type) {
+static DgScriptToken DgScriptLexerAccept(DgScriptLexer *this, DgScriptTokenType type) {
 	/**
 	 * Accepts a token of the given type. This is where most of the magic of
 	 * getting from a matched string to a token happens. Also advances the start
@@ -259,7 +259,7 @@ const char *gScriptOps[] = {
 	NULL,
 };
 
-DgScriptLexerStatus DgScriptLexerNextToken(DgScriptLexer *this, DgScriptToken *result) {
+static DgScriptLexerStatus DgScriptLexerNextToken(DgScriptLexer *this, DgScriptToken *result) {
 	/**
 	 * Get the next token
 	 * 

@@ -19,6 +19,104 @@
 
 #include "string.h"
 
+/** NEW STRING LIBRARY **/
+
+typedef struct DgNewStringHeader {
+	size_t size;
+} DgNewStringHeader;
+
+#define NS_HEADER_PTR(STR) (((DgNewStringHeader *) STR) - 1)
+
+static DgString DgStringAllocate(size_t size) {
+	/**
+	 * Allocate a new DgString of the given size.
+	 * 
+	 * @warning Note that only the ending NUL will be initialised, and the rest
+	 * of the contents of the string won't be.
+	 * 
+	 * @param size Size of string
+	 * @return A new string
+	 */
+	
+	// Allocate room for header + size + extra nul
+	DgNewStringHeader *header = DgMemoryAllocate(sizeof *header + size + 1);
+	
+	if (!header) {
+		return NULL;
+	}
+	
+	// Set size
+	header->size = size;
+	
+	// Get actual string ptr
+	DgString string = (DgString)(header + 1);
+	
+	// Init nul char
+	((char *) string)[size] = '\0';
+	
+	return string;
+}
+
+static DgString DgStringFill(DgString string, size_t index, size_t buffer_size, void *buffer) {
+	/**
+	 * Fills the contents of the string using contents from the given buffer.
+	 * 
+	 * @warning string is not checked for NULL, since this is only intended for
+	 * internal use.
+	 * 
+	 * @param string String to fill up
+	 * @param index Index of string
+	 * @param buffer_size Size of the buffer to fill string with
+	 * @param buffer Buffer to use to fill string
+	 * @return The string on success, NULL on failure
+	 */
+	
+	size_t remain_size = NS_HEADER_PTR(string)->size - index;
+	
+	if (remain_size < buffer_size) {
+		return NULL;
+	}
+	
+	DgMemoryCopy(buffer_size, buffer, (void *)(string + index));
+}
+
+DgString DgStringFromCString(const char * const restrict from) {
+	/**
+	 * Convert the C-style string `from` to a new-style string.
+	 * 
+	 * @param from C-style String to convert from
+	 * @return New style string or NULL on failure
+	 */
+	
+	size_t size = DgCStringLength(from);
+	
+	DgString string = DgStringAllocate(size);
+	
+	if (!string) {
+		return NULL;
+	}
+	
+	if (!DgStringFill(string, 0, size, from)) {
+		return NULL;
+	}
+	
+	return string;
+}
+
+void DgStringFree(DgString string) {
+	/**
+	 * Free memory assocaited with a string
+	 */
+	
+	if (string) {
+		DgMemoryFree(NS_HEADER_PTR(string));
+	}
+}
+
+#undef NS_HEADER_PTR
+
+/** C STRING LIBRARY **/
+
 char *DgStringConcatinate(const char * const string1, const char * const string2) {
 	/**
 	 * Concatinate string1 and string2

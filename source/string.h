@@ -12,6 +12,11 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
+typedef const char *DgString;
+
+DgString DgStringFromCString(const char * const restrict from);
+void DgStringFree(DgString string);
+
 typedef char **DgCStringArray;
 
 char *DgStringConcatinate(const char * const string1, const char * const string2);
@@ -31,3 +36,5 @@ size_t DgStringCountConsecutiveWithMax(const uint8_t * const data, size_t length
 char *DgIntegerToString(uint8_t base, int64_t data);
 char *DgStringEncodeBase64(size_t length, const void *input_);
 char *DgStringEncodeBase16(size_t length, const void *input_);
+
+#define DgCStringLength DgStringLength

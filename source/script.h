@@ -13,52 +13,71 @@
 #include "table.h"
 #include "storage.h"
 
-typedef enum DgScriptOpcode : uint8_t {
-	// Variables and storage
-	DG_SCRIPT_OPCODE_STORE = 1, // Set variable
-	DG_SCRIPT_OPCODE_STOREGLOBAL, // Set global variable
-	DG_SCRIPT_OPCODE_LOAD, // Get variable
-	DG_SCRIPT_OPCODE_LOADGLOBAL, // Get global variable
+typedef enum DgVMOpcode : uint8_t {
+	// Extended arguments for opcode, similar to CPython's interpreter
+	DG_VMOP_EXTEND = 0,
 	
-	// Constants
-	DG_SCRIPT_OPCODE_CONST, // Load a const value
+	// Variables and storage
+	// DG_VMOP_STORE = 0x01, // Set variable
+	// DG_VMOP_STOREGLOBAL, // Set global variable
+	// DG_VMOP_LOAD, // Get variable
+	// DG_VMOP_LOADGLOBAL, // Get global variable
+	DG_VMOP_GET, // Get var
+	DG_VMOP_SET, // Set var
+	DG_VMOP_LOAD, // Load a const value
 	
 	// Flow control
-	DG_SCRIPT_OPCODE_RETURN, // Return
-	DG_SCRIPT_OPCODE_CMP, // Compare values
-	DG_SCRIPT_OPCODE_JUMP, // Unconditional jump
-	DG_SCRIPT_OPCODE_JUMPEQ, // Jump if equal
-	DG_SCRIPT_OPCODE_JUMPNEQ, // Jump if not equal
-	DG_SCRIPT_OPCODE_JUMPLT, // Jump if less
-	DG_SCRIPT_OPCODE_JUMPLE, // Jump if less or equal
+	DG_VMOP_CALL, // Call a function
+	DG_VMOP_PREFORM, // Call a method
+	DG_VMOP_RETURN, // Return
+	DG_VMOP_CMP, // Compare values
+	DG_VMOP_BRANCH, // Branch
 	
 	// Operations
-	DG_SCRIPT_OPCODE_ADD,
-	DG_SCRIPT_OPCODE_SUBTRACT,
-	DG_SCRIPT_OPCODE_MULTIPLY,
-	DG_SCRIPT_OPCODE_DIVIDE,
-	DG_SCRIPT_OPCODE_MODULO,
-	DG_SCRIPT_OPCODE_POW,
-	DG_SCRIPT_OPCODE_AND,
-	DG_SCRIPT_OPCODE_OR,
-	DG_SCRIPT_OPCODE_XOR,
-	DG_SCRIPT_OPCODE_NOT,
-	DG_SCRIPT_OPCODE_BITAND,
-	DG_SCRIPT_OPCODE_BITOR,
-	DG_SCRIPT_OPCODE_BITXOR,
-	DG_SCRIPT_OPCODE_BITNOT,
-	DG_SCRIPT_OPCODE_SHLEFT,
-	DG_SCRIPT_OPCODE_SHRIGHT,
-	DG_SCRIPT_OPCODE_GET, // dict['test'], array[0]
-	DG_SCRIPT_OPCODE_PUT, // dict['test'] = 'test', array[0] = 'test'
-	DG_SCRIPT_OPCODE_DELETE, // dict.remove('test')
-	DG_SCRIPT_OPCODE_HAS, // dict.has('test')
-	DG_SCRIPT_OPCODE_CALL, // Call a function
-} DgScriptOpcode;
+	DG_VMOP_ADD,
+	DG_VMOP_SUBTRACT,
+	DG_VMOP_MULTIPLY,
+	DG_VMOP_DIVIDE,
+	DG_VMOP_MODULO,
+	DG_VMOP_POW,
+	DG_VMOP_AND,
+	DG_VMOP_OR,
+	DG_VMOP_XOR,
+	DG_VMOP_NOT,
+	DG_VMOP_BITAND,
+	DG_VMOP_BITOR,
+	DG_VMOP_BITXOR,
+	DG_VMOP_BITNOT,
+	DG_VMOP_SHLEFT,
+	DG_VMOP_SHRIGHT,
+	// DG_VMOP_GET, // dict['test'], array[0]
+	// DG_VMOP_PUT, // dict['test'] = 'test', array[0] = 'test'
+	// DG_VMOP_DELETE, // dict.remove('test')
+	// DG_VMOP_HAS, // dict.has('test')
+} DgVMOpcode;
 
-typedef uint32_t DgVMInstruction;
+typedef enum DgVMCondFlags {
+	DG_VMCOND_EQ = 0,
+	DG_VMCOND_NEQ,
+	DG_VMCOND_LT,
+	DG_VMCOND_GTEQ,
+	DG_VMCOND_GT,
+	DG_VMCOND_LTEQ,
+	DG_VMCOND_AL, // unconditional
+};
+
+typedef uint16_t DgVMInstruction;
 
 typedef struct DgScriptClosure {
-	uint8_t *bytecode;
+	DgVMInstruction *bytecode;
 	size_t bytecode_size;
 } DgScriptClosure;
+
+// #define DG_MAKE_OPCODE_C(op, cn) ((op << 26) | (cn & 0x03ffffff))
+#define DG_MAKE_OPCODE(op, cn) ((op << 10) | (cn & 0x3FF))
+#define DG_PARSE_INSTR_OP(in) (in >> 10)
+#define DG_PARSE_INSTR_ARG(in) (in & 0x3FF)
+
+typedef struct DgVM {
+	
+} DgVM;
