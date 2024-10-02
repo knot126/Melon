@@ -17,7 +17,19 @@ DgError DgMemoryFree(void *block);
 void *DgMemoryReallocate(void *block, size_t size);
 
 /* Global allocator error handler */
-typedef void (*DgMemoryErrorHandler)(const void *context, const void *error_info);
+enum {
+	DG_MEMORY_ALLOC_ERROR_INFO_FUNC_ALLOC = 1,
+	DG_MEMORY_ALLOC_ERROR_INFO_FUNC_REALLOC,
+};
+
+typedef struct DgMemoryErrorInfo {
+	void *old_block;
+	size_t size;
+	uint8_t function;
+} DgMemoryErrorInfo;
+
+typedef void *(*DgMemoryErrorHandler)(const void *context, const void *error_info);
+
 void DgMemorySetErrorHandler(DgMemoryErrorHandler handler);
 
 /* Common operations */

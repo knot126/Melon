@@ -27,8 +27,15 @@ void *DgMemoryAllocate(size_t size) {
 	
 	void *block = malloc(size);
 	
+	// User-defined error handler
 	if (gMemoryErrorFunc && !block) {
-		return gMemoryErrorFunc(NULL, NULL);
+		DgMemoryErrorInfo mei = {
+			.function = DG_MEMORY_ALLOC_ERROR_INFO_FUNC_ALLOC,
+			.size = size,
+			.old_block = NULL,
+		};
+		
+		return gMemoryErrorFunc(NULL, &mei);
 	}
 	
 	return block;
@@ -73,13 +80,20 @@ void *DgMemoryReallocate(void* block, size_t size) {
 		return DgMemoryAllocate(size);
 	}
 	else {
-		void *block = realloc(block, size);
+		void *block_new = realloc(block, size);
 		
-		if (gMemoryErrorFunc && !block) {
-			return gMemoryErrorFunc(NULL, NULL);
+		// User-defined error handler
+		if (gMemoryErrorFunc && !block_new) {
+			DgMemoryErrorInfo mei = {
+				.function = DG_MEMORY_ALLOC_ERROR_INFO_FUNC_REALLOC,
+				.size = size,
+				.old_block = block,
+			};
+			
+			return gMemoryErrorFunc(NULL, &mei);
 		}
 		
-		return block;
+		return block_new;
 	}
 }
 
