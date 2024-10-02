@@ -91,7 +91,7 @@ DgString DgStringFromCString(const char * const restrict from) {
 	size_t size = DgCStringLength(from);
 	
 	DgString string = DgStringAllocate(size);
-	
+	 
 	if (!string) {
 		return NULL;
 	}
