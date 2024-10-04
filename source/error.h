@@ -58,7 +58,9 @@ const char *DgErrorString(const DgErrorCode error);
 DgError DgLogError_(const DgErrorCode error, const char * const path, const int line);
 #define DgLogError(error) DgLogError_(error, __FILE__, __LINE__);
 
-// Guard/raise-based errors
+/***
+ * Guard/raise-based errors
+ */
 typedef struct DgErrorInfo {
 	const char *type;
 	const char *message;
@@ -84,3 +86,5 @@ void DgRaise_(DgErrorInfo ei);
 void DgUnguard(void);
 #define /* (void) */ DgRaise(TYPE, MESSAGE) ( DgRaise_((DgErrorInfo) {.type = TYPE, .message = MESSAGE, .file = __FILE__, .function = __FUNCTION__, .line = __LINE__}) )
 void DgReraise(void);
+
+#define DgTry(TO_TRY, AS_E, TO_CATCH) { DgErrorInfo *AS_E = DgGuard(); if (error_info) {TO_CATCH} else {TO_TRY; DgUnguard();} }

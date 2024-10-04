@@ -164,14 +164,9 @@ static void DgRaiseTest_somethingthatraisesanerror(void) {
 }
 
 void DgRaise_Test(void) {
-	DgErrorInfo *error = DgGuard();
-	
-	if (error) {
-		DgLog(DG_LOG_INFO, "Caught an error: %s", error->type);
-	}
-	else {
+	DgTry({
 		DgRaiseTest_somethingthatraisesanerror();
-		
-		DgUnguard();
-	}
+	}, error_info, {
+		DgLog(DG_LOG_INFO, "Caught an error: %s", error_info->type);
+	})
 }
