@@ -78,6 +78,7 @@ typedef struct {
 
 DgErrorGuardArray gMelonErrorGuards;
 DgErrorInfo gMelonCurrentError; // TODO: should be a stack to handle errors while handling errors
+bool gMelonEnableRaise = true;
 
 static inline DgErrorInfo *DgGetTopError_(void) {
 	return &gMelonCurrentError;
@@ -144,6 +145,7 @@ void DgReraise(void) {
 		DgLog(DG_LOG_INFO, "top = %zu", gMelonErrorGuards.top);
 		DgHandleFatalError_(&gMelonCurrentError);
 	}
+	// Otherwise we pass control back to the last guard
 	else {
 		DgErrorGuardEntry *entry = &gMelonErrorGuards.entries[--gMelonErrorGuards.top];
 		longjmp(entry->env, 1);
@@ -155,18 +157,42 @@ void DgRaise_(DgErrorInfo ei) {
 	 * Raise a new error
 	 */
 	
+	// If raise is not enabled then don't do anything
+	if (!gMelonEnableRaise) { return; }
+	
+	// Set current error
 	gMelonCurrentError = ei;
+	
+	// Raise the current error
 	DgReraise();
 }
 
-static void DgRaiseTest_somethingthatraisesanerror(void) {
-	DgRaise("SomeError", "Some test error");
+void DgErrorSetRaiseEnabled(bool enabled) {
+	/**
+	 * Set if raise operations should be enabled or disabled.
+	 */
+	
+	gMelonEnableRaise = enabled;
 }
 
-void DgRaise_Test(void) {
-	DgTry({
-		DgRaiseTest_somethingthatraisesanerror();
-	}, error_info, {
-		DgLog(DG_LOG_INFO, "Caught an error: %s", error_info->type);
-	})
+bool DgErrorGetRaiseEnabled(void) {
+	/**
+	 * Get if DgRaise operations will work as expected or if they will be
+	 * ignored.
+	 */
+	
+	return gMelonEnableRaise;
 }
+
+// static void DgRaiseTest_somethingthatraisesanerror(void) {
+// 	DgRaise("SomeError", "Some test error");
+// }
+// 
+// void DgRaise_Test(void) {
+// 	DgTry({
+// 		DgRaiseTest_somethingthatraisesanerror();
+// 	}, error_info, {
+// 		DgLog(DG_LOG_INFO, "Caught an error: %s", error_info->type);
+// 	})
+// }
+

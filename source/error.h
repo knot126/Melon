@@ -80,11 +80,19 @@ void DgRaise_(DgErrorInfo ei);
 
 /**
  * Error rasing and guarding functions/macros
+ * ==========================================
+ * 
+ * NOTE: DgRaise can be temporarily enabled or disabled, so your function
+ * *should* still do something after DgRaise that returns an error value if you
+ * are writing a library.
  */
 
 #define /* (DgErrorInfo *) */ DgGuard() ( DgGuard_(setjmp(DgGuardNextSlot_()->env)) )
 void DgUnguard(void);
 #define /* (void) */ DgRaise(TYPE, MESSAGE) ( DgRaise_((DgErrorInfo) {.type = TYPE, .message = MESSAGE, .file = __FILE__, .function = __FUNCTION__, .line = __LINE__}) )
 void DgReraise(void);
+
+void DgErrorSetRaiseEnabled(bool enabled);
+bool DgErrorGetRaiseEnabled(void);
 
 #define DgTry(TO_TRY, AS_E, TO_CATCH) { DgErrorInfo *AS_E = DgGuard(); if (error_info) {TO_CATCH} else {TO_TRY; DgUnguard();} }
