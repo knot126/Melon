@@ -15,8 +15,6 @@
 
 #include "memory.h"
 
-DgMemoryErrorHandler gMemoryErrorFunc;
-
 void *DgMemoryAllocate(size_t size) {
 	/**
 	 * Allocate some memory, or return NULL on failure.
@@ -27,15 +25,8 @@ void *DgMemoryAllocate(size_t size) {
 	
 	void *block = malloc(size);
 	
-	// User-defined error handler
-	if (gMemoryErrorFunc && !block) {
-		DgMemoryErrorInfo mei = {
-			.function = DG_MEMORY_ALLOC_ERROR_INFO_FUNC_ALLOC,
-			.size = size,
-			.old_block = NULL,
-		};
-		
-		return gMemoryErrorFunc(NULL, &mei);
+	if (!block) {
+		DgRaise("AllocationError", "Could not allocate memory");
 	}
 	
 	return block;
@@ -83,28 +74,12 @@ void *DgMemoryReallocate(void* block, size_t size) {
 		void *block_new = realloc(block, size);
 		
 		// User-defined error handler
-		if (gMemoryErrorFunc && !block_new) {
-			DgMemoryErrorInfo mei = {
-				.function = DG_MEMORY_ALLOC_ERROR_INFO_FUNC_REALLOC,
-				.size = size,
-				.old_block = block,
-			};
-			
-			return gMemoryErrorFunc(NULL, &mei);
+		if (!block_new) {
+			DgRaise("AllocationError", "Could not realloc() block of memory");
 		}
 		
 		return block_new;
 	}
-}
-
-void DgMemorySetErrorHandler(DgMemoryErrorHandler handler) {
-	/**
-	 * Set the optional global memory error handler function to `handler`.
-	 * 
-	 * @param handler Function which handles memory errors
-	 */
-	
-	gMemoryErrorFunc = handler;
 }
 
 void *DgMemoryCopy(size_t length, const void *from, void *to) {

@@ -76,7 +76,10 @@ DgErrorGuardEntry *DgGuardNextSlot_(void);
 DgErrorInfo *DgGuard_(int status);
 void DgRaise_(DgErrorInfo ei);
 
-// Actual stuff you should use
+/**
+ * Error rasing and guarding functions/macros
+ */
+
 #define /* (DgErrorInfo *) */ DgGuard() ( DgGuard_(setjmp(DgGuardNextSlot_()->env)) )
 void DgUnguard(void);
 #define /* (void) */ DgRaise(TYPE, MESSAGE) ( DgRaise_((DgErrorInfo) {.type = TYPE, .message = MESSAGE, .file = __FILE__, .function = __FUNCTION__, .line = __LINE__}) )

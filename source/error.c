@@ -73,11 +73,11 @@ DgError DgLogError_(const DgErrorCode error, const char * const path, const int 
 
 typedef struct {
 	DgErrorGuardEntry entries[MELON_MAX_GUARD_STACK_SIZE];
-	uint32_t top;
+	size_t top;
 } DgErrorGuardArray;
 
 DgErrorGuardArray gMelonErrorGuards;
-DgErrorInfo gMelonCurrentError; // should be a stack to handle errors while handling errors
+DgErrorInfo gMelonCurrentError; // TODO: should be a stack to handle errors while handling errors
 
 static inline DgErrorInfo *DgGetTopError_(void) {
 	return &gMelonCurrentError;
@@ -141,6 +141,7 @@ void DgReraise(void) {
 	
 	// No error handlers on stack, so abort.
 	if (gMelonErrorGuards.top == 0) {
+		DgLog(DG_LOG_INFO, "top = %zu", gMelonErrorGuards.top);
 		DgHandleFatalError_(&gMelonCurrentError);
 	}
 	else {
@@ -156,4 +157,21 @@ void DgRaise_(DgErrorInfo ei) {
 	
 	gMelonCurrentError = ei;
 	DgReraise();
+}
+
+static void DgRaiseTest_somethingthatraisesanerror(void) {
+	DgRaise("SomeError", "Some test error");
+}
+
+void DgRaise_Test(void) {
+	DgErrorInfo *error = DgGuard();
+	
+	if (error) {
+		DgLog(DG_LOG_INFO, "Caught an error: %s", error->type);
+	}
+	else {
+		DgRaiseTest_somethingthatraisesanerror();
+		
+		DgUnguard();
+	}
 }
