@@ -529,7 +529,6 @@ DgError DgStreamOpen(DgStorage *this, DgStream *context, DgStoragePath path, DgS
 	DgError status = DgStorageGetPoolFromPath(this, path, &pool);
 	
 	if (status) {
-		DgLog(DG_LOG_ERROR, "could not get pool from path");
 		return status;
 	}
 	
@@ -774,7 +773,7 @@ DgError DgStorageLoad(DgStorage *storage, DgStoragePath path, size_t *size, void
 	
 	DgStream stream;
 	DgError status;
-	DgLog(DG_LOG_VERBOSE, "open %s", path);
+	
 	status = DgStreamOpen(storage, &stream, path, DG_STREAM_READ);
 	
 	if (status) {
