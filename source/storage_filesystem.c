@@ -436,8 +436,14 @@ DgStoragePool *DgFilesystemCreatePool(const char *protocol, const char *basedir)
 	
 	DgFilesytem_SpecificConfig *config = (DgFilesytem_SpecificConfig *) pool->specific_config;
 	
-	// We also pre-append the / if there isn't one already
-	config->basedir = DgStringConcatinate(basedir, "/");
+	// We also pre-append the / if there isn't one already and it makes sense to
+	if (basedir != NULL && DgStringLength(basedir) != 0) {
+		config->basedir = DgStringConcatinate(basedir, "/");
+	}
+	else {
+		config->basedir = DgStringDuplicate("");
+	}
+	
 	config->sanitise = false;
 	
 	return pool;
