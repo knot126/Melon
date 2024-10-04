@@ -7,11 +7,14 @@
  */
 
 #include <stdbool.h>
+#include <setjmp.h>
 #include "log.h"
 
 #include "error.h"
 
-bool DgErrorFatal(DgError error) {
+/** Error codes **/
+
+bool DgErrorFatal(DgErrorCode error) {
 	/**
 	 * Return if the error is fatal or not.
 	 */
@@ -19,7 +22,7 @@ bool DgErrorFatal(DgError error) {
 	return (error != DG_ERROR_SUCCESSFUL);
 }
 
-const char *DgErrorString(const DgError error) {
+const char *DgErrorString(const DgErrorCode error) {
 	const char *s;
 	
 	switch (error) {
@@ -45,7 +48,7 @@ const char *DgErrorString(const DgError error) {
 	return s;
 }
 
-DgError DgLogError_(const DgError error, const char * const path, const int line) {
+DgError DgLogError_(const DgErrorCode error, const char * const path, const int line) {
 	/**
 	 * If there was an error, log it.
 	 * 
@@ -60,4 +63,97 @@ DgError DgLogError_(const DgError error, const char * const path, const int line
 	}
 	
 	return error;
+}
+
+/** Raise and guard **/
+
+#ifndef MELON_MAX_GUARD_STACK_SIZE
+	#define MELON_MAX_GUARD_STACK_SIZE 32
+#endif
+
+typedef struct {
+	DgErrorGuardEntry entries[MELON_MAX_GUARD_STACK_SIZE];
+	uint32_t top;
+} DgErrorGuardArray;
+
+DgErrorGuardArray gMelonErrorGuards;
+DgErrorInfo gMelonCurrentError; // should be a stack to handle errors while handling errors
+
+static inline DgErrorInfo *DgGetTopError_(void) {
+	return &gMelonCurrentError;
+}
+
+DgErrorGuardEntry *DgGuardNextSlot_(void) {
+	/**
+	 * Return a pointer to the next available error guard entry, or raise an
+	 * error if one is not available.
+	 * 
+	 * @todo Implement stack overflow check
+	 */
+	
+	return &gMelonErrorGuards.entries[gMelonErrorGuards.top++];
+}
+
+DgErrorInfo *DgGuard_(int status) {
+	/**
+	 * If status is zero, then don't do much as we have already saved the
+	 * enviornment, just return NULL. If it is nonzero that means we're handling
+	 * a return from setjmp as an error, so return the error.
+	 */
+	
+	if (status) {
+		return DgGetTopError_();
+	}
+	else {
+		return NULL;
+	}
+}
+
+void DgUnguard(void) {
+	/**
+	 * Pop a guard entry off the stack
+	 */
+	
+	gMelonErrorGuards.top--;
+}
+
+static void DgHandleFatalError_(DgErrorInfo *error) {
+	/**
+	 * Handle an error when there are no error guards left.
+	 */
+	
+	DgLog(DG_LOG_FATAL, "An unhandled error was raised:\n"
+		"     type: %s\n"
+		"  message: %s\n"
+		"     file: %s\n"
+		" function: %s\n"
+		"     line: %zu\n",
+		error->type, error->message, error->file, error->function, error->line
+	);
+	
+	abort();
+}
+
+void DgReraise(void) {
+	/**
+	 * Raise a currently set error
+	 */
+	
+	// No error handlers on stack, so abort.
+	if (gMelonErrorGuards.top == 0) {
+		DgHandleFatalError_(&gMelonCurrentError);
+	}
+	else {
+		DgErrorGuardEntry *entry = &gMelonErrorGuards.entries[--gMelonErrorGuards.top];
+		longjmp(entry->env, 1);
+	}
+}
+
+void DgRaise_(DgErrorInfo ei) {
+	/**
+	 * Raise a new error
+	 */
+	
+	gMelonCurrentError = ei;
+	DgReraise();
 }

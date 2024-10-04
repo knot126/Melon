@@ -10,13 +10,17 @@
 
 #include <inttypes.h>
 #include <stdbool.h>
+#include <setjmp.h>
+#include <stdlib.h>
 
-typedef int32_t DgError;
+typedef int32_t DgErrorCode;
+typedef DgErrorCode DgError;
 
 enum {
 	// Successful
 	DG_ERROR_SUCCESSFUL = 0,
 	DG_ERROR_SUCCESS = 0,
+	DG_SUCCESS = 0,
 	
 	// Nonfatal errors
 	DG_ERROR_WAITING = 0x10,
@@ -45,13 +49,35 @@ enum {
 	DG_ERROR_CONNECTION_FAILED = -0x51,
 	
 	DG_ERROR_FAILED = -0x7fffffff,
+	DG_FAIL = -0x7fffffff,
 };
 
-typedef struct DgErrorCallback {
-	int _lel;
-} DgErrorCallback;
-
-bool DgErrorFatal(DgError error);
-const char *DgErrorString(const DgError error);
-DgError DgLogError_(const DgError error, const char * const path, const int line);
+// Code-based errors
+bool DgErrorFatal(DgErrorCode error);
+const char *DgErrorString(const DgErrorCode error);
+DgError DgLogError_(const DgErrorCode error, const char * const path, const int line);
 #define DgLogError(error) DgLogError_(error, __FILE__, __LINE__);
+
+// Guard/raise-based errors
+typedef struct DgErrorInfo {
+	const char *type;
+	const char *message;
+	const char *file;
+	const char *function;
+	size_t line;
+} DgErrorInfo;
+
+typedef struct {
+	jmp_buf env;
+} DgErrorGuardEntry;
+
+// Primitives
+DgErrorGuardEntry *DgGuardNextSlot_(void);
+DgErrorInfo *DgGuard_(int status);
+void DgRaise_(DgErrorInfo ei);
+
+// Actual stuff you should use
+#define /* (DgErrorInfo *) */ DgGuard() ( DgGuard_(setjmp(DgGuardNextSlot_()->env)) )
+void DgUnguard(void);
+#define /* (void) */ DgRaise(TYPE, MESSAGE) ( DgRaise_((DgErrorInfo) {.type = TYPE, .message = MESSAGE, .file = __FILE__, .function = __FUNCTION__, .line = __LINE__}) )
+void DgReraise(void);
