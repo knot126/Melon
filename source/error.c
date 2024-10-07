@@ -10,6 +10,13 @@
 #include <setjmp.h>
 #include "log.h"
 
+// Linux gets backtraces
+#ifdef __linux__
+	#include <stdio.h>
+	#include <execinfo.h>
+	#define DG_MELON_MAX_BACKTRACE_COUNT 20
+#endif
+
 #include "error.h"
 
 /** Error codes **/
@@ -89,8 +96,12 @@ DgErrorGuardEntry *DgGuardNextSlot_(void) {
 	 * Return a pointer to the next available error guard entry, or raise an
 	 * error if one is not available.
 	 * 
-	 * @todo Implement stack overflow check
+	 * @throws GuardStackOverflow if the guard stack is at max capacity
 	 */
+	
+	if (gMelonErrorGuards.top >= MELON_MAX_GUARD_STACK_SIZE) {
+		DgRaise("GuardStackOverflow", "The guard stack execeeded its maxium size");
+	}
 	
 	return &gMelonErrorGuards.entries[gMelonErrorGuards.top++];
 }
@@ -132,6 +143,22 @@ static void DgHandleFatalError_(DgErrorInfo *error) {
 		error->type, error->message, error->file, error->function, error->line
 	);
 	
+	// Some ugly code to print a backtrace on linux
+#ifdef __linux__
+	void *return_address[DG_MELON_MAX_BACKTRACE_COUNT];
+	int len = backtrace(return_address, DG_MELON_MAX_BACKTRACE_COUNT);
+	// We don't call from a signal handler so malloc() shouldn't be a problem
+	char **backtrace = backtrace_symbols(return_address, len);
+	
+	if (backtrace) {
+		DgLog(DG_LOG_VERBOSE, "backtrace:");
+		for (int i = 0; i < len; i++) {
+			DgLog(DG_LOG_VERBOSE, "    %s", backtrace[i]);
+		}
+		free(backtrace);
+	}
+#endif
+	
 	abort();
 }
 
@@ -142,7 +169,6 @@ void DgReraise(void) {
 	
 	// No error handlers on stack, so abort.
 	if (gMelonErrorGuards.top == 0) {
-		DgLog(DG_LOG_INFO, "top = %zu", gMelonErrorGuards.top);
 		DgHandleFatalError_(&gMelonCurrentError);
 	}
 	// Otherwise we pass control back to the last guard
@@ -184,15 +210,31 @@ bool DgErrorGetRaiseEnabled(void) {
 	return gMelonEnableRaise;
 }
 
-// static void DgRaiseTest_somethingthatraisesanerror(void) {
-// 	DgRaise("SomeError", "Some test error");
-// }
-// 
-// void DgRaise_Test(void) {
-// 	DgTry({
-// 		DgRaiseTest_somethingthatraisesanerror();
-// 	}, error_info, {
-// 		DgLog(DG_LOG_INFO, "Caught an error: %s", error_info->type);
-// 	})
-// }
+static void DgRaiseTest_Func1() {
+	DgLog(DG_LOG_INFO, "Func 1!");
+}
+
+static int DgRaiseTest_Func2(int a, int b) {
+	DgLog(DG_LOG_INFO, "Func 2!");
+	DgRaise("SomeError", "Some error raised from func 2");
+	return 3;
+}
+
+static void DgRaiseTest_Func3(int c) {
+	DgLog(DG_LOG_INFO, "Func 1!");
+}
+
+void DgRaise_Test(void) {
+	// protected call test
+	DgTry({
+		DgRaiseTest_Func1();
+		int a = DgRaiseTest_Func2(2, 5);
+		DgRaiseTest_Func3(a);
+	}, error_info, {
+		DgLog(DG_LOG_INFO, "Caught an error: %s: %s", error_info->type, error_info->message);
+	})
+	
+	// unprotected call test
+	DgRaiseTest_Func2(2, 5);
+}
 

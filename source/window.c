@@ -54,6 +54,7 @@ DgError DgWindowInit(DgWindow *this, const char *title, DgVec2I size) {
 	this->display = XOpenDisplay(NULL);
 	
 	if (!this->display) {
+		DgRaise("XDisplayError", "Failed to get X display");
 		return DG_ERROR_FAILED;
 	}
 	
@@ -74,6 +75,7 @@ DgError DgWindowInit(DgWindow *this, const char *title, DgVec2I size) {
 	XStoreName(this->display, this->window, title);
 	
 	if (!this->window) {
+		DgRaise("XWindowError", "Failed to create X window");
 		return DG_ERROR_FAILED;
 	}
 #endif

@@ -159,6 +159,7 @@ DgError DgStorageAddPool(DgStorage *this, DgStoragePool *pool) {
 	
 	// Check for null
 	if (pool == NULL) {
+		DgRaise("NullPointer", "pool == NULL");
 		return DG_ERROR_NOT_SAFE;
 	}
 	
@@ -166,6 +167,7 @@ DgError DgStorageAddPool(DgStorage *this, DgStoragePool *pool) {
 	
 	// Check if the pool already exists
 	if (DgStorageHasPool(this, pool->protocol)) {
+		DgRaise("AlreadyExists", "Pool is already registered with storage");
 		return DG_ERROR_ALREADY_EXISTS;
 	}
 	
@@ -529,6 +531,7 @@ DgError DgStreamOpen(DgStorage *this, DgStream *context, DgStoragePath path, DgS
 	DgError status = DgStorageGetPoolFromPath(this, path, &pool);
 	
 	if (status) {
+		DgRaise("InvalidPool", "Could not find pool for path");
 		return status;
 	}
 	
@@ -540,7 +543,13 @@ DgError DgStreamOpen(DgStorage *this, DgStream *context, DgStoragePath path, DgS
 	DgStreamSetEndian(context, ((flags & DG_STREAM_ENDIAN_BIG) ? DG_ENDIAN_BIG : DG_ENDIAN_LITTLE));
 	
 	// Call its function
-	return pool->functions->open(this, pool, context, path, flags);
+	status = pool->functions->open(this, pool, context, path, flags);
+	
+	if (status) {
+		DgRaise("StreamOpenFailed", "Failed to open stream");
+	}
+	
+	return status;
 }
 
 DgError DgStreamClose(DgStream *context) {
