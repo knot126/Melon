@@ -22,10 +22,12 @@ enum {
 	DG_ERROR_SUCCESS = 0,
 	DG_SUCCESS = 0,
 	
-	// Nonfatal errors
+	DG_ERROR_UNKNOWN = 0x1,
+	DG_ERROR_BUFFER_TOO_SMALL,
+	DG_ERROR_INVALID_UTF8_SEQENCE,
+	
 	DG_ERROR_WAITING = 0x10,
 	
-	// Possibly fatal errors
 	DG_ERROR_OUT_OF_MEMORY = -0x10, // Out of memory (only when really out)
 	DG_ERROR_ALLOCATION_FAILED = -0x11, // Allocation of memory failed
 	

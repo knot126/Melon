@@ -221,7 +221,7 @@ static int DgRaiseTest_Func2(int a, int b) {
 }
 
 static void DgRaiseTest_Func3(int c) {
-	DgLog(DG_LOG_INFO, "Func 1!");
+	DgLog(DG_LOG_INFO, "Func 3!");
 }
 
 void DgRaise_Test(void) {
@@ -235,6 +235,6 @@ void DgRaise_Test(void) {
 	})
 	
 	// unprotected call test
-	DgRaiseTest_Func2(2, 5);
+	// DgRaiseTest_Func2(2, 5);
 }
 

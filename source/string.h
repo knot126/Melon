@@ -12,12 +12,17 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
-typedef const char *DgString;
-
-DgString DgStringFromCString(const char * const restrict from);
-void DgStringFree(DgString string);
+#include "error.h"
 
 typedef char **DgCStringArray;
+
+enum : uint32_t {
+	DG_UTF8_DECODE_ERROR = 0xffffffff,
+};
+
+size_t DgUTF8UnicodeCharLen(const uint8_t *source, size_t remain);
+uint32_t DgUTF8UnicodeDecodeCharEx(const uint8_t *source, size_t remain, DgErrorCode *error, size_t *size_out);
+uint32_t DgUTF8UnicodeDecodeChar(const char *source, size_t remain, size_t *size_out);
 
 char *DgStringConcatinate(const char * const string1, const char * const string2);
 char *DgStringConcatinateL(const char * const string1, const char * const string2);

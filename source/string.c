@@ -14,110 +14,149 @@
 #include <stdbool.h>
 
 #include "memory.h"
-#include "bits.h"
 #include "log.h"
+#include "error.h"
 
 #include "string.h"
 
-/** NEW STRING LIBRARY **/
-
-typedef struct DgNewStringHeader {
-	size_t size;
-} DgNewStringHeader;
-
-#define NS_HEADER_PTR(STR) (((DgNewStringHeader *) STR) - 1)
-
-static DgString DgStringAllocate(size_t size) {
+size_t DgUTF8UnicodeCharLen(const uint8_t *source, size_t remain) {
 	/**
-	 * Allocate a new DgString of the given size.
+	 * Return the length of the UTF-8 encoded Unicode character starting at
+	 * `source` based on its first byte. Returns zero on invalid Unicode
+	 * seqences.
 	 * 
-	 * @warning Note that only the ending NUL will be initialised, and the rest
-	 * of the contents of the string won't be.
-	 * 
-	 * @param size Size of string
-	 * @return A new string
+	 * @param source Start of character to decode
+	 * @param remain Maximum number of characters that may be read from the
+	 * source.
+	 * @return Number of bytes that SHOULD be in the unicode character, or 0 if
+	 * the byte isn't a valid UTF-8 encoded Unicode start byte.
 	 */
 	
-	// Allocate room for header + size + extra nul
-	DgNewStringHeader *header = DgMemoryAllocate(sizeof *header + size + 1);
+	if (remain == 0) { return 0; }
 	
-	if (!header) {
-		return NULL;
+	uint8_t c = source[0];
+	
+	if (!(c & 0b10000000)) {
+		return 1;
+	}
+	else if ((c >> 5) == 0b110) {
+		if (c < 0xC2) {
+			return 0;
+		}
+		
+		return 2;
+	}
+	else if ((c >> 4) == 0b1110) {
+		return 3;
+	}
+	else if ((c >> 3) == 0b11110) {
+		if (c > 0xF4) {
+			return 0;
+		}
+		
+		return 4;
 	}
 	
-	// Set size
-	header->size = size;
-	
-	// Get actual string ptr
-	DgString string = (DgString)(header + 1);
-	
-	// Init nul char
-	((char *) string)[size] = '\0';
-	
-	return string;
+	return 0;
 }
 
-static DgString DgStringFill(DgString string, size_t index, size_t buffer_size, const void *buffer) {
+uint32_t DgUTF8UnicodeDecodeCharEx(const uint8_t *source, size_t remain, DgErrorCode *error, size_t *size_out) {
 	/**
-	 * Fills the contents of the string using contents from the given buffer.
+	 * Decode the first UTF-8 encoded Unicode character pointed to by source.
 	 * 
-	 * @warning string is not checked for NULL, since this is only intended for
-	 * internal use.
+	 * @note Always returns 0xFFFD (replacement character) on error.
 	 * 
-	 * @param string String to fill up
-	 * @param index Index of string
-	 * @param buffer_size Size of the buffer to fill string with
-	 * @param buffer Buffer to use to fill string
-	 * @return The string on success, NULL on failure
+	 * @note This decoder handles errors in the following ways:
+	 *   - Continution bytes at the start of a character are 1 byte errors, so
+	 *     consecutive continutation bytes are different errors.
+	 *   - Bytes that never appear in UTF-8 are 1 byte errors.
+	 *   - A truncated character is a 1 byte error.
+	 *   - Any valid four byte character over code point 0x10FFFF is a four
+	 *     byte error.
+	 *   - Any valid but overly long encoding is the number of bytes of the
+	 *     overlong encoding.
+	 * 
+	 * @param source Pointer to the start of the character to decode
+	 * @param remain Length of the source that remains
+	 * @param error Pointer to an error code where any specific error will be
+	 * written, or DG_SUCCESS on success. If NULL, no error code is written.
+	 * @param size_out Pointer to where the size will be written, if not NULL
+	 * @return Valid Unicode character code
 	 */
 	
-	size_t remain_size = NS_HEADER_PTR(string)->size - index;
-	
-	if (remain_size < buffer_size) {
-		return NULL;
+	if (remain == 0) {
+		if (size_out) { size_out[0] = 0; }
+		if (error) { error[0] = DG_UTF8_DECODE_ERROR; }
+		return 0xfffd;
 	}
 	
-	DgMemoryCopy(buffer_size, buffer, (void *)(string + index));
+	size_t utf8len = DgUTF8UnicodeCharLen(source, remain);
 	
-	return string;
+	// If size is zero or above remaining amount then error
+	if (!utf8len || remain < utf8len) {
+		if (size_out) { size_out[0] = 1; }
+		if (error) { error[0] = DG_UTF8_DECODE_ERROR; }
+		return 0xfffd;
+	}
+	
+	uint32_t code;
+	
+	// Length one chars just return the first thing
+	if (utf8len == 1) {
+		code = source[0];
+		goto finish;
+	}
+	
+	// Some magic to get the first few bytes from the starting char.
+	code = (source[0] & ((1 << (7 - utf8len)) - 1));
+	
+	for (size_t i = 1; i < utf8len; i++) {
+		// Check for correct continutation bits
+		if ((source[i] >> 6) != 0b10) {
+			// I think for consisentcy with truncation at the end of a stream
+			// its better for the size of the error char to always be one.
+			// if (size_out) { size_out[0] = i; }
+			if (size_out) { size_out[0] = 1; }
+			if (error) { error[0] = DG_UTF8_DECODE_ERROR; }
+			return 0xfffd;
+		}
+		
+		// Shift over by six, insert next bytes
+		code <<= 6;
+		code |= source[i] & 0b111111;
+	}
+	
+	// Enforce minimal length encoding
+	if (   ((utf8len == 2) && (code < 0x80 || code > 0x7FF))
+		|| ((utf8len == 3) && (code < 0x800 || code > 0xFFFF))
+		|| ((utf8len == 4) && (code < 0x10000 || code > 0x10FFFF))) {
+		if (size_out) { size_out[0] = utf8len; }
+		if (error) { error[0] = DG_UTF8_DECODE_ERROR; }
+		return 0xfffd;
+	}
+	
+	// Success!
+finish:
+	if (size_out) { size_out[0] = utf8len; }
+	if (error) { error[0] = DG_SUCCESS; }
+	return code;
 }
 
-DgString DgStringFromCString(const char * const restrict from) {
-	/**
-	 * Convert the C-style string `from` to a new-style string.
-	 * 
-	 * @param from C-style String to convert from
-	 * @return New style string or NULL on failure
-	 */
-	
-	size_t size = DgCStringLength(from);
-	
-	DgString string = DgStringAllocate(size);
-	
-	if (!string) {
-		return NULL;
-	}
-	
-	if (!DgStringFill(string, 0, size, from)) {
-		return NULL;
-	}
-	
-	return string;
+uint32_t DgUTF8UnicodeDecodeChar(const char *source, size_t remain, size_t *size_out) {
+	return DgUTF8UnicodeDecodeCharEx((const uint8_t *) source, remain, NULL, size_out);
 }
 
-void DgStringFree(DgString string) {
-	/**
-	 * Free memory assocaited with a string
-	 */
+void DgUTF8UnicodeDecodeChar_Test(void) {
+	const char *myString = u8"å ä ö 〈 test 〉 🦊";
+	size_t len = DgStringLength(myString);
 	
-	if (string) {
-		DgMemoryFree(NS_HEADER_PTR(string));
+	for (size_t i = 0; i < len;) {
+		size_t charlen = 0;
+		uint32_t ch = DgUTF8UnicodeDecodeChar(&myString[i], len - i, &charlen);
+		DgLog(DG_LOG_INFO, "Character U+%lX (%lu) as UTF-8 is %zu bytes", ch, ch, charlen);
+		i += charlen;
 	}
 }
-
-#undef NS_HEADER_PTR
-
-/** C STRING LIBRARY **/
 
 char *DgStringConcatinate(const char * const string1, const char * const string2) {
 	/**
