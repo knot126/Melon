@@ -11,8 +11,8 @@
 #include "common.h"
 
 enum {
-	DG_ENDIAN_LITTLE = 0,
-	DG_ENDIAN_BIG = 1,
+	DG_ENDIAN_BIG = 0,
+	DG_ENDIAN_LITTLE = 1,
 };
 
 bool DgMachineEndian(void);

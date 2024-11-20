@@ -147,7 +147,7 @@ uint32_t DgUTF8UnicodeDecodeChar(const char *source, size_t remain, size_t *size
 }
 
 void DgUTF8UnicodeDecodeChar_Test(void) {
-	const char *myString = u8"å ä ö 〈 test 〉 🦊";
+	const char *myString = u8"åäö 〈 test 〉 🦊 \xc0\x80ꃕ";
 	size_t len = DgStringLength(myString);
 	
 	for (size_t i = 0; i < len;) {
@@ -295,7 +295,8 @@ char *DgStringConcatinateLR(const char * const string1, const char * const strin
 
 size_t DgStringLength(const char * const string) {
 	/**
-	 * Return the length of the given string
+	 * Return the size in bytes of the given string, not including the NUL
+	 * terminator.
 	 * 
 	 * @note This function returns 0 when string is NULL.
 	 * 
@@ -312,6 +313,30 @@ size_t DgStringLength(const char * const string) {
 			return i;
 		}
 	}
+}
+
+size_t DgStringCharacterCount(const char * const string) {
+	/**
+	 * Return the number of characters in a UTF-8 encoded string.
+	 * 
+	 * @param string String to count characters in
+	 * @return Number of characters in the string
+	 */
+	
+	if (!string) {
+		return 0;
+	}
+	
+	const size_t string_length = DgStringLength(string);
+	size_t j = 0;
+	
+	for (size_t i = 0; string[i] != '\0'; j++) {
+		size_t char_size = 1;
+		DgUTF8UnicodeDecodeChar(&string[i], string_length - i, &char_size);
+		i += char_size;
+	}
+	
+	return j;
 }
 
 char *DgStringDuplicate(const char * const string) {

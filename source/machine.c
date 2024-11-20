@@ -20,13 +20,11 @@ bool DgMachineEndian(void) {
 	// TODO: This really should be tested better.
 	
 	union {
-		uint16_t a;
-		uint8_t b;
+		uint16_t set_to_one;
+		uint8_t is_little;
 	} test;
 	
-	test.a = 0xbeef;
+	test.set_to_one = 1;
 	
-	bool is_little = (test.b == 0xef);
-	
-	return is_little ? DG_ENDIAN_LITTLE : DG_ENDIAN_BIG;
+	return test.is_little;
 }
