@@ -718,7 +718,7 @@ void DgCStringSplitByWhitespace_Test(void) {
 
 enum : uint16_t {
 	SP_PATTERN_END = 0,
-	SP_END = 0x100 + '$', // $
+	SP_END_OF_STRING = 0x100 + '$', // $
 	SP_ALL = 0x100 + '.', // .
 	SP_ALL_EXCEPT_NEWLINE = 0x100 + 'a', // \a
 	SP_WHITESPACE = 0x100 + 's', // \s
@@ -757,7 +757,7 @@ static uint16_t DgStringMatchSimplePattern_InterpretPatternChar(const char *patt
 		SP_RETURN(SP_ALL, 1);
 	}
 	else if (pattern[index] == '$') {
-		SP_RETURN(SP_END, 1);
+		SP_RETURN(SP_END_OF_STRING, 1);
 	}
 	
 	SP_RETURN(pattern[index], 1);
@@ -787,11 +787,6 @@ bool DgStringMatchSimplePattern(const char *string, const char *pattern) {
 			case SP_ALL: {
 				break;
 			}
-			case SP_END: {
-				// If it's not at the end its always a fail so we don't have to
-				// worry about there being more.
-				return (string[i] == '\0');
-			}
 			case SP_ALL_EXCEPT_NEWLINE: {
 				if (string[i] == '\n') {
 					return false;
@@ -815,6 +810,14 @@ bool DgStringMatchSimplePattern(const char *string, const char *pattern) {
 					return false;
 				}
 				break;
+			}
+			case SP_END_OF_STRING: {
+				// If there is still more to the pattern, we can never match.
+				if (DgStringMatchSimplePattern_InterpretPatternChar(pattern, counter, NULL) != SP_PATTERN_END) {
+					return false;
+				}
+				// Otherwise, we match if we're at the end and don't otherwise.
+				return (string[i] == '\0');
 			}
 			default: {
 				// Fail exact character match
@@ -850,6 +853,7 @@ void DgStringMatchSimplePattern_Test(void) {
 		"fouracom", "\\w\\w\\w\\w\\.com",
 		"OwO", ".w.$",
 		"UwU", ".w.$",
+		"foo", "foo$o",
 		NULL,
 	};
 	
