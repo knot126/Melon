@@ -716,32 +716,6 @@ void DgCStringSplitByWhitespace_Test(void) {
 	}
 }
 
-uint32_t DgStringSeminise(const char *string) {
-	/**
-	 * Take the "sem" (our word for small, non-cryptographic hash) of a string.
-	 * 
-	 * @note The algorithm used is DJB2 (xor version), but it can change.
-	 * 
-	 * @note DJB2 (Xor version) algorithm: hash[i] = (33 * hash[i - 1]) ^ string[i]
-	 * 
-	 * @see http://www.cse.yorku.ca/~oz/hash.html
-	 * 
-	 * @param string The string to seminise
-	 * @return Sem of the string
-	 */
-	
-	uint32_t hash = 5381;
-	size_t i = 0;
-	
-	while (string[i] != '\0') {
-		//     33 * hash            ^ string[i];
-		hash = ((hash << 5) + hash) ^ string[i];
-		i++;
-	}
-	
-	return hash;
-}
-
 const char gIntegerToStringTable[] = {
 	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e',
 	'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
