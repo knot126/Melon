@@ -716,6 +716,136 @@ void DgCStringSplitByWhitespace_Test(void) {
 	}
 }
 
+enum : uint16_t {
+	SP_PATTERN_END = 0,
+	SP_ALL = 0x100 + '.', // .
+	SP_ALL_EXCEPT_NEWLINE = 0x100 + 'a', // \a
+	SP_WHITESPACE = 0x100 + 's', // \s
+	SP_WORD = 0x100 + 'w', // \w
+	SP_DIGIT = 0x100 + 'd', // \d
+};
+
+#define SP_RETURN(CHAR, CTR) if (counter) { counter[0] += CTR; } return CHAR;
+
+static uint16_t DgStringMatchSimplePattern_InterpretPatternChar(const char *pattern, size_t index, size_t *counter) {
+	if (pattern[index] == '\\') {
+		char escaped = pattern[index + 1];
+		
+		if (escaped != '\0') {
+			if (escaped == 'a') {
+				SP_RETURN(SP_ALL_EXCEPT_NEWLINE, 2);
+			}
+			else if (escaped == 's') {
+				SP_RETURN(SP_WHITESPACE, 2);
+			}
+			else if (escaped == 'w') {
+				SP_RETURN(SP_WORD, 2);
+			}
+			else if (escaped == 'd') {
+				SP_RETURN(SP_DIGIT, 2);
+			}
+			
+			SP_RETURN(escaped, 2);
+		}
+		else {
+			SP_RETURN('\\', 1);
+		}
+	}
+	
+	if (pattern[index] == '.') {
+		SP_RETURN(SP_ALL, 1);
+	}
+	
+	SP_RETURN(pattern[index], 1);
+}
+
+#undef SP_RETURN
+
+#define SP_IN_RANGE(bottom, value, top) ((value >= bottom) && (value <= top))
+
+bool DgStringMatchSimplePattern(const char *string, const char *pattern) {
+	/**
+	 * Determine if the start of a string matches a simple regex-like pattern.
+	 */
+	
+	size_t pattern_len = DgStringLength(pattern);
+	size_t counter = 0;
+	
+	for (size_t i = 0;; i++) {
+		uint16_t match_type = DgStringMatchSimplePattern_InterpretPatternChar(pattern, counter, &counter);
+		
+		switch (match_type) {
+			case SP_PATTERN_END: {
+				// we match the start of string to this pattern if we got here
+				// before or while we're at the end of the string
+				return true;
+			}
+			case SP_ALL: {
+				break;
+			}
+			case SP_ALL_EXCEPT_NEWLINE: {
+				if (string[i] == '\n') {
+					return false;
+				}
+				break;
+			}
+			case SP_WHITESPACE: {
+				if (!(string[i] == ' ' || string[i] == '\t' || string[i] == '\r' || string[i] == '\n')) {
+					return false;
+				}
+				break;
+			}
+			case SP_WORD: {
+				if (!(SP_IN_RANGE('a', string[i], 'z') || SP_IN_RANGE('A', string[i], 'Z'))) {
+					return false;
+				}
+				break;
+			}
+			case SP_DIGIT: {
+				if (!SP_IN_RANGE('0', string[i], '9')) {
+					return false;
+				}
+				break;
+			}
+			default: {
+				// Fail exact character match
+				if (string[i] != match_type) {
+					return false;
+				}
+				break;
+			}
+		}
+		
+		// If we're at end of string and there's still more to match we fail
+		// TODO: Is this actually reachable?
+		if (string[i] == '\0') {
+			return false;
+		}
+	}
+}
+
+#undef SP_IN_RANGE
+
+void DgStringMatchSimplePattern_Test(void) {
+	const char *patterns[] = {
+		"cat", "cat",
+		"words", "\\w\\w\\w\\w\\w",
+		"abc", "\\w\\d\\w",
+		"a2c", "\\w\\d\\w",
+		"foo", "f..",
+		"foobar", "f..",
+		"x", "\\a",
+		"\n", "\\a",
+		NULL,
+	};
+	
+	for (size_t i = 0; patterns[2 * i]; i++) {
+		const char *string = patterns[2 * i];
+		const char *pattern = patterns[2 * i + 1];
+		DgLog(DG_LOG_INFO, "Does '%s' match pattern '%s' ? %s", string, pattern, DgStringMatchSimplePattern(string, pattern) ? "Yes" : "No");
+	}
+}
+
 const char gIntegerToStringTable[] = {
 	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e',
 	'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
