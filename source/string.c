@@ -497,6 +497,82 @@ bool DgStringEndsWith(const char * restrict base, const char * restrict what) {
 	return DgStringEqual(base + (base_length - what_length), what);
 }
 
+void DgStringUppercaseInplace(char *string) {
+	/**
+	 * Convert a string to uppercase in-place
+	 * 
+	 * @param string String to conver to uppercase
+	 */
+	
+	for (size_t i = 0; string[i]; i++) {
+		if ((string[i] >= 'a') && (string[i] <= 'z')) {
+			string[i] -= ('a' - 'A');
+		}
+	}
+}
+
+char *DgStringUppercase(const char *string) {
+	/**
+	 * Convert a string to uppercase.
+	 */
+	
+	char *newstr = DgStringDuplicate(string);
+	
+	if (!newstr) {
+		return NULL;
+	}
+	
+	DgStringUppercaseInplace(newstr);
+	
+	return newstr;
+}
+
+void DgStringLowercaseInplace(char *string) {
+	/**
+	 * Convert a string to lowercase in-place
+	 * 
+	 * @param string String to conver to lowercase
+	 */
+	
+	for (size_t i = 0; string[i]; i++) {
+		if ((string[i] >= 'A') && (string[i] <= 'Z')) {
+			string[i] += ('a' - 'A');
+		}
+	}
+}
+
+char *DgStringLowercase(const char *string) {
+	/**
+	 * Convert a string to lowercase.
+	 */
+	
+	char *newstr = DgStringDuplicate(string);
+	
+	if (!newstr) {
+		return NULL;
+	}
+	
+	DgStringLowercaseInplace(newstr);
+	
+	return newstr;
+}
+
+void DgStringCaseConversion_Test(void) {
+	const char *strings[] = {
+		"Hello, world!",
+		"123 + 456 = 579",
+		"World1259.xml",
+		"TEST TEST",
+		NULL,
+	};
+	
+	for (size_t i = 0; strings[i]; i++) {
+		DgLog(DG_LOG_INFO, "String: '%s'", strings[i]);
+		DgLog(DG_LOG_INFO, "Upper : '%s'", DgStringUppercase(strings[i]));
+		DgLog(DG_LOG_INFO, "Lower : '%s'", DgStringLowercase(strings[i]));
+	}
+}
+
 char *DgStringSlice(const char *base, size_t start, size_t end) {
 	/**
 	 * Allocate a slice of a string given a string.
