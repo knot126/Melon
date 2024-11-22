@@ -56,6 +56,19 @@ DgError DgThreadStart(DgThread *this) {
 	return (thrd_create(&this->native_thread, (thrd_start_t) this->function, this->argument) == thrd_success) ? DG_SUCCESS : DG_FAIL;
 }
 
+DgError DgThreadStartWithArgument(DgThread *this, void *argument) {
+	/**
+	 * Start a thread while also setting the argument.
+	 * 
+	 * @param this Thread to start
+	 * @param argument Value to set argument to
+	 * @return Error code
+	 */
+	
+	this->argument = argument;
+	return DgThreadStart(this);
+}
+
 DgError DgThreadAwait(DgThread *this) {
 	/**
 	 * Wait on the thread to finish execution
@@ -70,9 +83,28 @@ DgError DgThreadAwait(DgThread *this) {
 void DgThreadFree(DgThread *this) {
 	/**
 	 * Free any assocaited resources with the given thread object
+	 * 
+	 * @param this Thread object
 	 */
 	
 	return;
+}
+
+void DgThreadYield(void) {
+	/**
+	 * Give a hint that the current thread should yeild execution to another
+	 * thread.
+	 */
+	
+	thrd_yield();
+}
+
+void DgThreadExit(void) {
+	/**
+	 * Exit the current thread.
+	 */
+	
+	thrd_exit(0);
 }
 
 DgError DgLockInit(DgLock *this) {

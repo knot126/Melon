@@ -27,8 +27,12 @@ typedef struct DgThread {
 DgError DgThreadInit(DgThread *this, DgThreadFunction func, void *arg);
 DgError DgThreadInitWithPrototype(DgThread *this, DgThread *prototype);
 DgError DgThreadStart(DgThread *this);
+DgError DgThreadStartWithArgument(DgThread *this, void *argument);
 DgError DgThreadAwait(DgThread *this);
 void DgThreadFree(DgThread *this);
+
+void DgThreadYield(void);
+void DgThreadExit(void);
 
 // Locks
 typedef struct DgLock {
