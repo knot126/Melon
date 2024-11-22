@@ -8,23 +8,36 @@
 
 #pragma once
 
-#ifndef _WIN32
-	#include <pthread.h>
+#ifdef _WIN32
+#error Platform not supported by threads yet!
 #endif
+#include <threads.h>
+
+#include "error.h"
 
 // First two typedefs may change depending on threading library
-typedef void *DgThreadArg;
-typedef void *DgThreadReturn;
-
-typedef DgThreadReturn (*DgThreadFunction)(DgThreadArg);
+typedef void (*DgThreadFunction)(void *);
 
 typedef struct DgThread {
-#ifndef _WIN32
-	pthread_t _info;
-#else
-	int _info;
-#endif
+	DgThreadFunction function;
+	void *argument;
+	thrd_t native_thread;
 } DgThread;
 
-int DgThreadNew(DgThread* thread, DgThreadFunction func, DgThreadArg arg);
-int DgThreadJoin(DgThread* thread);
+DgError DgThreadInit(DgThread *this, DgThreadFunction func, void *arg);
+DgError DgThreadInitWithPrototype(DgThread *this, DgThread *prototype);
+DgError DgThreadStart(DgThread *this);
+DgError DgThreadAwait(DgThread *this);
+void DgThreadFree(DgThread *this);
+
+// Locks
+typedef struct DgLock {
+	mtx_t native_lock;
+} DgLock;
+
+DgError DgThreadJoin(DgThread* thread);
+DgError DgLockInit(DgLock *this);
+DgError DgLockLock(DgLock *this);
+bool DgLockTryToLock(DgLock *this);
+DgError DgLockUnlock(DgLock *this);
+void DgLockFree(DgLock *this);

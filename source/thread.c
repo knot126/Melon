@@ -7,39 +7,122 @@
  */
 
 #ifndef _WIN32
-	#include <pthread.h>
+	#include <threads.h>
 #endif
+
+#include "memory.h"
 
 #include "thread.h"
 
-int DgThreadNew(DgThread* thread, DgThreadFunction func, DgThreadArg arg) {
+DgError DgThreadInit(DgThread *this, DgThreadFunction func, void *arg) {
 	/**
-	 * Create a thread object and start execution.
+	 * Create a thread object which can be started with func and arg.
 	 * 
-	 * @param thread Thread object to use
-	 * @param func Thread function to free
+	 * @param this Thread object to use
+	 * @param func Function to run on thread
 	 * @param arg Argument that will be passed to the thread function
-	 * @return Integer status code, dependent on thread library
+	 * @return Error code
 	 */
 	
-#ifndef _WIN32
-	return pthread_create(&thread->_info, NULL, func, arg);
-#else
-	return 1;
-#endif
+	DgMemoryZero(this, sizeof *this);
+	
+	this->function = func;
+	this->argument = arg;
+	
+	return DG_ERROR_SUCCESS;
 }
 
-int DgThreadJoin(DgThread* thread) {
+DgError DgThreadInitWithPrototype(DgThread *this, DgThread *prototype) {
 	/**
-	 * Make the thread object join with the current thread
+	 * Create a thread object which uses the prototype for the function and
+	 * argument if they are not NULL.
 	 * 
-	 * @param thread Thread object to free
-	 * @return Integer status code, dependent on thread library
+	 * @param this Thread object to use
+	 * @param prototype Prototype thread object
+	 * @return Error code
 	 */
 	
-#ifndef _WIN32
-	return pthread_join(thread->_info, NULL);
-#else
-	return 1;
-#endif
+	return DgThreadInit(this, prototype->function, prototype->argument);
+}
+
+DgError DgThreadStart(DgThread *this) {
+	/**
+	 * Start the thread.
+	 * 
+	 * @param this Thread to start
+	 * @return Error code
+	 */
+	
+	return (thrd_create(&this->native_thread, (thrd_start_t) this->function, this->argument) == thrd_success) ? DG_SUCCESS : DG_FAIL;
+}
+
+DgError DgThreadAwait(DgThread *this) {
+	/**
+	 * Wait on the thread to finish execution
+	 * 
+	 * @param this Thread object to wait upon
+	 * @return Error code
+	 */
+	
+	return (thrd_join(this->native_thread, NULL) == thrd_success) ? DG_SUCCESS : DG_FAIL;
+}
+
+void DgThreadFree(DgThread *this) {
+	/**
+	 * Free any assocaited resources with the given thread object
+	 */
+	
+	return;
+}
+
+DgError DgLockInit(DgLock *this) {
+	/**
+	 * Initialise a new lock
+	 * 
+	 * @param this Lock to initialise
+	 * @return Error code
+	 */
+	
+	return (mtx_init(&this->native_lock, mtx_plain) == thrd_success) ? DG_SUCCESS : DG_FAIL;
+}
+
+DgError DgLockLock(DgLock *this) {
+	/**
+	 * Lock a lock, awaiting its availability
+	 * 
+	 * @param this Lock object
+	 * @return Error code
+	 */
+	
+	return (mtx_lock(&this->native_lock) == thrd_success) ? DG_SUCCESS : DG_FAIL;
+}
+
+bool DgLockTryToLock(DgLock *this) {
+	/**
+	 * Try to lock a lock, returning false if locking fails.
+	 * 
+	 * @param this Lock object
+	 * @return true if the lock was successfully accquired
+	 */
+	
+	return (mtx_trylock(&this->native_lock) == thrd_success);
+}
+
+DgError DgLockUnlock(DgLock *this) {
+	/**
+	 * Unlock a locked lock
+	 * 
+	 * @param this Lock to unlock
+	 * @return Error code
+	 */
+	
+	return (mtx_unlock(&this->native_lock) == thrd_success) ? DG_SUCCESS : DG_FAIL;
+}
+
+void DgLockFree(DgLock *this) {
+	/**
+	 * Frees resources assocaited with a lock
+	 */
+	
+	mtx_destroy(&this->native_lock);
 }
