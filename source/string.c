@@ -874,6 +874,9 @@ enum : uint16_t {
 	SP_WHITESPACE = 0x100 + 's', // \s
 	SP_WORD = 0x100 + 'w', // \w
 	SP_DIGIT = 0x100 + 'd', // \d
+	SP_ZERO_OR_MORE = 0x100 + '*', // x*
+	SP_ONE_OR_MORE = 0x100 + '+', // x+
+	SP_ZERO_OR_ONE = 0x100 + '?', // x?
 };
 
 #define SP_RETURN(CHAR, CTR) if (counter) { counter[0] += CTR; } return CHAR;
@@ -909,6 +912,15 @@ static uint16_t DgStringMatchSimplePattern_InterpretPatternChar(const char *patt
 	else if (pattern[index] == '$') {
 		SP_RETURN(SP_END_OF_STRING, 1);
 	}
+	else if (pattern[index] == '*') {
+		SP_RETURN(SP_ZERO_OR_MORE, 1);
+	}
+	else if (pattern[index] == '+') {
+		SP_RETURN(SP_ONE_OR_MORE, 1);
+	}
+	else if (pattern[index] == '?') {
+		SP_RETURN(SP_ZERO_OR_ONE, 1);
+	}
 	
 	SP_RETURN(pattern[index], 1);
 }
@@ -916,6 +928,64 @@ static uint16_t DgStringMatchSimplePattern_InterpretPatternChar(const char *patt
 #undef SP_RETURN
 
 #define SP_IN_RANGE(bottom, value, top) ((value >= bottom) && (value <= top))
+
+static bool DgStringMatchSimplePattern_DoesCharMatch(uint16_t match_type, char c) {
+	/**
+	 * Test if the character c is in the set of match_type
+	 */
+	
+	switch (match_type) {
+		case SP_PATTERN_END: {
+			// we match the start of string to this pattern if we got here
+			// before or while we're at the end of the string
+			return true;
+		}
+		case SP_ALL: {
+			break;
+		}
+		case SP_ALL_EXCEPT_NEWLINE: {
+			if (c == '\n') {
+				return false;
+			}
+			break;
+		}
+		case SP_WHITESPACE: {
+			if (!(c == ' ' || c == '\t' || c == '\r' || c == '\n')) {
+				return false;
+			}
+			break;
+		}
+		case SP_WORD: {
+			if (!(SP_IN_RANGE('a', c, 'z') || SP_IN_RANGE('A', c, 'Z'))) {
+				return false;
+			}
+			break;
+		}
+		case SP_DIGIT: {
+			if (!SP_IN_RANGE('0', c, '9')) {
+				return false;
+			}
+			break;
+		}
+		case SP_END_OF_STRING: {
+			// HACK: If there is still more to the pattern, we can never match,
+			// though we don't have access to verify that its the end of the
+			// pattern here. Do that in the main function instead.
+			
+			// Otherwise, we match if we're at the end and don't otherwise.
+			return (c == '\0');
+		}
+		default: {
+			// Fail exact character match
+			if (c != match_type) {
+				return false;
+			}
+			break;
+		}
+	}
+	
+	return true;
+}
 
 bool DgStringMatchSimplePattern(const char *string, const char *pattern) {
 	/**
@@ -925,63 +995,75 @@ bool DgStringMatchSimplePattern(const char *string, const char *pattern) {
 	size_t pattern_len = DgStringLength(pattern);
 	size_t counter = 0;
 	
-	for (size_t i = 0;; i++) {
+	for (size_t i = 0;;) {
 		uint16_t match_type = DgStringMatchSimplePattern_InterpretPatternChar(pattern, counter, &counter);
 		
-		switch (match_type) {
-			case SP_PATTERN_END: {
-				// we match the start of string to this pattern if we got here
-				// before or while we're at the end of the string
-				return true;
+		// Handle the must-be-end-of-string type
+		if (match_type == SP_END_OF_STRING) {
+			// If the pattern continues on even after the $, it can never be
+			// matched.
+			if (DgStringMatchSimplePattern_InterpretPatternChar(pattern, counter, NULL) != SP_PATTERN_END) {
+				return false;
 			}
-			case SP_ALL: {
+			
+			// Otherwise its if this is the NUL char.
+			return DgStringMatchSimplePattern_DoesCharMatch(match_type, string[i]);
+		}
+		
+		// Handle reaching the end of the pattern (always matches)
+		if (match_type == SP_PATTERN_END) {
+			return true;
+		}
+		
+		// Now for normal types of matches...
+		size_t min_matches = 1, max_matches = 1, num_matches = 0;
+		
+		// Set min/max matches if next char indicates a variable number of
+		// matches are allowed
+		uint16_t next = DgStringMatchSimplePattern_InterpretPatternChar(pattern, counter, NULL);
+		
+		switch (next) {
+			case SP_ZERO_OR_MORE: {
+				min_matches = 0;
+				max_matches = -1;
+				counter += 1;
 				break;
 			}
-			case SP_ALL_EXCEPT_NEWLINE: {
-				if (string[i] == '\n') {
-					return false;
-				}
+			case SP_ONE_OR_MORE: {
+				min_matches = 1;
+				max_matches = -1;
+				counter += 1;
 				break;
 			}
-			case SP_WHITESPACE: {
-				if (!(string[i] == ' ' || string[i] == '\t' || string[i] == '\r' || string[i] == '\n')) {
-					return false;
-				}
+			case SP_ZERO_OR_ONE: {
+				min_matches = 0;
+				counter += 1;
 				break;
-			}
-			case SP_WORD: {
-				if (!(SP_IN_RANGE('a', string[i], 'z') || SP_IN_RANGE('A', string[i], 'Z'))) {
-					return false;
-				}
-				break;
-			}
-			case SP_DIGIT: {
-				if (!SP_IN_RANGE('0', string[i], '9')) {
-					return false;
-				}
-				break;
-			}
-			case SP_END_OF_STRING: {
-				// If there is still more to the pattern, we can never match.
-				if (DgStringMatchSimplePattern_InterpretPatternChar(pattern, counter, NULL) != SP_PATTERN_END) {
-					return false;
-				}
-				// Otherwise, we match if we're at the end and don't otherwise.
-				return (string[i] == '\0');
 			}
 			default: {
-				// Fail exact character match
-				if (string[i] != match_type) {
-					return false;
-				}
 				break;
 			}
 		}
 		
-		// If we're at end of string and there's still more to match we fail
-		// TODO: Is this actually reachable?
-		if (string[i] == '\0') {
+		// Count number of matches, up to max_matches
+		while (DgStringMatchSimplePattern_DoesCharMatch(match_type, string[i])) {
+			num_matches++;
+			i++;
+			
+			if (num_matches >= max_matches) {
+				break;
+			}
+		}
+		
+		// If not an allowed number of matches, then we're done
+		if (!SP_IN_RANGE(min_matches, num_matches, max_matches)) {
 			return false;
+		}
+		
+		// If we're at end of string, check if the pattern is over. If it is,
+		// we have a full match. If not, we didn't match enough.
+		if (string[i] == '\0') {
+			return DgStringMatchSimplePattern_InterpretPatternChar(pattern, counter, NULL) == SP_PATTERN_END;
 		}
 	}
 }
@@ -1004,6 +1086,8 @@ void DgStringMatchSimplePattern_Test(void) {
 		"OwO", ".w.$",
 		"UwU", ".w.$",
 		"foo", "foo$o",
+		"foobar.com", "\\w+\\.com",
+		"foobar.org", "\\w+\\.com",
 		NULL,
 	};
 	
