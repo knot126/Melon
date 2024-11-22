@@ -1000,14 +1000,17 @@ bool DgStringMatchSimplePattern(const char *string, const char *pattern) {
 		
 		// Handle the must-be-end-of-string type
 		if (match_type == SP_END_OF_STRING) {
-			// If the pattern continues on even after the $, it can never be
-			// matched.
-			if (DgStringMatchSimplePattern_InterpretPatternChar(pattern, counter, NULL) != SP_PATTERN_END) {
-				return false;
-			}
-			
-			// Otherwise its if this is the NUL char.
-			return DgStringMatchSimplePattern_DoesCharMatch(match_type, string[i]);
+// 			// If the pattern continues on even after the $, it can never be
+// 			// matched.
+// 			if (DgStringMatchSimplePattern_InterpretPatternChar(pattern, counter, NULL) != SP_PATTERN_END) {
+// 				return false;
+// 			}
+// 			
+// 			// Otherwise its if this is the NUL char.
+// 			return DgStringMatchSimplePattern_DoesCharMatch(match_type, string[i]);
+			// This should (?) always fail since we should have handled any
+			// matching cases with the check for NUL at the bottom.
+			return false;
 		}
 		
 		// Handle reaching the end of the pattern (always matches)
@@ -1065,7 +1068,8 @@ bool DgStringMatchSimplePattern(const char *string, const char *pattern) {
 		if (string[i] == '\0') {
 			uint16_t m1 = DgStringMatchSimplePattern_InterpretPatternChar(pattern, counter, &counter);
 			
-			// Again, if there's more to the pattern aside from $ then we fail
+			// Handle when there is a pattern with $ that cannot be matched
+			// because the $ isn't at the end of the pattern.
 			if (m1 == SP_END_OF_STRING) {
 				if (DgStringMatchSimplePattern_InterpretPatternChar(pattern, counter, NULL) != SP_PATTERN_END) {
 					return false;
@@ -1097,6 +1101,8 @@ void DgStringMatchSimplePattern_Test(void) {
 		"foo", "foo$o",
 		"foobar.com", "\\w+\\.com",
 		"foobar.org", "\\w+\\.com",
+		"gMyString2", "g\\w+2",
+		"6969", "69\\w*69",
 		NULL,
 	};
 	
