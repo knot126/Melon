@@ -1063,7 +1063,16 @@ bool DgStringMatchSimplePattern(const char *string, const char *pattern) {
 		// If we're at end of string, check if the pattern is over. If it is,
 		// we have a full match. If not, we didn't match enough.
 		if (string[i] == '\0') {
-			return DgStringMatchSimplePattern_InterpretPatternChar(pattern, counter, NULL) == SP_PATTERN_END;
+			uint16_t m1 = DgStringMatchSimplePattern_InterpretPatternChar(pattern, counter, &counter);
+			
+			// Again, if there's more to the pattern aside from $ then we fail
+			if (m1 == SP_END_OF_STRING) {
+				if (DgStringMatchSimplePattern_InterpretPatternChar(pattern, counter, NULL) != SP_PATTERN_END) {
+					return false;
+				}
+			}
+			
+			return m1 == SP_PATTERN_END || m1 == SP_END_OF_STRING;
 		}
 	}
 }
