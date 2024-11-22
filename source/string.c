@@ -499,9 +499,9 @@ bool DgStringEndsWith(const char * restrict base, const char * restrict what) {
 
 void DgStringUppercaseInplace(char *string) {
 	/**
-	 * Convert a string to uppercase in-place
+	 * Convert a string to UPPERCASE in-place
 	 * 
-	 * @param string String to conver to uppercase
+	 * @param string String to convert to uppercase
 	 */
 	
 	for (size_t i = 0; string[i]; i++) {
@@ -513,7 +513,11 @@ void DgStringUppercaseInplace(char *string) {
 
 char *DgStringUppercase(const char *string) {
 	/**
-	 * Convert a string to uppercase.
+	 * Convert a string to UPPERCASE.
+	 * 
+	 * @warning You must free the string returned by this function.
+	 * 
+	 * @param string String to convert to uppercase
 	 */
 	
 	char *newstr = DgStringDuplicate(string);
@@ -531,7 +535,7 @@ void DgStringLowercaseInplace(char *string) {
 	/**
 	 * Convert a string to lowercase in-place
 	 * 
-	 * @param string String to conver to lowercase
+	 * @param string String to convert to lowercase
 	 */
 	
 	for (size_t i = 0; string[i]; i++) {
@@ -544,6 +548,10 @@ void DgStringLowercaseInplace(char *string) {
 char *DgStringLowercase(const char *string) {
 	/**
 	 * Convert a string to lowercase.
+	 * 
+	 * @warning You must free the string returned by this function.
+	 * 
+	 * @param string String to convert to lowercase
 	 */
 	
 	char *newstr = DgStringDuplicate(string);
@@ -556,6 +564,71 @@ char *DgStringLowercase(const char *string) {
 	
 	return newstr;
 }
+
+#define InRange(bottom, value, top) ((value >= bottom) && (value <= top))
+
+void DgStringTitlecaseInplace(char *string) {
+	/**
+	 * Convert a string to Title Case in-place.
+	 * 
+	 * @warning The semantics of this function may change between versions,
+	 * implementations or even locales. Only use this for displaying strings to
+	 * the user where case ambiguity is okay.
+	 * 
+	 * @param string String to conver to title case
+	 */
+	
+	bool needs_title = true;
+	
+	for (size_t i = 0; string[i]; i++) {
+		if (InRange('a', string[i], 'z')) {
+			if (needs_title) {
+				string[i] -= ('a' - 'A');
+			}
+			
+			needs_title = false;
+		}
+		else if (InRange('A', string[i], 'Z')) {
+			if (!needs_title) {
+				string[i] += ('a' - 'A');
+			}
+			
+			needs_title = false;
+		}
+		else if (InRange('0', string[i], '9')) {
+			needs_title = false;
+		}
+		else {
+			needs_title = true;
+		}
+	}
+}
+
+char *DgStringTitlecase(const char *string) {
+	/**
+	 * Convert a string to Title Case.
+	 * 
+	 * @warning The semantics of this function may change between versions,
+	 * implementations or even locales. Only use this for displaying strings to
+	 * the user where case ambiguity is okay.
+	 * @warning You must free the string that is returned.
+	 * 
+	 * @param string String to make title case
+	 * @return Title cased string
+	 */
+	
+	char *newstr = DgStringDuplicate(string);
+	
+	if (!newstr) {
+		return NULL;
+	}
+	
+	DgStringTitlecaseInplace(newstr);
+	
+	return newstr;
+}
+
+#undef InRange
 
 void DgStringCaseConversion_Test(void) {
 	const char *strings[] = {
@@ -570,6 +643,7 @@ void DgStringCaseConversion_Test(void) {
 		DgLog(DG_LOG_INFO, "String: '%s'", strings[i]);
 		DgLog(DG_LOG_INFO, "Upper : '%s'", DgStringUppercase(strings[i]));
 		DgLog(DG_LOG_INFO, "Lower : '%s'", DgStringLowercase(strings[i]));
+		DgLog(DG_LOG_INFO, "Title : '%s'", DgStringTitlecase(strings[i]));
 	}
 }
 

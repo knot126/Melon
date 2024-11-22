@@ -37,6 +37,8 @@ void DgStringUppercaseInplace(char *string);
 char *DgStringUppercase(const char *string);
 void DgStringLowercaseInplace(char *string);
 char *DgStringLowercase(const char *string);
+void DgStringTitlecaseInplace(char *string);
+char *DgStringTitlecase(const char *string);
 size_t DgStringLength(const char * const string);
 size_t DgStringCharacterCount(const char * const string);
 char *DgStringSlice(const char *base, size_t start, size_t end);
