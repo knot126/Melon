@@ -29,10 +29,13 @@ DgError DgThreadInitWithPrototype(DgThread *this, DgThread *prototype);
 DgError DgThreadStart(DgThread *this);
 DgError DgThreadStartWithArgument(DgThread *this, void *argument);
 DgError DgThreadAwait(DgThread *this);
+DgError DgThreadDetach(DgThread *this);
 void DgThreadFree(DgThread *this);
 
 void DgThreadYield(void);
 void DgThreadExit(void);
+
+void DgStartInNewThread(DgThreadFunction func, void *arg);
 
 // Locks
 typedef struct DgLock {

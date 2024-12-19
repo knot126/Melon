@@ -80,6 +80,15 @@ DgError DgThreadAwait(DgThread *this) {
 	return (thrd_join(this->native_thread, NULL) == thrd_success) ? DG_SUCCESS : DG_FAIL;
 }
 
+DgError DgThreadDetach(DgThread *this) {
+	/**
+	 * Detaches a thread object from it's thread, allowing execution of the
+	 * thread to continue independently.
+	 */
+	
+	return (thrd_detach(this->native_thread) == thrd_success) ? DG_SUCCESS : DG_FAIL;
+}
+
 void DgThreadFree(DgThread *this) {
 	/**
 	 * Free any assocaited resources with the given thread object
@@ -88,6 +97,21 @@ void DgThreadFree(DgThread *this) {
 	 */
 	
 	return;
+}
+
+void DgStartInNewThread(DgThreadFunction func, void *arg) {
+	/**
+	 * Start the given function with the given arg in a new thread and
+	 * immediately detach it.
+	 * 
+	 * @param func Function to start
+	 * @param arg Argument to pass to function
+	 */
+	
+	DgThread thread;
+	DgThreadInit(&thread, func, arg);
+	DgThreadStart(&thread);
+	DgThreadDetach(&thread);
 }
 
 void DgThreadYield(void) {

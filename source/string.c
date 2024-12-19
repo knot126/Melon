@@ -866,6 +866,7 @@ void DgCStringSplitByWhitespace_Test(void) {
 	}
 }
 
+/** SIMPLE PATTERNS **/
 enum : uint16_t {
 	SP_PATTERN_END = 0,
 	SP_END_OF_STRING = 0x100 + '$', // $
@@ -928,6 +929,7 @@ static uint16_t DgStringMatchSimplePattern_InterpretPatternChar(const char *patt
 #undef SP_RETURN
 
 #define SP_IN_RANGE(bottom, value, top) ((value >= bottom) && (value <= top))
+#define SP_MATCH_FAILED ((size_t) -1)
 
 static bool DgStringMatchSimplePattern_DoesCharMatch(uint16_t match_type, char c) {
 	/**
@@ -987,7 +989,7 @@ static bool DgStringMatchSimplePattern_DoesCharMatch(uint16_t match_type, char c
 	return true;
 }
 
-bool DgStringMatchSimplePattern(const char *string, const char *pattern) {
+size_t DgStringMatchSimplePatternWithEnd(const char *string, const char *pattern) {
 	/**
 	 * Determine if the start of a string matches a simple regex-like pattern.
 	 */
@@ -1000,22 +1002,14 @@ bool DgStringMatchSimplePattern(const char *string, const char *pattern) {
 		
 		// Handle the must-be-end-of-string type
 		if (match_type == SP_END_OF_STRING) {
-// 			// If the pattern continues on even after the $, it can never be
-// 			// matched.
-// 			if (DgStringMatchSimplePattern_InterpretPatternChar(pattern, counter, NULL) != SP_PATTERN_END) {
-// 				return false;
-// 			}
-// 			
-// 			// Otherwise its if this is the NUL char.
-// 			return DgStringMatchSimplePattern_DoesCharMatch(match_type, string[i]);
 			// This should (?) always fail since we should have handled any
 			// matching cases with the check for NUL at the bottom.
-			return false;
+			return SP_MATCH_FAILED;
 		}
 		
 		// Handle reaching the end of the pattern (always matches)
 		if (match_type == SP_PATTERN_END) {
-			return true;
+			return i;
 		}
 		
 		// Now for normal types of matches...
@@ -1060,7 +1054,7 @@ bool DgStringMatchSimplePattern(const char *string, const char *pattern) {
 		
 		// If not an allowed number of matches, then we're done
 		if (!SP_IN_RANGE(min_matches, num_matches, max_matches)) {
-			return false;
+			return SP_MATCH_FAILED;
 		}
 		
 		// If we're at end of string, check if the pattern is over. If it is,
@@ -1072,16 +1066,20 @@ bool DgStringMatchSimplePattern(const char *string, const char *pattern) {
 			// because the $ isn't at the end of the pattern.
 			if (m1 == SP_END_OF_STRING) {
 				if (DgStringMatchSimplePattern_InterpretPatternChar(pattern, counter, NULL) != SP_PATTERN_END) {
-					return false;
+					return SP_MATCH_FAILED;
 				}
 			}
 			
-			return m1 == SP_PATTERN_END || m1 == SP_END_OF_STRING;
+			return (m1 == SP_PATTERN_END || m1 == SP_END_OF_STRING) ? i : SP_MATCH_FAILED;
 		}
 	}
 }
 
 #undef SP_IN_RANGE
+
+bool DgStringMatchSimplePattern(const char *string, const char *pattern) {
+	return DgStringMatchSimplePatternWithEnd(string, pattern) != SP_MATCH_FAILED;
+}
 
 void DgStringMatchSimplePattern_Test(void) {
 	const char *patterns[] = {
