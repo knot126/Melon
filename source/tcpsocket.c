@@ -116,6 +116,7 @@ void DgTCPSocketFree(DgTCPSocket *this) {
 	 */
 	
 	shutdown(this->socket, SHUT_RDWR);
+	close(this->socket);
 }
 
 DgError DgTCPSocketAccept(DgTCPSocket *this, DgTCPSocket *new_socket) {
