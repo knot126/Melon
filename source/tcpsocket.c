@@ -148,7 +148,7 @@ DgError DgTCPSocketAccept(DgTCPSocket *this, DgTCPSocket *new_socket) {
 	}
 }
 
-DgError DgTCPSocketSend(DgTCPSocket *this, size_t size, void *data) {
+DgError DgTCPSocketSend(DgTCPSocket *this, size_t size, const void *data) {
 	/**
 	 * Add `data` to the queue of data to send
 	 * 

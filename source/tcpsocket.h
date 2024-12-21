@@ -31,5 +31,5 @@ DgError DgTCPSocketInitClient(DgTCPSocket *this, const char *host);
 DgError DgTCPSocketInitServer(DgTCPSocket *this, const char *host, uint16_t port);
 void DgTCPSocketFree(DgTCPSocket *this);
 DgError DgTCPSocketAccept(DgTCPSocket *this, DgTCPSocket *new_socket);
-DgError DgTCPSocketSend(DgTCPSocket *this, size_t size, void *data);
+DgError DgTCPSocketSend(DgTCPSocket *this, size_t size, const void *data);
 DgError DgTCPSocketRecieve(DgTCPSocket *this, size_t size, void *data);
