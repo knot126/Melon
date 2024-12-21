@@ -47,7 +47,7 @@ typedef struct DgStreamImp {
 	DgStreamReadFunction read;
 	DgStreamWriteFunction write;
 	DgStreamGetPositionFunction get_position;
-	DgStreamSetPositionFunction set_position;
+	DgStreamSetPositionFunction set_position; // deprecated
 	DgStreamSeekFunction seek;
 } DgStreamImp;
 
@@ -77,6 +77,7 @@ bool DgStreamGetEndian(DgStream *context);
 bool DgStreamIsSwappingEndian(DgStream *context);
 
 size_t DgStreamLength(DgStream *context);
+DgError DgStreamLoad(DgStream *context, size_t *size, void **buffer, bool add_nul);
 
 #include "storage_generated.h.part"
 

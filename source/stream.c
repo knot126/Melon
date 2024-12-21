@@ -103,19 +103,19 @@ DgError DgStreamGetPosition(DgStream *context, size_t *position) {
 
 DgError DgStreamSetPosition(DgStream *context, size_t position) {
 	/**
-	 * Get the position in the file stream.
+	 * Set the position in the file stream.
 	 * 
 	 * @param context Stream object
 	 * @param position The position to go to
 	 * @return Error code
 	 */
 	
-	return context->imp->set_position ? context->imp->set_position(context, position) : DG_ERROR_NOT_SUPPORTED;
+	return DgStreamSeek(context, DG_STREAM_SEEK_START, position);
 }
 
 DgError DgStreamSeek(DgStream *context, DgStreamSeekBase base, int64_t offset) {
 	/**
-	 * Get the position in the file stream.
+	 * Seek to the position in the file stream.
 	 * 
 	 * @param context Stream object
 	 * @param base Seek base (current pos, start, end)
@@ -208,6 +208,82 @@ size_t DgStreamLength(DgStream *context) {
 	}
 	
 	return length;
+}
+
+DgError DgStreamLoad(DgStream *context, size_t *size, void **buffer, bool add_nul) {
+	/**
+	 * Load the entire contents of a stream supporting seeking to start and end.
+	 * 
+	 * @warning You must free the buffer yourself
+	 * 
+	 * @param context Stream object to load from
+	 * @param size Where size is written (may be NULL)
+	 * @param buffer Pointer to the stream contents
+	 * @param add_nul If true, an extra NUL byte is appended to the buffer
+	 */
+	
+	size_t old_pos, length;
+	
+	// Store old pos for restoring later
+	DgError error = DgStreamGetPosition(context, &old_pos);
+	
+	if (error) {
+		return error;
+	}
+	
+	// Seek to end for getting length
+	error = DgStreamSeek(context, DG_STREAM_SEEK_END, 0);
+	
+	if (error) {
+		return error;
+	}
+	
+	// Get length
+	error = DgStreamGetPosition(context, &length);
+	
+	if (error) {
+		return error;
+	}
+	
+	// Seek to start for reading
+	error = DgStreamSeek(context, DG_STREAM_SEEK_START, 0);
+	
+	if (error) {
+		return error;
+	}
+	
+	// Allocate memory for buffer
+	void *buf = DgMemoryAllocate(length + add_nul);
+	
+	if (!buf) {
+		return DG_ERROR_ALLOCATION_FAILED;
+	}
+	
+	// Read stream contents into buffer
+	error = DgStreamRead(context, length, buf);
+	
+	if (error) {
+		DgMemoryFree(buf);
+		return error;
+	}
+	
+	// Set extra NUL byte, if needed
+	if (add_nul) {
+		((uint8_t *) buf)[length] = '\0';
+	}
+	
+	// Seek back to original position
+	// Errors are ignored because it's kind of a waste to fail after
+	// successfully reading the buffer.
+	DgStreamSetPosition(context, old_pos);
+	
+	// Set size and buf, return success
+	if (size) {
+		*size = length;
+	}
+	
+	*buffer = buf;
+	return DG_SUCCESS;
 }
 
 // Some extra storage functions that are automatically generated and for which

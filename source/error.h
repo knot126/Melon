@@ -23,39 +23,38 @@ enum {
 	DG_SUCCESS = 0,
 	
 	DG_ERROR_UNKNOWN = 0x1,
-	DG_ERROR_BUFFER_TOO_SMALL,
-	DG_ERROR_INVALID_UTF8_SEQENCE,
+	DG_ERROR_BUFFER_TOO_SMALL = 0x2,
+	DG_ERROR_INVALID_UTF8_SEQENCE = 0x3,
 	
-	DG_ERROR_WAITING = 0x10,
+	DG_ERROR_WAITING = 0xf,
 	
-	DG_ERROR_OUT_OF_MEMORY = -0x10, // Out of memory (only when really out)
-	DG_ERROR_ALLOCATION_FAILED = -0x11, // Allocation of memory failed
+	DG_ERROR_OUT_OF_MEMORY = 0x10, // Out of memory (only when really out)
+	DG_ERROR_ALLOCATION_FAILED = 0x11, // Allocation of memory failed
 	
-	DG_ERROR_FILE_NOT_FOUND = -0x20, // Did not find the file
-	DG_ERROR_NOT_FOUND = -0x21,
-	DG_ERROR_NOT_INITIALISED = -0x22, // Something was not initialised
-	DG_ERROR_ALREADY_EXISTS = -0x23,
-	DG_ERROR_READ_ONLY = -0x24,
-	DG_ERROR_NOT_SAFE = -0x25, // Not safe to preform the operation (e.g. NULL)
-	DG_ERROR_WRITE_FAILED = -0x26,
-	DG_ERROR_OUT_OF_RANGE = -0x27,
+	DG_ERROR_FILE_NOT_FOUND = 0x20, // Did not find the file
+	DG_ERROR_NOT_FOUND = 0x21,
+	DG_ERROR_NOT_INITIALISED = 0x22, // Something was not initialised
+	DG_ERROR_ALREADY_EXISTS = 0x23,
+	DG_ERROR_READ_ONLY = 0x24,
+	DG_ERROR_NOT_SAFE = 0x25, // Not safe to preform the operation (e.g. NULL)
+	DG_ERROR_WRITE_FAILED = 0x26,
+	DG_ERROR_OUT_OF_RANGE = 0x27,
 	
-	DG_ERROR_NO_CLIENT = -0x30,
-	DG_ERROR_REJECTED = -0x31,
-	DG_ERROR_FORBIDDEN = -0x32,
+	DG_ERROR_NO_CLIENT = 0x30,
+	DG_ERROR_REJECTED = 0x31,
+	DG_ERROR_FORBIDDEN = 0x32,
 	
-	DG_ERROR_NOT_IMPLEMENTED = -0x40, // Feature not implemented yet
-	DG_ERROR_NOT_SUPPORTED = -0x41, // Platform does not support this feature
+	DG_ERROR_NOT_IMPLEMENTED = 0x40, // Feature not implemented yet
+	DG_ERROR_NOT_SUPPORTED = 0x41, // Platform does not support this feature
 	
-	DG_ERROR_NAME_LOOKUP_FAILED = -0x50,
-	DG_ERROR_CONNECTION_FAILED = -0x51,
+	DG_ERROR_NAME_LOOKUP_FAILED = 0x50,
+	DG_ERROR_CONNECTION_FAILED = 0x51,
 	
 	DG_ERROR_FAILED = -0x7fffffff,
 	DG_FAIL = -0x7fffffff,
 };
 
 // Code-based errors
-bool DgErrorFatal(DgErrorCode error);
 const char *DgErrorString(const DgErrorCode error);
 DgError DgLogError_(const DgErrorCode error, const char * const path, const int line);
 #define DgLogError(error) DgLogError_(error, __FILE__, __LINE__);

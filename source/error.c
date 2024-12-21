@@ -21,14 +21,6 @@
 
 /** Error codes **/
 
-bool DgErrorFatal(DgErrorCode error) {
-	/**
-	 * Return if the error is fatal or not.
-	 */
-	
-	return (error != DG_ERROR_SUCCESSFUL);
-}
-
 const char *DgErrorString(const DgErrorCode error) {
 	const char *s;
 	

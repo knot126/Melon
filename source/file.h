@@ -8,6 +8,8 @@
 
 #pragma once
 
-#include "storage.h"
+#include "stream.h"
 #include "error.h"
 
+DgError DgFileOpen(DgStream *stream, const char *path, DgStreamOpenFlags flags);
+DgError DgFileLoad(const char *path, size_t *size, void **buffer);

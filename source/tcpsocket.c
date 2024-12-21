@@ -48,13 +48,15 @@ DgError DgTCPSocketInit(DgTCPSocket *this, const char *host, uint32_t port, bool
 	
 	// Translate host to address
 	struct addrinfo hints = {
-		.ai_family = AF_INET6,
+		.ai_family = server ? AF_UNSPEC : AF_INET6,
 		.ai_socktype = SOCK_STREAM,
 		.ai_protocol = IPPROTO_TCP,
 		.ai_flags = (server ? AI_PASSIVE : (AI_ADDRCONFIG | AI_V4MAPPED)) | AI_NUMERICSERV,
 	};
 	
-	if (getaddrinfo(host, port_str, &hints, &addresses)) {
+	int errorcode = getaddrinfo(host, port_str, &hints, &addresses);
+	
+	if (errorcode) {
 		error = DG_ERROR_NAME_LOOKUP_FAILED;
 		goto fail;
 	}
