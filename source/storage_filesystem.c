@@ -20,6 +20,7 @@
 
 #include "memory.h"
 #include "string.h"
+#include "stream.h"
 #include "storage.h"
 #include "log.h"
 
@@ -99,6 +100,7 @@ DgError DgFilesystemMakedirs(const char *deepest, bool last) {
 }
 
 #define REAL_PATH(VAR) DgFilesystemRealPath(((DgFilesytem_SpecificConfig *) pool->specific_config)->basedir, VAR);
+#define REAL_PATH_S(VAR) DgFilesystemRealPath(((DgFilesytem_SpecificConfig *) info->pool->specific_config)->basedir, VAR);
 
 static DgError DgFilesystem_Rename(DgStorage *storage, DgStoragePool *pool, DgStoragePath old_path, DgStoragePath new_path) {
 	/**
@@ -205,7 +207,7 @@ static DgError DgFilesystem_Type(DgStorage *storage, DgStoragePool *pool, DgStor
 	return DG_ERROR_NOT_IMPLEMENTED;
 }
 
-static DgError DgFilesystem_Open(DgStorage *storage, DgStoragePool *pool, DgStream *context, DgStoragePath path, DgStreamOpenFlags flags) {
+static DgError DgFilesystem_Open(DgStream *context, const DgStorageStreamPath *info, DgStreamOpenFlags flags) {
 	/**
 	 * Open a file stream
 	 * 
@@ -217,8 +219,7 @@ static DgError DgFilesystem_Open(DgStorage *storage, DgStoragePool *pool, DgStre
 	 * @return Error code
 	 */
 	
-	path = REAL_PATH(path);
-	
+	const char *path = REAL_PATH_S(info->path);
 	char *mode = "rb";
 	
 	// Find the mode that matches the given flags the best.
@@ -263,7 +264,7 @@ static DgError DgFilesystem_Open(DgStorage *storage, DgStoragePool *pool, DgStre
 	return DG_ERROR_SUCCESSFUL;
 }
 
-static DgError DgFilesystem_Close(DgStorage *storage, DgStoragePool *pool, DgStream *context) {
+static DgError DgFilesystem_Close(DgStream *context) {
 	/**
 	 * Close a file stream
 	 * 
@@ -278,7 +279,7 @@ static DgError DgFilesystem_Close(DgStorage *storage, DgStoragePool *pool, DgStr
 	return DG_ERROR_SUCCESSFUL;
 }
 
-static DgError DgFilesystem_Read(DgStorage *storage, DgStoragePool *pool, DgStream *context, size_t size, void *buffer) {
+static DgError DgFilesystem_Read(DgStream *context, size_t size, void *buffer) {
 	/**
 	 * Read from a file stream
 	 * 
@@ -299,7 +300,7 @@ static DgError DgFilesystem_Read(DgStorage *storage, DgStoragePool *pool, DgStre
 	return DG_ERROR_SUCCESSFUL;
 }
 
-static DgError DgFilesystem_Write(DgStorage *storage, DgStoragePool *pool, DgStream *context, size_t size, void *buffer) {
+static DgError DgFilesystem_Write(DgStream *context, size_t size, const void *buffer) {
 	/**
 	 * Write to a file stream
 	 * 
@@ -320,7 +321,7 @@ static DgError DgFilesystem_Write(DgStorage *storage, DgStoragePool *pool, DgStr
 	return DG_ERROR_SUCCESSFUL;
 }
 
-static DgError DgFilesystem_GetPosition(DgStorage *storage, DgStoragePool *pool, DgStream *context, size_t *position) {
+static DgError DgFilesystem_GetPosition(DgStream *context, size_t *position) {
 	/**
 	 * Get the current position of a file stream
 	 * 
@@ -336,7 +337,7 @@ static DgError DgFilesystem_GetPosition(DgStorage *storage, DgStoragePool *pool,
 	return DG_ERROR_SUCCESSFUL;
 }
 
-static DgError DgFilesystem_SetPosition(DgStorage *storage, DgStoragePool *pool, DgStream *context, size_t position) {
+static DgError DgFilesystem_SetPosition(DgStream *context, size_t position) {
 	/**
 	 * Get the current position of a file stream
 	 * 
@@ -356,7 +357,7 @@ static DgError DgFilesystem_SetPosition(DgStorage *storage, DgStoragePool *pool,
 	return DG_ERROR_SUCCESSFUL;
 }
 
-static DgError DgFilesystem_Seek(DgStorage *storage, DgStoragePool *pool, DgStream *context, DgStorageSeekBase base, int64_t offset) {
+static DgError DgFilesystem_Seek(DgStream *context, DgStreamSeekBase base, int64_t offset) {
 	/**
 	 * Seek to a positon in the file stream, relative to base
 	 * 
@@ -371,9 +372,9 @@ static DgError DgFilesystem_Seek(DgStorage *storage, DgStoragePool *pool, DgStre
 	int origin;
 	
 	switch (base) {
-		case DG_STORAGE_SEEK_RELATIVE: origin = SEEK_CUR; break;
-		case DG_STORAGE_SEEK_START:    origin = SEEK_SET; break;
-		case DG_STORAGE_SEEK_END:      origin = SEEK_END; break;
+		case DG_STREAM_SEEK_RELATIVE: origin = SEEK_CUR; break;
+		case DG_STREAM_SEEK_START:    origin = SEEK_SET; break;
+		case DG_STREAM_SEEK_END:      origin = SEEK_END; break;
 	}
 	
 	int status = fseek((FILE *) context->context, offset, origin);
@@ -394,19 +395,22 @@ static DgError DgFilesystem_FreeSpecificConfig(DgStoragePool *pool) {
 
 #undef REAL_PATH
 
+DgStreamImp gStorageFilesystemStreamImp = {
+	.open = (DgStreamOpenFunction) &DgFilesystem_Open,
+	.close = &DgFilesystem_Close,
+	.read = &DgFilesystem_Read,
+	.write = &DgFilesystem_Write,
+	.get_position = &DgFilesystem_GetPosition,
+	.set_position = &DgFilesystem_SetPosition,
+	.seek = &DgFilesystem_Seek,	
+};
+
 DgStorageFunctions gStorageFilesystemFunctions = {
 	.create_file = &DgFilesystem_CreateFile,
 	.create_folder = &DgFilesystem_CreateFolder,
 	.type = &DgFilesystem_Type,
 	.rename = &DgFilesystem_Rename,
 	.delete = &DgFilesystem_Delete,
-	.open = &DgFilesystem_Open,
-	.close = &DgFilesystem_Close,
-	.read = &DgFilesystem_Read,
-	.write = &DgFilesystem_Write,
-	.get_position = &DgFilesystem_GetPosition,
-	.set_position = &DgFilesystem_SetPosition,
-	.seek = &DgFilesystem_Seek,
 	.free_pool = &DgFilesystem_FreeSpecificConfig,
 };
 
@@ -427,6 +431,7 @@ DgStoragePool *DgFilesystemCreatePool(const char *protocol, const char *basedir)
 	
 	pool->protocol = DgStringDuplicate(protocol);
 	pool->functions = &gStorageFilesystemFunctions;
+	pool->stream_imp = &gStorageFilesystemStreamImp;
 	pool->specific_config = DgMemoryAllocate(sizeof *pool->specific_config);
 	
 	if (!pool->specific_config) {

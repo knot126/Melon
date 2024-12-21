@@ -512,7 +512,7 @@ DgError DgStoragePoolFree(DgStoragePool *pool) {
 
 /* Stream functions and similar */
 
-DgError DgStreamOpen(DgStorage *this, DgStream *context, DgStoragePath path, DgStreamOpenFlags flags) {
+DgError DgStorageOpen(DgStorage *this, DgStream *context, DgStoragePath path, DgStreamOpenFlags flags) {
 	/**
 	 * Open a stream
 	 * 
@@ -535,15 +535,24 @@ DgError DgStreamOpen(DgStorage *this, DgStream *context, DgStoragePath path, DgS
 		return status;
 	}
 	
-	// Pre-set the stream storage and pool
-	context->storage = this;
-	context->pool = pool;
+	// Create storage stream object
+	DgStorageStream *ss = DgMemoryAllocate(sizeof *ss);
 	
-	// Set endianess
-	DgStreamSetEndian(context, ((flags & DG_STREAM_ENDIAN_BIG) ? DG_ENDIAN_BIG : DG_ENDIAN_LITTLE));
+	if (!ss) {
+		return DG_ERROR_ALLOCATION_FAILED;
+	}
 	
-	// Call its function
-	status = pool->functions->open(this, pool, context, path, flags);
+	ss->storage = this;
+	ss->pool = pool;
+	
+	// Open the stream
+	DgStorageStreamPath path_with_info = {
+		.storage = this,
+		.pool = pool,
+		.path = path,
+	};
+	
+	status = DgStreamOpen(context, pool->stream_imp, &path_with_info, flags);
 	
 	if (status) {
 		DgRaise("StreamOpenFailed", "Failed to open stream");
@@ -552,222 +561,8 @@ DgError DgStreamOpen(DgStorage *this, DgStream *context, DgStoragePath path, DgS
 	return status;
 }
 
-DgError DgStreamClose(DgStream *context) {
-	/**
-	 * Close the file stream
-	 * 
-	 * @param context Stream object
-	 * @return Error code
-	 */
-	
-	DgStorage *this = context->storage;
-	DgStoragePool *pool = context->pool;
-	
-	return pool->functions->close(this, pool, context);
-}
-
-DgError DgStreamRead(DgStream *context, size_t size, void *buffer) {
-	/**
-	 * Read a buffer from the file stream
-	 * 
-	 * @param context Stream object
-	 * @param size Size of the buffer
-	 * @param buffer Pointer to where to store the data
-	 * @return Error code
-	 */
-	
-	DgStorage *this = context->storage;
-	DgStoragePool *pool = context->pool;
-	
-	return pool->functions->read(this, pool, context, size, buffer);
-}
-
-DgError DgStreamWrite(DgStream *context, size_t size, void *buffer) {
-	/**
-	 * Write a buffer to the file stream
-	 * 
-	 * @param context Stream object
-	 * @param size Size of the buffer
-	 * @param buffer Pointer to where to store the data
-	 * @return Error code
-	 */
-	
-	DgStorage *this = context->storage;
-	DgStoragePool *pool = context->pool;
-	
-	return pool->functions->write(this, pool, context, size, buffer);
-}
-
-DgError DgStreamGetPosition(DgStream *context, size_t *position) {
-	/**
-	 * Get the position in the file stream.
-	 * 
-	 * @param context Stream object
-	 * @param position Where to put the position
-	 * @return Error code
-	 */
-	
-	DgStorage *this = context->storage;
-	DgStoragePool *pool = context->pool;
-	
-	return pool->functions->get_position(this, pool, context, position);
-}
-
-DgError DgStreamSetPosition(DgStream *context, size_t position) {
-	/**
-	 * Get the position in the file stream.
-	 * 
-	 * @param context Stream object
-	 * @param position The position to go to
-	 * @return Error code
-	 */
-	
-	DgStorage *this = context->storage;
-	DgStoragePool *pool = context->pool;
-	
-	return pool->functions->set_position(this, pool, context, position);
-}
-
-DgError DgStreamSeek(DgStream *context, DgStorageSeekBase base, int64_t offset) {
-	/**
-	 * Get the position in the file stream.
-	 * 
-	 * @param context Stream object
-	 * @param base Seek base (current pos, start, end)
-	 * @param offset The offset from the base
-	 * @return Error code
-	 */
-	
-	DgStorage *this = context->storage;
-	DgStoragePool *pool = context->pool;
-	
-	return pool->functions->seek(this, pool, context, base, offset);
-}
-
 // We don't need it anymore, so undefine resolve macro just to be clean
 #undef DG_STORAGE_RESOLVE
-
-void DgStreamSetEndian(DgStream *context, bool endianness) {
-	/**
-	 * Set the endianness of the given stream.
-	 * 
-	 * @note Setting endianness only controls integers and floats using the read
-	 * and write functions.
-	 * 
-	 * @param context Context to set endianness of
-	 * @param endianness What to set the endianess to. Either DG_ENDIAN_BIG or
-	 * DG_ENDIAN_LITTLE.
-	 */
-	
-	// I dobut ?: is needed
-	context->swap_endian = (endianness != DgMachineEndian()) ? true : false;
-}
-
-bool DgStreamGetEndian(DgStream *context) {
-	/**
-	 * Get the current endianness of the stream.
-	 * 
-	 * @param context Stream to get the endianness of
-	 * @return DG_ENDIAN_LITTLE or DG_ENDIAN_BIG
-	 */
-	
-	bool me = DgMachineEndian();
-	
-	if (me == DG_ENDIAN_LITTLE) {
-		return (context->swap_endian) ? DG_ENDIAN_BIG : DG_ENDIAN_LITTLE;
-	}
-	else {
-		return (context->swap_endian) ? DG_ENDIAN_LITTLE : DG_ENDIAN_BIG;
-	}
-}
-
-bool DgStreamIsSwappingEndian(DgStream *context) {
-	/**
-	 * Return if the endian is being swapped on the stream.
-	 * 
-	 * @param context Context to check
-	 * @return true if swapping endian, false if not
-	 */
-	
-	return context->swap_endian;
-}
-
-size_t DgStreamLength(DgStream *context) {
-	/**
-	 * Get the length of a file.
-	 * 
-	 * @param context Stream object
-	 * @return Size of the file
-	 */
-	
-	size_t old_pos, length;
-	DgError status;
-	
-	// We store the old position so we can later restore it
-	status = DgStreamGetPosition(context, &old_pos);
-	
-	if (status) {
-		return 0;
-	}
-	
-	status = DgStreamSeek(context, DG_STORAGE_SEEK_END, 0);
-	
-	if (status) {
-		return 0;
-	}
-	
-	status = DgStreamGetPosition(context, &length);
-	
-	if (status) {
-		return 0;
-	}
-	
-	status = DgStreamSetPosition(context, old_pos);
-	
-	if (status) {
-		return 0;
-	}
-	
-	return length;
-}
-
-// Some extra storage functions that are automatically generated and for which
-// there are too many of to put in this file directly.
-#include "storage_generated.c.part"
-
-DgError DgStreamWriteString(DgStream * restrict context, const char * restrict data) {
-	/**
-	 * Write a string to a stream.
-	 * 
-	 * @param context Stream object
-	 * @param data The string to write
-	 * @return Error code
-	 */
-	
-	return DgStreamWrite(context, DgStringLength(data), (void *) data);
-}
-
-DgError DgStreamWriteIntegerString(DgStream *context, int64_t data) {
-	/**
-	 * Write a stringified integer to a stream WITHOUT a null byte.
-	 * 
-	 * @param context Stream object
-	 * @param data The string to write
-	 * @return Error code
-	 */
-	
-	char *str = DgIntegerToString(10, data);
-	
-	if (!str) {
-		return DG_ERROR_ALLOCATION_FAILED;
-	}
-	
-	DgError error = DgStreamWrite(context, DgStringLength(str), (void *) str);
-	
-	DgMemoryFree(str);
-	
-	return error;
-}
 
 DgError DgStorageLoad(DgStorage *storage, DgStoragePath path, size_t *size, void **buffer) {
 	/**
@@ -783,7 +578,7 @@ DgError DgStorageLoad(DgStorage *storage, DgStoragePath path, size_t *size, void
 	DgStream stream;
 	DgError status;
 	
-	status = DgStreamOpen(storage, &stream, path, DG_STREAM_READ);
+	status = DgStorageOpen(storage, &stream, path, DG_STREAM_READ);
 	
 	if (status) {
 		return status;
@@ -826,7 +621,7 @@ DgError DgStorageSave(DgStorage *storage, DgStoragePath path, size_t size, void 
 	DgStream stream;
 	DgError status;
 	
-	status = DgStreamOpen(storage, &stream, path, DG_STREAM_WRITE);
+	status = DgStorageOpen(storage, &stream, path, DG_STREAM_WRITE);
 	
 	if (status) {
 		return status;
@@ -857,7 +652,7 @@ DgError DgStorageAppend(DgStorage *storage, DgStoragePath path, size_t size, voi
 	DgStream stream;
 	DgError status;
 	
-	status = DgStreamOpen(storage, &stream, path, DG_STREAM_READ | DG_STREAM_WRITE | DG_STREAM_START_AT_END);
+	status = DgStorageOpen(storage, &stream, path, DG_STREAM_READ | DG_STREAM_WRITE | DG_STREAM_START_AT_END);
 	
 	if (status) {
 		return status;

@@ -743,7 +743,7 @@ void DgBitmapWritePPM(DgBitmap *this, const char * const filepath) {
 	}
 	
 	DgStream stream;
-	DgStreamOpen(NULL, &stream, filepath, DG_STREAM_WRITE);
+	DgStorageOpen(NULL, &stream, filepath, DG_STREAM_WRITE);
 	
 	// Write header
 	DgStreamWriteString(&stream, "P6\n");

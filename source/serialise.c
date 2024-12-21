@@ -162,7 +162,7 @@ DgError DgSerialiseWrite(DgStorage *storage, const char *path, DgValue * restric
 	
 	// Open stream
 	DgStream stream;
-	DgError status = DgStreamOpen(storage, &stream, path, DG_STREAM_WRITE);
+	DgError status = DgStorageOpen(storage, &stream, path, DG_STREAM_WRITE);
 	
 	if (status != DG_ERROR_SUCCESS) {
 		DgLog(DG_LOG_ERROR, "Serialise: Failed to open stream: '%s'", path);
