@@ -30,10 +30,24 @@ DgError DgStreamOpen(DgStream *context, DgStreamImp *imp, const void *path, DgSt
 	context->imp = imp;
 	
 	// Set endianess
-	DgStreamSetEndian(context, ((flags & DG_STREAM_ENDIAN_BIG) ? DG_ENDIAN_BIG : DG_ENDIAN_LITTLE));
+	if (flags & DG_STREAM_ENDIAN_BIG) {
+		DgStreamSetEndian(context, DG_ENDIAN_BIG);
+	}
+	else if (flags & DG_STREAM_ENDIAN_NATIVE) {
+		// nop
+	}
+	else {
+		// Little (the default)
+		DgStreamSetEndian(context, DG_ENDIAN_LITTLE);
+	}
 	
 	// Call the stream's open function
 	DgError status = context->imp->open ? context->imp->open(context, path, flags) : DG_ERROR_NOT_SUPPORTED;
+	
+	// Seek to end if the user wants that
+	if (flags & DG_STREAM_START_AT_END) {
+		DgStreamSeek(context, DG_STREAM_SEEK_END, 0);
+	}
 	
 	return status;
 }

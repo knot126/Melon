@@ -256,11 +256,6 @@ static DgError DgFilesystem_Open(DgStream *context, const DgStorageStreamPath *i
 		return DG_ERROR_FAILED;
 	}
 	
-	// Seek to the end if the user wants that
-	if (flags & DG_STREAM_START_AT_END) {
-		fseek((FILE *) context->context, 0, SEEK_END);
-	}
-	
 	return DG_ERROR_SUCCESSFUL;
 }
 

@@ -28,6 +28,8 @@ typedef enum DgStreamOpenFlags : uint64_t {
 	DG_STREAM_START_AT_END = (1 << 2),
 	DG_STREAM_DONT_OVERWRITE = (1 << 3),
 	DG_STREAM_ENDIAN_BIG = (1 << 4),
+	DG_STREAM_ENDIAN_LITTLE = (1 << 5),
+	DG_STREAM_ENDIAN_NATIVE = (1 << 6),
 } DgStreamOpenFlags;
 
 // Stream function pointer types
