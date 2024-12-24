@@ -105,8 +105,8 @@ fail:
 	return error;
 }
 
-DgError DgTCPSocketInitClient(DgTCPSocket *this, const char *host) {
-	return DgTCPSocketInit(this, host, 12345, false);
+DgError DgTCPSocketInitClient(DgTCPSocket *this, const char *host, uint16_t port) {
+	return DgTCPSocketInit(this, host, port, false);
 }
 
 DgError DgTCPSocketInitServer(DgTCPSocket *this, const char *host, uint16_t port) {
@@ -165,7 +165,7 @@ DgError DgTCPSocketSend(DgTCPSocket *this, size_t size, const void *data) {
 	while (sent < size) {
 		ssize_t sent_size = send(this->socket, data + sent, size - sent, 0);
 		
-		if (sent_size < 0) {
+		if (sent_size <= 0) {
 			return DG_ERROR_FAILED;
 		}
 		
@@ -188,7 +188,7 @@ DgError DgTCPSocketRecieve(DgTCPSocket *this, size_t size, void *data) {
 	while (recieved < size) {
 		ssize_t recv_size = recv(this->socket, data + recieved, size - recieved, MSG_WAITALL);
 		
-		if (recv_size < 0) {
+		if (recv_size <= 0) {
 			return DG_ERROR_FAILED;
 		}
 		
@@ -198,7 +198,23 @@ DgError DgTCPSocketRecieve(DgTCPSocket *this, size_t size, void *data) {
 	return DG_ERROR_SUCCESS;
 }
 
-const char *DgTCPSocketGetPeerAddressString(DgTCPSocket *this) {
+bool DgTCPSocketConnected(DgTCPSocket *this) {
+	/**
+	 * Check that the socket is still connected.
+	 * 
+	 * @param this TCP Socket
+	 */
+	
+	struct pollfd poll_info = {
+		.fd = this->socket,
+	};
+	
+	poll(&poll_info, 1, 0);
+	
+	return (poll_info.revents & POLLHUP) == POLLHUP;
+}
+
+char *DgTCPSocketGetPeerAddressString(DgTCPSocket *this) {
 	/**
 	 * Get the address of the peer on the other side of the connection.
 	 * 
