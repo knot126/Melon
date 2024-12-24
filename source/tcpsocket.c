@@ -21,6 +21,7 @@
 #include "log.h"
 #include "error.h"
 #include "string.h"
+#include "stringbuilder.h"
 #include "memory.h"
 #include "bytes.h"
 
@@ -195,4 +196,42 @@ DgError DgTCPSocketRecieve(DgTCPSocket *this, size_t size, void *data) {
 	}
 	
 	return DG_ERROR_SUCCESS;
+}
+
+const char *DgTCPSocketGetPeerAddressString(DgTCPSocket *this) {
+	/**
+	 * Get the address of the peer on the other side of the connection.
+	 * 
+	 * @param this TCP socket
+	 * @return A string representing the peer address
+	 */
+	
+	// NOTE: atm this function is written poorly, but it works for now
+	
+	struct sockaddr_storage addr;
+	socklen_t addr_len = sizeof addr;
+	
+	if (getpeername(this->socket, &addr, &addr_len)) {
+		return NULL;
+	}
+	
+	DgStringBuilder sb;
+	DgStringBuilderInit(&sb);
+	
+	if (addr.ss_family == AF_INET) {
+		struct sockaddr_in *a = (struct sockaddr_storage *) &addr;
+		
+		for (size_t i = 0; i < 4; i++) {
+			
+			char *b = DgIntegerToString(10, (a->sin_addr.s_addr >> ((3 - i) * 8)) & 0xff);
+			DgStringBuilderAppend(&sb, b);
+			if (i != 3) { DgStringBuilderAppend(&sb, "."); }
+			DgMemoryFree(b);
+		}
+	}
+	else {
+		DgStringBuilderAppend(&sb, "unknown");
+	}
+	
+	return DgStringBuilderGet(&sb);
 }
