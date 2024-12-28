@@ -207,6 +207,7 @@ bool DgTCPSocketConnected(DgTCPSocket *this) {
 	
 	struct pollfd poll_info = {
 		.fd = this->socket,
+		.events = POLLHUP | POLLIN | POLLOUT,
 	};
 	
 	poll(&poll_info, 1, 0);
@@ -227,15 +228,15 @@ char *DgTCPSocketGetPeerAddressString(DgTCPSocket *this) {
 	struct sockaddr_storage addr;
 	socklen_t addr_len = sizeof addr;
 	
-	if (getpeername(this->socket, &addr, &addr_len)) {
+	if (getpeername(this->socket, (void *) &addr, &addr_len)) {
 		return NULL;
 	}
 	
 	DgStringBuilder sb;
-	DgStringBuilderInit(&sb);
+	DgStringBuilderClear(&sb);
 	
 	if (addr.ss_family == AF_INET) {
-		struct sockaddr_in *a = (struct sockaddr_storage *) &addr;
+		struct sockaddr_in *a = (struct sockaddr_in *) &addr;
 		
 		for (size_t i = 0; i < 4; i++) {
 			

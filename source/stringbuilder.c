@@ -11,34 +11,52 @@
 
 #include "stringbuilder.h"
 
-void DgStringBuilderInit(DgStringBuilder *this) {
+void DgStringBuilderClear(DgStringBuilder *this) {
 	DgMemoryZero(this, sizeof *this);
 }
 
-void DgStringBuilderAppendBytes(DgStringBuilder *this, size_t size, const void *data) {
+bool DgStringBuilderAppendBytes(DgStringBuilder *this, size_t size, const void *data) {
 	/**
 	 * Append any bytes to the building up string
 	 * 
 	 * @param this String builder
 	 * @param size Size of data to append
 	 * @param data Data to append
+	 * @return true on success, false on failure
 	 */
 	
 	if (this->head + size < DG_STRING_BUILDER_LOCAL_LENGTH) {
 		DgMemoryCopy(size, data, this->local + this->head);
 		this->head += size;
+		return true;
+	}
+	else {
+		return false;
 	}
 }
 
-void DgStringBuilderAppend(DgStringBuilder *this, const char *data) {
+bool DgStringBuilderAppendChar(DgStringBuilder *this, char ch) {
+	/**
+	 * Append a character to the running string
+	 * 
+	 * @param this String builder
+	 * @param ch Character to append
+	 * @return true on success, false on failure
+	 */
+	
+	return DgStringBuilderAppendBytes(this, 1, &ch);
+}
+
+bool DgStringBuilderAppend(DgStringBuilder *this, const char *data) {
 	/**
 	 * Append a string to the building up string
 	 * 
 	 * @param this String builder
 	 * @param data Data to append to string
+	 * @return true on success, false on failure
 	 */
 	
-	DgStringBuilderAppendBytes(this, DgStringLength(data), data);
+	return DgStringBuilderAppendBytes(this, DgStringLength(data), data);
 }
 
 const char *DgStringBuilderGetTemp(DgStringBuilder *this) {

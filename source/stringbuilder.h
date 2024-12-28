@@ -21,8 +21,9 @@ typedef struct DgStringBuilder {
 	char local[DG_STRING_BUILDER_LOCAL_LENGTH];
 } DgStringBuilder;
 
-void DgStringBuilderInit(DgStringBuilder *this);
-void DgStringBuilderAppendBytes(DgStringBuilder *this, size_t size, const void *data);
-void DgStringBuilderAppend(DgStringBuilder *this, const char *data);
+void DgStringBuilderClear(DgStringBuilder *this);
+bool DgStringBuilderAppendBytes(DgStringBuilder *this, size_t size, const void *data);
+bool DgStringBuilderAppendChar(DgStringBuilder *this, char ch);
+bool DgStringBuilderAppend(DgStringBuilder *this, const char *data);
 const char *DgStringBuilderGetTemp(DgStringBuilder *this);
 char *DgStringBuilderGet(DgStringBuilder *this);
