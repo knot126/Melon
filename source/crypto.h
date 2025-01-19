@@ -8,6 +8,6 @@
 
 #pragma once
 
-#include "crypto_random.h"
-#include "crypto_symmetric.h"
-#include "crypto_hash.h"
+#include "crypto.random.h"
+#include "crypto.symmetric.h"
+#include "crypto.hash.h"

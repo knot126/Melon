@@ -24,7 +24,7 @@
 #include "storage.h"
 #include "log.h"
 
-#include "storage_filesystem.h"
+#include "storage.filesystem.h"
 
 typedef struct {
 	const char *basedir;

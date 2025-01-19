@@ -9,7 +9,7 @@
 #include "string.h"
 #include "memory.h"
 
-#include "stringbuilder.h"
+#include "string_builder.h"
 
 void DgStringBuilderClear(DgStringBuilder *this) {
 	DgMemoryZero(this, sizeof *this);

@@ -13,6 +13,8 @@
 
 #include "file.h"
 
+/// @todo https://www.os2museum.com/wp/i-thought-i-found-a-bug/#more-6762
+
 DgError DgFileStream_Open(DgStream *stream, const char *path, DgStreamOpenFlags flags) {
 	const char *mode = "rb";
 	
@@ -67,6 +69,7 @@ DgError DgFileStream_Seek(DgStream *stream, DgStreamSeekBase base, int64_t offse
 		case DG_STREAM_SEEK_END: origin = SEEK_END; break;
 	}
 	
+	/// @todo 64-bit safe
 	return fseek(stream->context, offset, origin) ? DG_FAIL : DG_SUCCESS;
 }
 

@@ -29,7 +29,7 @@
 // ...
 #endif
 
-#include "crypto_random.h"
+#include "crypto.random.h"
 
 DgError DgRandom(size_t size, void *buffer) {
 	/**
@@ -60,9 +60,6 @@ DgError DgRandom(size_t size, void *buffer) {
 	 * @see https://learn.microsoft.com/en-us/windows/win32/seccng/cng-algorithm-pseudo-handles
 	 * 
 	 * For linux:
-	 * 
-	 * @todo This needs to be implemented, but please avoid using /dev/(u)random
-	 * if possible becuase that is a mess.
 	 * 
 	 * @see https://sockpuppet.org/blog/2014/02/25/safely-generate-random-numbers/
 	 * @see https://www.2uo.de/myths-about-urandom/

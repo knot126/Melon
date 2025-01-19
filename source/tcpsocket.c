@@ -21,7 +21,7 @@
 #include "log.h"
 #include "error.h"
 #include "string.h"
-#include "stringbuilder.h"
+#include "string_builder.h"
 #include "memory.h"
 #include "bytes.h"
 

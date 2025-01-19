@@ -79,7 +79,7 @@ bool DgStreamIsSwappingEndian(DgStream *context);
 size_t DgStreamLength(DgStream *context);
 DgError DgStreamLoad(DgStream *context, size_t *size, void **buffer, bool add_nul);
 
-#include "storage_generated.h.part"
+#include "stream_generated.h.part"
 
 DgError DgStreamWriteString(DgStream * restrict context, const char * restrict data);
 DgError DgStreamWriteIntegerString(DgStream *context, int64_t data);

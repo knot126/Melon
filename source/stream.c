@@ -288,7 +288,34 @@ DgError DgStreamLoad(DgStream *context, size_t *size, void **buffer, bool add_nu
 
 // Some extra storage functions that are automatically generated and for which
 // there are too many of to put in this file directly.
-#include "storage_generated.c.part"
+#include "stream_generated.c.part"
+
+char *DgStreamReadString(DgStream * restrict context, size_t size) {
+	/**
+	 * Read a string of a given length into a dynamic buffer and return it.
+	 * 
+	 * @warning You must free the returned string.
+	 * 
+	 * @param context Stream object
+	 * @param size Size of the string in bytes
+	 * @return Pointer to a NUL-terminated string, or NULL on failure
+	 */
+	
+	char *string = DgMemoryAllocate(size + 1);
+	
+	if (!string) {
+		return NULL;
+	}
+	
+	if (DgStreamRead(context, size, string)) {
+		DgMemoryFree(string);
+		return NULL;
+	}
+	
+	string[size] = '\0';
+	
+	return string;
+}
 
 DgError DgStreamWriteString(DgStream * restrict context, const char * restrict data) {
 	/**

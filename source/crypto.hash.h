@@ -8,4 +8,4 @@
 
 #pragma once
 
-#include "crypto_hash_cubehash.h"
+#include "crypto.hash.cubehash.h"
