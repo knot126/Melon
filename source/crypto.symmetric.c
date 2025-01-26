@@ -1,5 +1,5 @@
 /**
- * Melon Software Framework is Copyright (C) 2021 - 2024 Knot126
+ * Melon Software Framework is Copyright (C) 2021 - 2025 Knot126
  * 
  * =============================================================================
  * 
@@ -124,6 +124,8 @@ static size_t DgCryptoChaChaState_CryptWithRemainingBlock(DgCryptoChaChaState *t
 	/**
 	 * Encrypt up to `size` bytes or `this->remaining_keystream` bytes,
 	 * whichever is less, and return the amount encrypted.
+	 * 
+	 * @comment knot126 this code is a tombstone
 	 */
 	
 	size_t amount = (this->remaining_keystream < size) ? this->remaining_keystream : size;

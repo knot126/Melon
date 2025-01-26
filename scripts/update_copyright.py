@@ -6,10 +6,11 @@ import os
 from pathlib import Path
 
 OLD = """/**
- * Copyright (C) 2021 - 2023 Knot126 and Descentix Software
- * ========================================================"""
-NEW = """/**
  * Melon Software Framework is Copyright (C) 2021 - 2024 Knot126
+ * 
+ * ============================================================================="""
+NEW = """/**
+ * Melon Software Framework is Copyright (C) 2021 - 2025 Knot126
  * 
  * ============================================================================="""
 

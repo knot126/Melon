@@ -1,9 +1,9 @@
 /**
- * Melon Software Framework is Copyright (C) 2021 - 2024 Knot126
+ * Melon Software Framework is Copyright (C) 2021 - 2025 Knot126
  * 
  * =============================================================================
  * 
- * Hashing Strings and Data
+ * Short and Fast Checksums and Hashes
  */ 
 
 #include "common.h"
@@ -51,4 +51,19 @@ uint32_t DgChecksumU32_DJB2(size_t length, const char *data) {
 	}
 	
 	return hash;
+}
+
+uint32_t DgChecksumAlder32(const uint8_t *data, size_t size) {
+	/**
+	 * Compute the Alder32 checksum of a data buffer
+	 */
+	
+	uint16_t a = 1, b = 0;
+	
+	for (size_t i = 0; i < size; i++) {
+		a += data[i];
+		b += a;
+	}
+	
+	return ((uint32_t)(b % 65521) << 16) | (a % 65521);
 }
