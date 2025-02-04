@@ -132,6 +132,14 @@ void DgMemoryStreamGetPointersAndSize(DgMemoryStream *stream, size_t *size, void
 	}
 }
 
+void *DgMemoryStreamGetHeadPointer(DgMemoryStream *stream) {
+	/**
+	 * Get a raw point to the current head as stored in stream memory.
+	 */
+	
+	return stream->data + stream->head;
+}
+
 size_t DgMemoryStreamError(DgMemoryStream *stream) {
 	/**
 	 * Get the latest error from the stream and set the error to DG_MEMORY_STREAM_OKAY.

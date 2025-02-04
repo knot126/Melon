@@ -64,7 +64,7 @@ typedef enum DgVMCondFlags {
 	DG_VMCOND_GT,
 	DG_VMCOND_LTEQ,
 	DG_VMCOND_AL, // unconditional
-};
+} DgVMCondFlags;
 
 typedef uint16_t DgVMInstruction;
 
