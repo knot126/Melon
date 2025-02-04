@@ -267,7 +267,7 @@ DgError DgArrayRemove(DgArray *this, size_t index) {
 	 * Remove one element at the given index.
 	 */
 	
-	return DgArrayRemoveND(this, index, 1, false);
+	return DgArrayRemoveND(this, index, 1, true);
 }
 
 DgError DgArrayConcat(DgArray *this, DgArray *other) {
