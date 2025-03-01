@@ -4,6 +4,7 @@ import struct
 import json
 import pathlib
 import os
+import sys
 
 BUILD_JSON = "build.json"
 BUILD_DIR = "temp"

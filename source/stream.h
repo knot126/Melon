@@ -40,6 +40,7 @@ typedef DgError (*DgStreamWriteFunction)(DgStream *context, size_t size, const v
 typedef DgError (*DgStreamGetPositionFunction)(DgStream *context, size_t *position);
 typedef DgError (*DgStreamSetPositionFunction)(DgStream *context, size_t position);
 typedef DgError (*DgStreamSeekFunction)(DgStream *context, DgStreamSeekBase base, int64_t offset);
+typedef bool (*DgStreamEOFFunction)(DgStream *context);
 
 typedef struct DgStreamImp {
 	DgStreamOpenFunction open;
@@ -49,6 +50,7 @@ typedef struct DgStreamImp {
 	DgStreamGetPositionFunction get_position;
 	DgStreamSetPositionFunction set_position; // deprecated
 	DgStreamSeekFunction seek;
+	DgStreamEOFFunction eof;
 } DgStreamImp;
 
 // Generic flags that are implemented by DgStream
@@ -71,6 +73,7 @@ DgError DgStreamWrite(DgStream *context, size_t size, const void *buffer);
 DgError DgStreamGetPosition(DgStream *context, size_t *position);
 DgError DgStreamSetPosition(DgStream *context, size_t position);
 DgError DgStreamSeek(DgStream *context, DgStreamSeekBase base, int64_t offset);
+bool DgStreamEOF(DgStream *context);
 
 void DgStreamSetEndian(DgStream *context, bool endianness);
 bool DgStreamGetEndian(DgStream *context);
@@ -81,5 +84,10 @@ DgError DgStreamLoad(DgStream *context, size_t *size, void **buffer, bool add_nu
 
 #include "stream_generated.h.part"
 
+char *DgStreamReadStringOfSize(DgStream * restrict context, size_t size);
+
 DgError DgStreamWriteString(DgStream * restrict context, const char * restrict data);
 DgError DgStreamWriteIntegerString(DgStream *context, int64_t data);
+
+DgError DgStreamReadLEB128(DgStream *this, uint64_t *value);
+DgError DgStreamWriteLEB128(DgStream *this, uint64_t value);

@@ -8,6 +8,7 @@
 
 #include "memory.h"
 #include "string.h"
+#include "string_builder.h"
 
 #include "stream.h"
 
@@ -124,6 +125,17 @@ DgError DgStreamSeek(DgStream *context, DgStreamSeekBase base, int64_t offset) {
 	 */
 	
 	return context->imp->seek ? context->imp->seek(context, base, offset) : DG_ERROR_NOT_SUPPORTED;
+}
+
+bool DgStreamEOF(DgStream *context) {
+	/**
+	 * Return true if the stream is at the end of file, and false if it's not.
+	 * 
+	 * @param context Stream object
+	 * @return if the stream is at eof
+	 */
+	
+	return context->imp->eof ? context->imp->eof(context) : false;
 }
 
 void DgStreamSetEndian(DgStream *context, bool endianness) {
@@ -290,7 +302,7 @@ DgError DgStreamLoad(DgStream *context, size_t *size, void **buffer, bool add_nu
 // there are too many of to put in this file directly.
 #include "stream_generated.c.part"
 
-char *DgStreamReadString(DgStream * restrict context, size_t size) {
+char *DgStreamReadStringOfSize(DgStream * restrict context, size_t size) {
 	/**
 	 * Read a string of a given length into a dynamic buffer and return it.
 	 * 
@@ -315,6 +327,21 @@ char *DgStreamReadString(DgStream * restrict context, size_t size) {
 	string[size] = '\0';
 	
 	return string;
+}
+
+char *DgStreamReadShortLine(DgStream * restrict context) {
+	DgStringBuilder sb;
+	DgStringBuilderClear(&sb);
+	
+	char ch = 0;
+	
+	while (ch != '\n' && DgStreamRead(context, 1, &ch) == DG_ERROR_SUCCESS) {
+		if (ch != '\r') {
+			DgStringBuilderAppendChar(&sb, ch);
+		}
+	}
+	
+	return DgStringBuilderGet(&sb);
 }
 
 DgError DgStreamWriteString(DgStream * restrict context, const char * restrict data) {
@@ -347,6 +374,58 @@ DgError DgStreamWriteIntegerString(DgStream *context, int64_t data) {
 	DgError error = DgStreamWrite(context, DgStringLength(str), (void *) str);
 	
 	DgMemoryFree(str);
+	
+	return error;
+}
+
+DgError DgStreamReadLEB128(DgStream *this, uint64_t *value) {
+	/**
+	 * Read an LEB128 encoded unsigned integer.
+	 * 
+	 * @param this Stream to read from
+	 * @param value Pointer to where the value will be stored
+	 * @return Any error while reading the integer; the stream may not be in a
+	 * consistent state.
+	 */
+	
+	DgError error;
+	uint64_t result = 0;
+	bool reading = true;
+	
+	for (size_t i = 0; reading; i++) {
+		uint8_t part;
+		error = DgStreamReadUInt8(this, &part);
+		if (error) { break; }
+		result |= part << (7 * i);
+		reading = (part >> 7);
+	}
+	
+	if (!error) {
+		*value = result;
+	}
+	
+	return error;
+}
+
+DgError DgStreamWriteLEB128(DgStream *this, uint64_t value) {
+	/**
+	 * Write a LEB128 encoded unsigned integer.
+	 * 
+	 * @param this Stream to write to
+	 * @param value Value to write
+	 * @return Error while writing the integer; the integer could be only
+	 * partially written
+	 */
+	
+	DgError error;
+	
+	while (value) {
+		uint8_t part = value & 0x7f;
+		value >>= 7;
+		part |= (value ? 0x80 : 0);
+		error = DgStreamWriteUInt8(this, part);
+		if (error) { break; }
+	}
 	
 	return error;
 }

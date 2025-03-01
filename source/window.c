@@ -18,19 +18,160 @@
 #include "maths.h"
 #include "bitmap.h"
 #include "error.h"
+#include "memory.h"
+#include "library.h"
 
 #include "window.h"
 
-#if defined(DG_USE_SDL2) || defined(DG_USE_X11)
+DgWindow *gDefaultWindow;
 
-#ifdef DG_USE_SDL2
-#include <SDL2/SDL.h>
+// Windowing under linux, it's hell
+#ifdef __linux__
 
-static uint32_t gWindowCount_ = 0;
-#elif defined(DG_USE_X11)
+#if defined(DG_ENABLE_X11) && defined(DG_ENABLE_WAYLAND)
+	#define SELECT(SYM, ...) {\
+		switch (this->backend) { \
+			case DG_WINDOW_WAYLAND: \
+				result = SYM ## _Wayland(__VA_ARGS__)\
+				break;\
+			\
+			case DG_WINDOW_X11:\
+				result = SYM ## _X11(__VA_ARGS__)\
+				break;\
+			\
+			default: DgLog(DG_LOG_WARNING, "Unknown window backend: %d", this->backend); break;\
+		}\
+	}
+#elif defined(DG_ENABLE_WAYLAND)
+	#define SELECT(SYM, ...) result = SYM ## _Wayland(__VA_ARGS__);
+#elif defined(DG_ENABLE_X11)
+	#define SELECT(SYM, ...) result = SYM ## _X11(__VA_ARGS__);
+#else
+	#define SELECT(SYM, ...)
+#endif
+
+// Wayland specific functions
+#ifdef DG_ENABLE_WAYLAND
+#include <wayland-client-core.h>
+
+DgError DgWindowInit_Wayland(DgWindow *this, const char *title, DgVec2I size) {
+	return DG_ERROR_NOT_IMPLEMENTED;
+}
+
+int DgWindowFree_Wayland(DgWindow *this) {
+	return 0;
+}
+
+bool DgWindowUpdate_Wayland(DgWindow *this) {
+	return false;
+}
+
+void *DgWindowGetNativeDisplayHandleForEGL_Wayland(DgWindow *this) {
+	return (void *) this->wl.display;
+}
+
+void *DgWindowGetNativeWindowHandleForEGL_Wayland(DgWindow *this) {
+	return (void *) this->wl.surface;
+}
+#endif
+
+// X11 specific functions
+#ifdef DG_ENABLE_X11
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <signal.h>
+
+DgError DgWindowInit_X11(DgWindow *this, const char *title, DgVec2I size) {
+	DgError error = DgLibraryInit(&this->x11.lib, "X11");
+	
+	if (error) {
+		return DG_ERROR_FAILED;
+	}
+	
+	Display *(*XOpenDisplay)(const char *) = DgLibraryGetSymbol(&this->x11.lib, "XOpenDisplay");
+	int (*XDefaultScreen)(Display *) = DgLibraryGetSymbol(&this->x11.lib, "XDefaultScreen");
+	Window (*XRootWindow)(Display *, int) = DgLibraryGetSymbol(&this->x11.lib, "XRootWindow");
+	Visual *(*XDefaultVisual)(Display *, int) = DgLibraryGetSymbol(&this->x11.lib, "XDefaultVisual");
+	Colormap (*XCreateColormap)(Display *, Window, Visual, int) = DgLibraryGetSymbol(&this->x11.lib, "XCreateColormap");
+	int (*XFreeColormap)(Display *, Colormap) = DgLibraryGetSymbol(&this->x11.lib, "XFreeColormap");
+	int (*XCreateWindow)(Display *, Window, int, int, unsigned, unsigned, unsigned, int, int, Visual, unsigned long, XSetWindowAttributes *) = DgLibraryGetSymbol(&this->x11.lib, "XCreateWindow");
+	int (*XMapWindow)(Display *, Window) = DgLibraryGetSymbol(&this->x11.lib, "XMapWindow");
+	int (*XStoreName)(Display *, Window, const char *) = DgLibraryGetSymbol(&this->x11.lib, "XStoreName");
+	
+	if (!XOpenDisplay || !XDefaultScreen || !XRootWindow || !XDefaultVisual || !XCreateColormap || !XFreeColormap || !XCreateWindow || !XMapWindow || !XStoreName) {
+		return DG_ERROR_FAILED;
+	}
+	
+	this->x11.display = XOpenDisplay(NULL);
+	
+	if (!this->x11.display) {
+		return DG_ERROR_FAILED;
+	}
+	
+	int screen = XDefaultScreen(this->x11.display);
+	Window root = XRootWindow(this->x11.display, screen);
+	Visual *visual = XDefaultVisual(this->x11.display, screen);
+	Colormap colourmap = XCreateColormap(this->x11.display, root, visual, AllocNone);
+	
+	XSetWindowAttributes attributes;
+	attributes.colormap = colourmap;
+	attributes.event_mask = ExposureMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask;
+	
+	this->x11.window = XCreateWindow(this->x11.display, root, 0, 0, size.x, size.y, 0, DefaultDepth(this->display, screen), InputOutput, visual, CWColormap | CWEventMask, &attributes);
+	
+	XFreeColormap(this->x11.display, colourmap);
+	
+	XMapWindow(this->x11.display, this->x11.window);
+	XStoreName(this->x11.display, this->x11.window, title);
+	
+	if (!this->x11.window) {
+		return DG_ERROR_FAILED;
+	}
+	
+	this->size = size;
+	this->should_close = false;
+	this->backend = DG_WINDOW_X11;
+	
+	return DG_ERROR_SUCCESSFUL;
+}
+
+int DgWindowFree_X11(DgWindow *this) {
+	void (*XDestroyWindow)(Display, Window) = DgLibraryGetSymbol(&this->x11.lib, "XDestroyWindow");
+	void (*XCloseDisplay)(Display) = DgLibraryGetSymbol(&this->x11.lib, "XCloseDisplay");
+	
+	XDestroyWindow(this->x11.display, this->x11.window);
+	XCloseDisplay(this->x11.display);
+	
+	DgLibraryFree(&this->x11.lib);
+	
+	return 0;
+}
+
+bool DgWindowUpdate_X11(DgWindow *this) {
+	while (XPending(this->display)) {
+		XEvent event;
+		
+		XNextEvent(this->display, &event);
+		
+		if (event.type == KeyPress) {
+			// this->should_close = true;
+		}
+		else if (event.type == DestroyNotify) {
+			this->should_close = true;
+		}
+	}
+	
+	return true;
+}
+
+void *DgWindowGetNativeDisplayHandleForEGL_X11(DgWindow *this) {
+	return (void *) this->x11.display;
+}
+
+void *DgWindowGetNativeWindowHandleForEGL_X11(DgWindow *this) {
+	return (void *) this->x11.window;
+}
+#endif
 #endif
 
 DgError DgWindowInit(DgWindow *this, const char *title, DgVec2I size) {
@@ -41,49 +182,22 @@ DgError DgWindowInit(DgWindow *this, const char *title, DgVec2I size) {
 	 * @return Zero on success, non-zero on failure
 	 */
 	
-#ifdef DG_USE_SDL2
-	gWindowCount_++;
+	DgMemoryZero(this, sizeof *this);
 	
-	if (!SDL_WasInit(0)) {
-		SDL_Init(SDL_INIT_VIDEO);
+	DgError error = DG_ERROR_NOT_IMPLEMENTED;
+	
+#ifdef DG_ENABLE_WAYLAND
+	if (error) {
+		error = DgWindowInit_Wayland(this, title, size);
 	}
-	
-	this->window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, size.x, size.y, 0);
-	this->surface = SDL_GetWindowSurface(this->window);
-#elif defined(DG_USE_X11)
-	this->display = XOpenDisplay(NULL);
-	
-	if (!this->display) {
-		DgRaise("XDisplayError", "Failed to get X display");
-		return DG_ERROR_FAILED;
-	}
-	
-	int screen = DefaultScreen(this->display);
-	Window root = RootWindow(this->display, screen);
-	Visual *visual = DefaultVisual(this->display, screen);
-	Colormap colourmap = XCreateColormap(this->display, root, visual, AllocNone);
-	
-	XSetWindowAttributes attributes;
-	attributes.colormap = colourmap;
-	attributes.event_mask = ExposureMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask;
-	
-	this->window = XCreateWindow(this->display, root, 0, 0, size.x, size.y, 0, DefaultDepth(this->display, screen), InputOutput, visual, CWColormap | CWEventMask, &attributes);
-	
-	XFreeColormap(this->display, colourmap);
-	
-	XMapWindow(this->display, this->window);
-	XStoreName(this->display, this->window, title);
-	
-	if (!this->window) {
-		DgRaise("XWindowError", "Failed to create X window");
-		return DG_ERROR_FAILED;
+#endif
+#ifdef DG_ENABLE_X11
+	if (error) {
+		error = DgWindowInit_X11(this, title, size);
 	}
 #endif
 	
-	this->size = size;
-	this->should_close = false;
-	
-	return DG_ERROR_SUCCESSFUL;
+	return error;
 }
 
 void DgWindowFree(DgWindow *this) {
@@ -93,138 +207,35 @@ void DgWindowFree(DgWindow *this) {
 	 * @param this Window object
 	 */
 	
-#ifdef DG_USE_SDL2
-	gWindowCount_--;
+	int result; // unused
 	
-	if (gWindowCount_ == 0) {
-		SDL_Quit();
-	}
-#elif defined(DG_USE_X11)
-	XDestroyWindow(this->display, this->window);
-	XCloseDisplay(this->display);
-#endif
+	SELECT(DgWindowFree, this);
 }
 
-DgWindowStatus DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
+bool DgWindowUpdate(DgWindow *this) {
 	/**
 	 * Display new changes to a window.
 	 * 
-	 * @note bitmap can be NULL if you have an assocaited bitmap (or you just
-	 * like to draw unknown memory...)
-	 * 
-	 * @warning The currently active bitmap must not have less pixels than the
-	 * window surface or there will be a buffer overrun.
-	 * 
-	 * @warning The currently active bitmap must be 24-bits.
-	 * 
 	 * @param this Window object
-	 * @return DG_WINDOW_CONTINUE if this window draw succeeded
-	 *         DG_WINDOW_DRAW_FAILED if drawing to the window failed
-	 *         DG_WINDOW_SHOULD_CLOSE if the window is expected to close
+	 * @return true on success, or false if there was some kind of error
 	 */
 	
-#ifdef DG_USE_SDL2
-	// Check up on events
-	SDL_Event event;
+	bool result = false;
 	
-	while (SDL_PollEvent(&event)) {
-		switch (event.type) {
-			case SDL_QUIT: {
-				this->should_close = true;
-				return DG_WINDOW_SHOULD_CLOSE;
-				break;
-			}
-		}
-	}
+	SELECT(DgWindowUpdate, this);
 	
-	// Draw the window
-	if (bitmap) {
-		uint32_t *wd = (uint32_t *) this->surface->pixels;
-		uint32_t pixel_count = this->size.x * this->size.y;
-		uint8_t *data = bitmap->src;
-		
-		for (size_t i = 0; i < pixel_count; i++) {
-			wd[i] = SDL_MapRGBA(this->surface->format, data[(i * 3)], data[(i * 3) + 1], data[(i * 3) + 2], 0xff);
-		}
-	}
-	
-	return SDL_UpdateWindowSurface(this->window) ? DG_WINDOW_DRAW_FAILED : DG_WINDOW_CONTINUE;
-#elif defined(DG_USE_X11)
-	while (XPending(this->display)) {
-		XEvent event;
-		
-		XNextEvent(this->display, &event);
-		
-		if (event.type == KeyPress) {
-			this->should_close = true;
-		}
-		else if (event.type == DestroyNotify) {
-			this->should_close = true;
-		}
-	}
-	
-	return DG_WINDOW_CONTINUE;
-#endif
+	return result;
 }
 
-DgError DgWindowAssocaiteBitmap(DgWindow * restrict this, DgBitmap * restrict bitmap) {
-	/**
-	 * Assocaite a bitmap object with a window for faster rendering.
-	 * 
-	 * @note To use the bitmap, you must call DgWindowUpdate with a bitmap of
-	 * NULL otherwise it just copies normally.
-	 * 
-	 * @param this Window object
-	 * @param bitmap Bitmap object
-	 */
-	
-#ifdef DG_USE_SDL2
-	DgBitmapSetSource(bitmap, this->surface->pixels, this->size, 4);
-	
-	return DG_ERROR_SUCCESSFUL;
-#else
-	return DG_ERROR_NOT_IMPLEMENTED;
-#endif
-}
-
-DgVec2 DgWindowGetMouseLocation(DgWindow * restrict this) {
-	/**
-	 * Return the current mouse position.
-	 * 
-	 * @param this Window object
-	 * @return Cursor position relative to window
-	 */
-	
-#ifdef DG_USE_SDL2
-	int x, y;
-	
-	SDL_PumpEvents();
-	SDL_GetMouseState(&x, &y);
-	
-	return (DgVec2) {(float)(x) / (float)(this->size.x), ((float)(y) / (float)(this->size.y))};
-#else
-	return (DgVec2) {0.0, 0.0};
-#endif
-}
-
-DgVec2I DgWindowGetMouseLocation2(DgWindow * restrict this) {
+DgVec2I DgWindowGetMouseLocation(DgWindow * restrict this) {
 	/**
 	 * Return the current mouse position in window coordinates.
 	 * 
-	 * @param this Window object (not needed using SDL backend)
+	 * @param this Window object
 	 * @return Cursor position relative to window in window coordinates
 	 */
 	
-#ifdef DG_USE_SDL2
-	int x, y;
-	
-	SDL_PumpEvents();
-	SDL_GetMouseState(&x, &y);
-	
-	return (DgVec2I) {x, y};
-#else
-	return (DgVec2I) {0, 0};
-#endif
+	return this->mouse_pos;
 }
 
 bool DgWindowGetMouseDown(DgWindow * restrict this) {
@@ -235,38 +246,7 @@ bool DgWindowGetMouseDown(DgWindow * restrict this) {
 	 * @return Cursor position relative to window
 	 */
 	
-#if DG_USE_SDL2
-	SDL_PumpEvents();
-	return !!(SDL_GetMouseState(NULL, NULL) & SDL_BUTTON_LMASK);
-#else
 	return false;
-#endif
-}
-
-void *DgWindowGetNativeDisplayHandle(DgWindow * restrict this) {
-	/**
-	 * Get the native display handle used with EGL.
-	 * 
-	 * @param this Window object
-	 * @return Handle to the native display object 
-	 */
-	
-#ifdef DG_USE_X11
-	return (void *) this->display;
-#else
-	return NULL;
-#endif
-}
-
-void *DgWindowGetNativeWindowHandle(DgWindow * restrict this) {
-	/**
-	 * Get the native window handle used with EGL.
-	 * 
-	 * @param this Window object
-	 * @return Handle to the native window object 
-	 */
-	
-	return (void *) this->window;
 }
 
 DgVec2I DgWindowGetSize(DgWindow * restrict this) {
@@ -292,7 +272,45 @@ bool DgWindowShouldClose(DgWindow * restrict this) {
 	return this->should_close;
 }
 
-#elif defined(DG_USE_WINDOWS_API)
+DgWindowBackend DgWindowGetBackend(DgWindow *this) {
+	/**
+	 * Get the name of the backend for this window.
+	 */
+	
+	return this->backend;
+}
+
+void *DgWindowGetNativeDisplayHandleForEGL(DgWindow * restrict this) {
+	/**
+	 * Get the native display handle used with EGL.
+	 * 
+	 * @param this Window object
+	 * @return Handle to the native display object 
+	 */
+	
+	void *result = NULL;
+	
+	SELECT(DgWindowGetNativeDisplayHandleForEGL, this);
+	
+	return result;
+}
+
+void *DgWindowGetNativeWindowHandleForEGL(DgWindow * restrict this) {
+	/**
+	 * Get the native window handle used with EGL.
+	 * 
+	 * @param this Window object
+	 * @return Handle to the native window object 
+	 */
+	
+	void *result = NULL;
+	
+	SELECT(DgWindowGetNativeWindowHandleForEGL, this);
+	
+	return result;
+}
+
+#if defined(_WIN32)
 
 #include <windows.h>
 
@@ -383,27 +401,27 @@ DgWindowStatus DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
 	
 	while (PeekMessage(&message, this->window_handle, 0, 0, PM_NOREMOVE) == 1) {
 		// Any extra handles for the message
-		if (message.message == WM_PAINT) {
-			PAINTSTRUCT ps;
-			HDC hdc = BeginPaint(this->window_handle, &ps);
-			
-			int width = bitmap->width;
-			int height = bitmap->height;
-			
-			BITMAPINFOHEADER psHeaderGlobal = {0};
-			psHeaderGlobal.biSize = sizeof(BITMAPINFOHEADER);
-			psHeaderGlobal.biWidth = width;
-			psHeaderGlobal.biHeight = height;
-			psHeaderGlobal.biPlanes = 1;
-			psHeaderGlobal.biBitCount = 24;
-			
-			BITMAPINFOHEADER* psHeader = &psHeaderGlobal;
-			
-			SetDIBitsToDevice(hdc, 0, 0, width, height, 0, 0, 0, height, (void *) bitmap->src, (BITMAPINFO *) psHeader, DIB_RGB_COLORS);
-			
-			EndPaint(this->window_handle, &ps);
-			break;
-		}
+// 		if (message.message == WM_PAINT) {
+// 			PAINTSTRUCT ps;
+// 			HDC hdc = BeginPaint(this->window_handle, &ps);
+// 			
+// 			int width = bitmap->width;
+// 			int height = bitmap->height;
+// 			
+// 			BITMAPINFOHEADER psHeaderGlobal = {0};
+// 			psHeaderGlobal.biSize = sizeof(BITMAPINFOHEADER);
+// 			psHeaderGlobal.biWidth = width;
+// 			psHeaderGlobal.biHeight = height;
+// 			psHeaderGlobal.biPlanes = 1;
+// 			psHeaderGlobal.biBitCount = 24;
+// 			
+// 			BITMAPINFOHEADER* psHeader = &psHeaderGlobal;
+// 			
+// 			SetDIBitsToDevice(hdc, 0, 0, width, height, 0, 0, 0, height, (void *) bitmap->src, (BITMAPINFO *) psHeader, DIB_RGB_COLORS);
+// 			
+// 			EndPaint(this->window_handle, &ps);
+// 			break;
+// 		}
 		
 		// Remove message
 		PeekMessage(&message, this->window_handle, 0, 0, PM_REMOVE);
@@ -423,18 +441,6 @@ DgWindowStatus DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
 	return 0;
 }
 
-DgError DgWindowAssocaiteBitmap(DgWindow * restrict this, DgBitmap * restrict bitmap) {
-	/**
-	 * Assocaite a bitmap with the window.
-	 */
-	
-	this->bitmap = bitmap;
-	
-	DgBitmapSetFlags(this->bitmap, DgBitmapGetFlags(this->bitmap) | DG_BITMAP_UNFUCK_RGB);
-	
-	return DG_ERROR_SUCCESSFUL;
-}
-
 DgVec2 DgWindowGetMouseLocation(DgWindow *this) {
 	return (DgVec2) {0.0f, 0.0f};
 }
@@ -446,35 +452,4 @@ DgVec2I DgWindowGetMouseLocation2(DgWindow *this) {
 bool DgWindowGetMouseDown(DgWindow *this) {
 	return false;
 }
-
-#else
-
-DgError DgWindowInit(DgWindow *this, const char *title, DgVec2I size) {
-	return 0;
-}
-
-void DgWindowFree(DgWindow *this) {
-	return;
-}
-
-DgWindowStatus DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
-	return 1;
-}
-
-DgError DgWindowAssocaiteBitmap(DgWindow * restrict this, DgBitmap * restrict bitmap) {
-	return DG_ERROR_NOT_IMPLEMENTED;
-}
-
-DgVec2 DgWindowGetMouseLocation(DgWindow *this) {
-	return (DgVec2) {0.0f, 0.0f};
-}
-
-DgVec2I DgWindowGetMouseLocation2(DgWindow *this) {
-	return (DgVec2I) {0, 0};
-}
-
-bool DgWindowGetMouseDown(DgWindow *this) {
-	return false;
-}
-
 #endif
