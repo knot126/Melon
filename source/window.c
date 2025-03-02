@@ -82,7 +82,7 @@ void *DgWindowGetNativeWindowHandleForEGL_Wayland(DgWindow *this) {
 #include <signal.h>
 
 DgError DgWindowInit_X11(DgWindow *this, const char *title, DgVec2I size) {
-	DgError error = DgLibraryInit(&this->x11.lib, "X11");
+	DgError error = DgLibraryInit(&this->x11.lib, "libX11.so");
 	
 	if (error) {
 		return DG_ERROR_FAILED;
@@ -92,11 +92,12 @@ DgError DgWindowInit_X11(DgWindow *this, const char *title, DgVec2I size) {
 	int (*XDefaultScreen)(Display *) = DgLibraryGetSymbol(&this->x11.lib, "XDefaultScreen");
 	Window (*XRootWindow)(Display *, int) = DgLibraryGetSymbol(&this->x11.lib, "XRootWindow");
 	Visual *(*XDefaultVisual)(Display *, int) = DgLibraryGetSymbol(&this->x11.lib, "XDefaultVisual");
-	Colormap (*XCreateColormap)(Display *, Window, Visual, int) = DgLibraryGetSymbol(&this->x11.lib, "XCreateColormap");
+	Colormap (*XCreateColormap)(Display *, Window, Visual *, int) = DgLibraryGetSymbol(&this->x11.lib, "XCreateColormap");
 	int (*XFreeColormap)(Display *, Colormap) = DgLibraryGetSymbol(&this->x11.lib, "XFreeColormap");
-	int (*XCreateWindow)(Display *, Window, int, int, unsigned, unsigned, unsigned, int, int, Visual, unsigned long, XSetWindowAttributes *) = DgLibraryGetSymbol(&this->x11.lib, "XCreateWindow");
+	int (*XCreateWindow)(Display *, Window, int, int, unsigned, unsigned, unsigned, int, int, Visual *, unsigned long, XSetWindowAttributes *) = DgLibraryGetSymbol(&this->x11.lib, "XCreateWindow");
 	int (*XMapWindow)(Display *, Window) = DgLibraryGetSymbol(&this->x11.lib, "XMapWindow");
 	int (*XStoreName)(Display *, Window, const char *) = DgLibraryGetSymbol(&this->x11.lib, "XStoreName");
+	int (*XDefaultDepth)(Display *, int) = DgLibraryGetSymbol(&this->x11.lib, "XDefaultDepth");
 	
 	if (!XOpenDisplay || !XDefaultScreen || !XRootWindow || !XDefaultVisual || !XCreateColormap || !XFreeColormap || !XCreateWindow || !XMapWindow || !XStoreName) {
 		return DG_ERROR_FAILED;
@@ -117,7 +118,8 @@ DgError DgWindowInit_X11(DgWindow *this, const char *title, DgVec2I size) {
 	attributes.colormap = colourmap;
 	attributes.event_mask = ExposureMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask;
 	
-	this->x11.window = XCreateWindow(this->x11.display, root, 0, 0, size.x, size.y, 0, DefaultDepth(this->display, screen), InputOutput, visual, CWColormap | CWEventMask, &attributes);
+	int default_depth = XDefaultDepth(this->x11.display, screen);
+	this->x11.window = XCreateWindow(this->x11.display, root, 0, 0, size.x, size.y, 0, default_depth, InputOutput, visual, CWColormap | CWEventMask, &attributes);
 	
 	XFreeColormap(this->x11.display, colourmap);
 	
@@ -136,8 +138,8 @@ DgError DgWindowInit_X11(DgWindow *this, const char *title, DgVec2I size) {
 }
 
 int DgWindowFree_X11(DgWindow *this) {
-	void (*XDestroyWindow)(Display, Window) = DgLibraryGetSymbol(&this->x11.lib, "XDestroyWindow");
-	void (*XCloseDisplay)(Display) = DgLibraryGetSymbol(&this->x11.lib, "XCloseDisplay");
+	void (*XDestroyWindow)(Display *, Window) = DgLibraryGetSymbol(&this->x11.lib, "XDestroyWindow");
+	void (*XCloseDisplay)(Display *) = DgLibraryGetSymbol(&this->x11.lib, "XCloseDisplay");
 	
 	XDestroyWindow(this->x11.display, this->x11.window);
 	XCloseDisplay(this->x11.display);
@@ -148,10 +150,10 @@ int DgWindowFree_X11(DgWindow *this) {
 }
 
 bool DgWindowUpdate_X11(DgWindow *this) {
-	while (XPending(this->display)) {
+	while (XPending(this->x11.display)) {
 		XEvent event;
 		
-		XNextEvent(this->display, &event);
+		XNextEvent(this->x11.display, &event);
 		
 		if (event.type == KeyPress) {
 			// this->should_close = true;

@@ -52,18 +52,18 @@ typedef struct DgWindow {
 #ifdef __linux__
 	union {
 #if defined(DG_ENABLE_X11)
-		struct x11 {
-			DgLibrary *lib;
+		struct {
+			DgLibrary lib;
 			void *display;
 			uint32_t window; // X headers say this should be 32-bit unsigned, so
 			                 // just make it and don't bother with X11 headers.
-		};
+		} x11;
 #endif
 #if defined(DG_ENABLE_WAYLAND)
-		struct wl {
+		struct {
 			struct wl_display *display;
 			struct wl_surface *surface;
-		};
+		} wl;
 #endif
 	};
 #elif defined(_WIN32)

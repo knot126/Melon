@@ -10,4 +10,4 @@
 
 #include "table.h"
 
-DgError DgSerialiseWrite(DgStorage *storage, const char *path, DgValue * restrict value);
+DgError DgSerialiseWrite(DgStream *stream, DgValue * restrict value);

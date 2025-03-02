@@ -7,7 +7,7 @@
  */
 
 #include "machine.h"
-#include "storage.h"
+#include "stream.h"
 #include "bytes.h"
 #include "array.h"
 #include "table.h"
@@ -33,7 +33,7 @@ DgError DgSerialiseWriteValue(DgStream * restrict stream, const DgValue * restri
 	DgValueType type = value->type;
 	
 	// Write the type ID
-	status = DgStreamWriteUInt16(stream, type);
+	status = DgStreamWriteLEB128(stream, type);
 	
 	if (status) {
 		return status;
@@ -46,30 +46,12 @@ DgError DgSerialiseWriteValue(DgStream * restrict stream, const DgValue * restri
 		case DG_TYPE_BOOL:
 			status = DgStreamWriteInt8(stream, value->data.asBool);
 			break;
-		case DG_TYPE_INT8:
-			status = DgStreamWriteInt8(stream, value->data.asInt8);
-			break;
-		case DG_TYPE_UINT8:
-			status = DgStreamWriteUInt8(stream, value->data.asUInt8);
-			break;
-		case DG_TYPE_INT16:
-			status = DgStreamWriteInt16(stream, value->data.asInt16);
-			break;
-		case DG_TYPE_UINT16:
-			status = DgStreamWriteUInt16(stream, value->data.asUInt16);
-			break;
-		case DG_TYPE_INT32:
-			status = DgStreamWriteInt32(stream, value->data.asInt32);
-			break;
-		case DG_TYPE_UINT32:
-			status = DgStreamWriteUInt32(stream, value->data.asUInt32);
-			break;
 		case DG_TYPE_INT64:
+			// Signed int's are not yet supported LEB in 2.0 :(
 			status = DgStreamWriteInt64(stream, value->data.asInt64);
 			break;
 		case DG_TYPE_UINT64:
-		case DG_TYPE_POINTER:
-			status = DgStreamWriteUInt64(stream, value->data.asUInt64);
+			status = DgStreamWriteLEB128(stream, value->data.asUInt64);
 			break;
 		case DG_TYPE_STRING:
 			status = DgStreamWriteString(stream, value->data.asStaticString);
@@ -99,7 +81,7 @@ DgError DgSerialiseWriteValue(DgStream * restrict stream, const DgValue * restri
 			DgArray *array = value->data.asArray;
 			size_t length = DgArrayLength(array);
 			
-			status = DgStreamWriteUInt64(stream, length);
+			status = DgStreamWriteLEB128(stream, length);
 			
 			if (status) {
 				return status;
@@ -121,7 +103,7 @@ DgError DgSerialiseWriteValue(DgStream * restrict stream, const DgValue * restri
 			DgTable *table = value->data.asTable;
 			size_t length = DgTableLength(table);
 			
-			status = DgStreamWriteUInt64(stream, length);
+			status = DgStreamWriteLEB128(stream, length);
 			
 			if (status) {
 				return status;
@@ -150,41 +132,29 @@ DgError DgSerialiseWriteValue(DgStream * restrict stream, const DgValue * restri
 	return status;
 }
 
-DgError DgSerialiseWrite(DgStorage *storage, const char *path, DgValue * restrict value) {
+DgError DgSerialiseWrite(DgStream *stream, DgValue * restrict value) {
 	/**
 	 * Write the value to the given file path.
 	 * 
-	 * @param storage Storage object to use
-	 * @param path Path to write to
+	 * @param stream Stream to write data to
 	 * @param value Value to write
 	 * @return Error status
 	 */
 	
 	// Open stream
-	DgStream stream;
-	DgError status = DgStorageOpen(storage, &stream, path, DG_STREAM_WRITE);
-	
-	if (status != DG_ERROR_SUCCESS) {
-		DgLog(DG_LOG_ERROR, "Serialise: Failed to open stream: '%s'", path);
-		return status;
-	}
-	
-	DgStreamSetEndian(&stream, DG_ENDIAN_BIG);
+	DgStreamSetEndian(&stream, DG_ENDIAN_LITTLE);
 	
 	// Magic number
-	status = DgStreamWriteUInt32(&stream, 0xFC991E51); // FURRIES!
+	DgError status = DgStreamWriteUInt32(&stream, 0xFC991E51); // FURRIES!
 	CHECK_STATUS(status, onfail);
 	
 	// Version
-	status = DgStreamWriteUInt16(&stream, 1); CHECK_STATUS(status, onfail);
-	status = DgStreamWriteUInt16(&stream, 0); CHECK_STATUS(status, onfail);
+	status = DgStreamWriteLEB128(&stream, 2); CHECK_STATUS(status, onfail);
+	status = DgStreamWriteLEB128(&stream, 0); CHECK_STATUS(status, onfail);
 	
 	// Serialise root value
 	status = DgSerialiseWriteValue(&stream, value);
 	
 	onfail:
-	// Close stream
-	DgStreamClose(&stream);
-	
 	return status;
 }
