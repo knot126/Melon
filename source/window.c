@@ -81,6 +81,8 @@ void *DgWindowGetNativeWindowHandleForEGL_Wayland(DgWindow *this) {
 #include <X11/Xutil.h>
 #include <signal.h>
 
+#define X11_SYM(RET, SYM, SIG) RET (*SYM)SIG = DgLibraryGetSymbol(&this->x11.lib, #SYM)
+
 DgError DgWindowInit_X11(DgWindow *this, const char *title, DgVec2I size) {
 	DgError error = DgLibraryInit(&this->x11.lib, "libX11.so");
 	
@@ -150,6 +152,9 @@ int DgWindowFree_X11(DgWindow *this) {
 }
 
 bool DgWindowUpdate_X11(DgWindow *this) {
+	X11_SYM(int, XPending, (Display *));
+	X11_SYM(void, XNextEvent, (Display *, XEvent *));
+	
 	while (XPending(this->x11.display)) {
 		XEvent event;
 		
