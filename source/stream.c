@@ -388,13 +388,12 @@ DgError DgStreamReadLEB128(DgStream *this, uint64_t *value) {
 	 * consistent state.
 	 */
 	
-	DgError error;
+	DgError error = DG_ERROR_SUCCESS;
 	uint64_t result = 0;
 	bool reading = true;
 	
 	for (size_t i = 0; reading; i++) {
-		uint8_t part;
-		error = DgStreamReadUInt8(this, &part);
+		uint8_t part = DgStreamReadUInt8(this, &error);
 		if (error) { break; }
 		result |= part << (7 * i);
 		reading = (part >> 7);

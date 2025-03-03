@@ -52,7 +52,7 @@ DgWindow *gDefaultWindow;
 
 // Wayland specific functions
 #ifdef DG_ENABLE_WAYLAND
-#include <wayland-client-core.h>
+#include <wayland-client-protocol.h>
 
 DgError DgWindowInit_Wayland(DgWindow *this, const char *title, DgVec2I size) {
 	return DG_ERROR_NOT_IMPLEMENTED;

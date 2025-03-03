@@ -142,18 +142,18 @@ DgError DgSerialiseWrite(DgStream *stream, DgValue * restrict value) {
 	 */
 	
 	// Open stream
-	DgStreamSetEndian(&stream, DG_ENDIAN_LITTLE);
+	DgStreamSetEndian(stream, DG_ENDIAN_LITTLE);
 	
 	// Magic number
-	DgError status = DgStreamWriteUInt32(&stream, 0xFC991E51); // FURRIES!
+	DgError status = DgStreamWriteUInt32(stream, 0xFC991E51); // FURRIES!
 	CHECK_STATUS(status, onfail);
 	
 	// Version
-	status = DgStreamWriteLEB128(&stream, 2); CHECK_STATUS(status, onfail);
-	status = DgStreamWriteLEB128(&stream, 0); CHECK_STATUS(status, onfail);
+	status = DgStreamWriteLEB128(stream, 2); CHECK_STATUS(status, onfail);
+	status = DgStreamWriteLEB128(stream, 0); CHECK_STATUS(status, onfail);
 	
 	// Serialise root value
-	status = DgSerialiseWriteValue(&stream, value);
+	status = DgSerialiseWriteValue(stream, value);
 	
 	onfail:
 	return status;

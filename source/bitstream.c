@@ -86,7 +86,8 @@ DgError DgBitStreamReadBit(DgBitStream *this, bool *bit) {
 	 */
 	
 	if (!this->amount_queued_in) {
-		DgError e = DgStreamReadUInt8(this->base, &this->queued_in);
+		DgError e;
+		this->queued_in = DgStreamReadUInt8(this->base, &e);
 		if (e) { return e; }
 		this->amount_queued_in = 8;
 	}
