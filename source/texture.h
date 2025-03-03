@@ -25,7 +25,7 @@ typedef struct DgTexture {
 		uint32_t *pixels32;
 		float *pixelsf;
 	};
-	DgTextureFormat format;
 	uint32_t width;
 	uint32_t height;
+	DgTextureFormat format;
 } DgTexture;
