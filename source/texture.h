@@ -11,6 +11,9 @@
 #include "common.h"
 #include "stream.h"
 
+typedef struct { uint8_t r, g, b; } DgRGBPixel;
+typedef struct { uint8_t r, g, b, a; } DgRGBAPixel;
+
 typedef enum : uint16_t {
 	DG_TEXTURE_L = 1,
 	DG_TEXTURE_LA = 2,
@@ -21,11 +24,15 @@ typedef enum : uint16_t {
 typedef struct DgTexture {
 	union {
 		uint8_t *pixels;
-		uint16_t *pixels16;
-		uint32_t *pixels32;
-		float *pixelsf;
+		DgRGBPixel *rgb_pixels;
+		DgRGBAPixel *rgba_pixels;
 	};
 	uint32_t width;
 	uint32_t height;
 	DgTextureFormat format;
 } DgTexture;
+
+bool DgTextureLoadQOIFromStream(DgTexture *this, DgStream *stream);
+bool DgTextureLoadQOI(DgTexture *this, const char *path);
+bool DgTextureGenerateTiles(DgTexture *this);
+void DgTextureFree(DgTexture *this);

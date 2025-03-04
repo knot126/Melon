@@ -10,11 +10,12 @@
 #include "memory.h"
 #include "string.h"
 #include "stream.h"
+#include "file.h"
 
 #include "texture.h"
 
-typedef struct { uint8_t r, g, b; } RGBPixel;
-typedef struct { uint8_t r, g, b, a; } RGBAPixel;
+typedef DgRGBPixel RGBPixel;
+typedef DgRGBAPixel RGBAPixel;
 
 #define QOI_TABLE_INSERT(P) recent[(3 * P.r + 5 * P.g + 7 * P.b + 11 * P.a) & 0b111111] = P;
 #define QOI_PUT(P) { if (this->format == 4) { ((RGBAPixel *) this->pixels)[i] = P; } else { ((RGBPixel *) this->pixels)[i] = (RGBPixel) {P.r, P.g, P.b}; } }
@@ -68,7 +69,7 @@ bool DgTextureLoadQOIFromStream(DgTexture *this, DgStream *stream) {
 		}
 		
 		// RGBA pair
-		if (c == 0xff) {
+		else if (c == 0xff) {
 			prev.r = DgStreamReadUInt8(stream, NULL);
 			prev.g = DgStreamReadUInt8(stream, NULL);
 			prev.b = DgStreamReadUInt8(stream, NULL);
@@ -78,13 +79,13 @@ bool DgTextureLoadQOIFromStream(DgTexture *this, DgStream *stream) {
 		}
 		
 		// Index
-		if ((c >> 6) == 0b00) {
+		else if ((c >> 6) == 0b00) {
 			prev = recent[(c & 0b111111)];
 			QOI_PUT(prev);
 		}
 		
 		// Diff
-		if ((c >> 6) == 0b01) {
+		else if ((c >> 6) == 0b01) {
 			prev.r += ((c >> 4) & 0b11) - 2;
 			prev.g += ((c >> 2) & 0b11) - 2;
 			prev.b += ((c) & 0b11) - 2;
@@ -93,7 +94,7 @@ bool DgTextureLoadQOIFromStream(DgTexture *this, DgStream *stream) {
 		}
 		
 		// Luma
-		if ((c >> 6) == 0b10) {
+		else if ((c >> 6) == 0b10) {
 			// 10 ------ ---- ----
 			// ^      ^  ^    ^
 			// Header |  Red  Blue diff (as offset from negative green diff)
@@ -110,14 +111,60 @@ bool DgTextureLoadQOIFromStream(DgTexture *this, DgStream *stream) {
 		}
 		
 		// Run
-		if ((c >> 6) == 0b11) {
+		else if ((c >> 6) == 0b11) {
 			uint8_t run_len = (c & 0b111111) + 1;
 			
-			for (size_t j = 0; j < run_len && i < this->width * this->height; i++, j++) {
+			for (size_t j = 0; (j < run_len) && (i < this->width * this->height); i++, j++) {
 				QOI_PUT(prev);
 			}
+			
+			i--;
 		}
 	}
 	
 	return true;
+}
+
+bool DgTextureLoadQOI(DgTexture *this, const char *path) {
+	/**
+	 * Load a QOI file into a texture
+	 */
+	
+	DgStream stream;
+	DgError error = DgFileOpen(&stream, path, DG_STREAM_READ);
+	
+	if (error) {
+		return false;
+	}
+	
+	bool success = DgTextureLoadQOIFromStream(this, &stream);
+	
+	DgStreamClose(&stream);
+	
+	return success;
+}
+
+bool DgTextureGenerateTiles(DgTexture *this) {
+	this->format = DG_TEXTURE_RGB;
+	this->width = 256;
+	this->height = 256;
+	this->pixels = DgMemoryAllocate(this->width * this->height * this->format);
+	
+	if (!this->pixels) {
+		return false;
+	}
+	
+	for (size_t y = 0; y < this->height; y++) {
+		for (size_t x = 0; x < this->width; x++) {
+			uint8_t v = (((x / (this->width / 8)) & 1) ^ ((y / (this->height / 8)) & 1)) ? 0xff : 0;
+			((RGBPixel *) this->pixels)[this->width * y + x] = (RGBPixel) {v, v, v};
+		}
+	}
+	
+	return true;
+}
+
+void DgTextureFree(DgTexture *this) {
+	DgMemoryFree(this->pixels);
+	DgMemoryZero(this, sizeof *this);
 }
