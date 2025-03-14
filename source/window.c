@@ -118,7 +118,7 @@ DgError DgWindowInit_X11(DgWindow *this, const char *title, DgVec2I size) {
 	
 	XSetWindowAttributes attributes;
 	attributes.colormap = colourmap;
-	attributes.event_mask = ExposureMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask;
+	attributes.event_mask = ExposureMask | KeyPressMask | KeyReleaseMask | PointerMotionMask | StructureNotifyMask;
 	
 	int default_depth = XDefaultDepth(this->x11.display, screen);
 	this->x11.window = XCreateWindow(this->x11.display, root, 0, 0, size.x, size.y, 0, default_depth, InputOutput, visual, CWColormap | CWEventMask, &attributes);
@@ -162,6 +162,10 @@ bool DgWindowUpdate_X11(DgWindow *this) {
 		
 		if (event.type == KeyPress) {
 			// this->should_close = true;
+		}
+		else if (event.type == MotionNotify) {
+			this->mouse_pos.x = event.xmotion.x;
+			this->mouse_pos.y = event.xmotion.y;
 		}
 		else if (event.type == DestroyNotify) {
 			this->should_close = true;
@@ -381,7 +385,7 @@ void DgWindowFree(DgWindow *this) {
 	return;
 }
 
-DgWindowStatus DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
+DgWindowStatus DgWindowUpdate(DgWindow *this) {
 	/**
 	 * Update the window contents with to use the given bitmap (or NULL if using
 	 * the assocaited bitmap).
@@ -397,39 +401,7 @@ DgWindowStatus DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
 	// Invalidate the rectange so we can draw to it.
 	InvalidateRect(this->window_handle, NULL, FALSE);
 	
-	// Find the correct bitmap
-	bitmap = bitmap ? bitmap : this->bitmap;
-	
-	// If there is no bitmap, be an asre about it
-	if (!bitmap) {
-		DgLog(DG_LOG_FATAL, "No bitmap for DgWindowUpdate!!");
-		return 1;
-	}
-	
 	while (PeekMessage(&message, this->window_handle, 0, 0, PM_NOREMOVE) == 1) {
-		// Any extra handles for the message
-// 		if (message.message == WM_PAINT) {
-// 			PAINTSTRUCT ps;
-// 			HDC hdc = BeginPaint(this->window_handle, &ps);
-// 			
-// 			int width = bitmap->width;
-// 			int height = bitmap->height;
-// 			
-// 			BITMAPINFOHEADER psHeaderGlobal = {0};
-// 			psHeaderGlobal.biSize = sizeof(BITMAPINFOHEADER);
-// 			psHeaderGlobal.biWidth = width;
-// 			psHeaderGlobal.biHeight = height;
-// 			psHeaderGlobal.biPlanes = 1;
-// 			psHeaderGlobal.biBitCount = 24;
-// 			
-// 			BITMAPINFOHEADER* psHeader = &psHeaderGlobal;
-// 			
-// 			SetDIBitsToDevice(hdc, 0, 0, width, height, 0, 0, 0, height, (void *) bitmap->src, (BITMAPINFO *) psHeader, DIB_RGB_COLORS);
-// 			
-// 			EndPaint(this->window_handle, &ps);
-// 			break;
-// 		}
-		
 		// Remove message
 		PeekMessage(&message, this->window_handle, 0, 0, PM_REMOVE);
 		
@@ -448,11 +420,7 @@ DgWindowStatus DgWindowUpdate(DgWindow *this, DgBitmap *bitmap) {
 	return 0;
 }
 
-DgVec2 DgWindowGetMouseLocation(DgWindow *this) {
-	return (DgVec2) {0.0f, 0.0f};
-}
-
-DgVec2I DgWindowGetMouseLocation2(DgWindow *this) {
+DgVec2I DgWindowGetMouseLocation(DgWindow *this) {
 	return (DgVec2I) {0, 0};
 }
 
