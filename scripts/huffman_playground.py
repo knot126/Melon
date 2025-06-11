@@ -45,6 +45,31 @@ class Node:
 		s_right = ("\n" + self.right.stringify(indent + 1)) if self.right else ""
 		
 		return f"{tabs}* value = {self.value}\n{tabs}| prob = {self.prob}{s_left}{s_right}"
+	
+	### Added 2025-04-08
+	def printcode(self, partial="", ch="01"):
+		if self.left: self.left.printcode(partial + ch[0], ch)
+		if self.right: self.right.printcode(partial + ch[1], ch)
+		if self.value: print("'" + self.value + "'", partial)
+	
+	def build_codes(self, d=None, partial="", ch="01"):
+		d = d if d != None else {}
+		if self.left: self.left.build_codes(d, partial + ch[0], ch)
+		if self.right: self.right.build_codes(d, partial + ch[1], ch)
+		if self.value: d[self.value] = partial
+		return d
+	
+	def compress(self, message):
+		code = self.build_codes()
+		
+		out = ""
+		
+		for symbol in message:
+			out += code[symbol]
+		
+		return out
+	
+	###
 
 def probs_to_nodes(probs):
 	"""
@@ -95,3 +120,7 @@ if (__name__ == "__main__"):
 		r = compute_tree(probs_to_nodes(r))
 		
 		print(f"{r}")
+		
+		r.printcode()
+		
+		print(r.compress(d))

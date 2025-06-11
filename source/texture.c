@@ -17,6 +17,11 @@
 typedef DgRGBPixel RGBPixel;
 typedef DgRGBAPixel RGBAPixel;
 
+void DgTextureFree(DgTexture *this) {
+	DgMemoryFree(this->pixels);
+	DgMemoryZero(this, sizeof *this);
+}
+
 #define QOI_TABLE_INSERT(P) recent[(3 * P.r + 5 * P.g + 7 * P.b + 11 * P.a) & 0b111111] = P;
 #define QOI_PUT(P) { if (this->format == 4) { ((RGBAPixel *) this->pixels)[i] = P; } else { ((RGBPixel *) this->pixels)[i] = (RGBPixel) {P.r, P.g, P.b}; } }
 
@@ -144,6 +149,168 @@ bool DgTextureLoadQOI(DgTexture *this, const char *path) {
 	return success;
 }
 
+#define DG_QOG_REMAINING (this->width * this->height - i)
+
+bool DgTextureWriteQOGToStream(DgTexture *this, DgStream *stream) {
+	/**
+	 * Write a prototype greyscale QOI-based format to the given stream
+	 */
+	
+	if (this->format != DG_TEXTURE_L) {
+		return false;
+	}
+	
+	DgStreamWriteString(stream, "qogf");
+	DgStreamWriteUInt16(stream, this->width);
+	DgStreamWriteUInt16(stream, this->height);
+	
+	uint8_t prev = 0;
+	
+	for (size_t i = 0; i < this->width * this->height; i++) {
+		// Consider RLE
+		size_t runlen = 0;
+		
+		for (runlen = 0; i + runlen < this->width * this->height; runlen++) {
+			if (this->pixels[i + runlen] != prev) {
+				break;
+			}
+		}
+		
+		if (runlen) {
+			if (runlen > 319) {
+				runlen = 319;
+			}
+			
+			if (runlen < 63) {
+				DgStreamWriteUInt8(stream, 0xc0 | (runlen - 1));
+			}
+			else {
+				DgStreamWriteUInt8(stream, 0xfe);
+				DgStreamWriteUInt8(stream, runlen - 63);
+			}
+			
+			continue;
+		}
+		
+		// Consider tri-pixel delta encoding
+		if (DG_QOG_REMAINING >= 3) {
+			if ((this->pixels[i] - prev + 2) < 4 &&
+				(this->pixels[i+1] - this->pixels[i] + 2) < 4 &&
+				(this->pixels[i+2] - this->pixels[i+1] + 2) < 4) {
+				DgStreamWriteUInt8(stream, ((this->pixels[i] - prev + 2) << 4) | ((this->pixels[i+1] - this->pixels[i] + 2) << 2) | ((this->pixels[i+2] - this->pixels[i+1] + 2)));
+				prev = this->pixels[i+2];
+				i += 2;
+				continue;
+			}
+		}
+		
+		// Consider dual-pixel delta encoding
+		if (DG_QOG_REMAINING >= 2) {
+			if ((this->pixels[i] - prev + 4) < 8 && (this->pixels[i+1] - this->pixels[i] + 4) < 8) {
+				DgStreamWriteUInt8(stream, 0x40 | ((this->pixels[i] - prev + 4) << 3) | ((this->pixels[i+1] - this->pixels[i] + 4)));
+				prev = this->pixels[i+1];
+				i++;
+				continue;
+			}
+		}
+		
+		// Try single pixel delta
+		if ((this->pixels[i] - prev + 32) < 64) {
+			DgStreamWriteUInt8(stream, 0x80 | (this->pixels[i] - prev + 32));
+			prev = this->pixels[i];
+			continue;
+		}
+		
+		// aw damn it
+		DgStreamWriteUInt8(stream, 0xff);
+		DgStreamWriteUInt8(stream, this->pixels[i]);
+		
+		prev = this->pixels[i];
+	}
+	
+	return true;
+}
+
+#undef DG_QOG_REMAINING
+
+bool DgTextureLoadTGAFromStream(DgTexture *this, DgStream *stream) {
+	DgMemoryZero(this, sizeof *this);
+	
+	// TGA is little endian (or so I think, anyway)
+	DgStreamSetEndian(stream, DG_ENDIAN_LITTLE);
+	
+	uint8_t info_size = DgStreamReadUInt8(stream, NULL);
+	uint8_t colmap_type = DgStreamReadUInt8(stream, NULL);
+	uint8_t image_type = DgStreamReadUInt8(stream, NULL);
+	
+	// Colourmaps are not supported
+	if (colmap_type != 0) {
+		return false;
+	}
+	
+	// Enforce image type to be uncompressed truecolour
+	if (image_type != 2) {
+		return false;
+	}
+	
+	// Skip colormap info
+	DgStreamSkip(stream, 5);
+	
+	// Hotspot (ignored)
+	uint16_t hot_x = DgStreamReadUInt16(stream, NULL);
+	uint16_t hot_y = DgStreamReadUInt16(stream, NULL);
+	
+	// Size info
+	uint16_t width = DgStreamReadUInt16(stream, NULL);
+	uint16_t height = DgStreamReadUInt16(stream, NULL);
+	uint8_t depth = DgStreamReadUInt8(stream, NULL); // in bits per pixel
+	uint8_t extra = DgStreamReadUInt8(stream, NULL);
+	
+	// Skip image ID field
+	DgStreamSkip(stream, info_size);
+	
+	// Derive format info
+	uint8_t alpha_depth = (extra & 0xf);
+	bool from_right = (extra >> 4);
+	bool from_top = (extra >> 5);
+	
+	// We only support RGB and RGBA
+	if (depth != 24 && depth != 32) {
+		return false;
+	}
+	
+	// Have sanity
+	if (from_right) {
+		return false;
+	}
+	
+	// Store format (RGB or RGBA) and stuff
+	this->format = (depth >> 3);
+	this->width = width;
+	this->height = height;
+	
+	// Allocate memory for the bitmap
+	this->pixels = DgMemoryAllocate(this->width * this->height * this->format);
+	
+	if (!this->pixels) {
+		return false;
+	}
+	
+	// If we read from the top, we just need to copy one for one since it's
+	// otherwise the same format.
+	if (from_top) {
+		DgStreamRead(stream, this->width * this->height * this->format, this->pixels);
+	}
+	// Otherwise we read one scanline at a time to flip things around.
+	else {
+		for (size_t i = 0; i < this->height; i++) {
+			DgStreamRead(stream, this->width * this->format, this->pixels + ((this->height - i - 1) * this->width * this->format));
+		}
+	}
+	
+	return true;
+}
+
 bool DgTextureGenerateTiles(DgTexture *this) {
 	this->format = DG_TEXTURE_RGB;
 	this->width = 256;
@@ -164,7 +331,37 @@ bool DgTextureGenerateTiles(DgTexture *this) {
 	return true;
 }
 
-void DgTextureFree(DgTexture *this) {
+#define DG_MAX(A, B) ((A) > (B) ? (A) : (B))
+
+bool DgTextureGreyscale(DgTexture *this) {
+	/**
+	 * Convert a texture to greyscale
+	 */
+	
+	if (this->format == DG_TEXTURE_L) {
+		return true;
+	}
+	
+	uint8_t *new_pixels = DgMemoryAllocate(this->width * this->height);
+	
+	if (!new_pixels) {
+		return false;
+	}
+	
+	for (size_t i = 0; i < this->width * this->height; i++) {
+		if (this->format > 3) {
+			new_pixels[i] = DG_MAX(DG_MAX(this->pixels[this->format * i], this->pixels[this->format * i + 1]), this->pixels[this->format * i + 2]);
+		}
+		else {
+			new_pixels[i] = this->pixels[this->format * i];
+		}
+	}
+	
 	DgMemoryFree(this->pixels);
-	DgMemoryZero(this, sizeof *this);
+	this->pixels = new_pixels;
+	this->format = DG_TEXTURE_L;
+	
+	return true;
 }
+
+#undef DG_MAX

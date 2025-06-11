@@ -34,5 +34,8 @@ typedef struct DgTexture {
 
 bool DgTextureLoadQOIFromStream(DgTexture *this, DgStream *stream);
 bool DgTextureLoadQOI(DgTexture *this, const char *path);
+bool DgTextureWriteQOGToStream(DgTexture *this, DgStream *stream);
+bool DgTextureLoadTGAFromStream(DgTexture *this, DgStream *stream);
 bool DgTextureGenerateTiles(DgTexture *this);
+bool DgTextureGreyscale(DgTexture *this);
 void DgTextureFree(DgTexture *this);

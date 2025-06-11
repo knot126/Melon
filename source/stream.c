@@ -127,6 +127,18 @@ DgError DgStreamSeek(DgStream *context, DgStreamSeekBase base, int64_t offset) {
 	return context->imp->seek ? context->imp->seek(context, base, offset) : DG_ERROR_NOT_SUPPORTED;
 }
 
+bool DgStreamSkip(DgStream *context, int64_t offset) {
+	/**
+	 * Skip a specific number of bytes of the file stream
+	 * 
+	 * @param context Stream
+	 * @param offset Number of bytes to skip
+	 * @return Success status
+	 */
+	
+	return DgStreamSeek(context, DG_STREAM_SEEK_RELATIVE, offset) == DG_SUCCESS;
+}
+
 bool DgStreamEOF(DgStream *context) {
 	/**
 	 * Return true if the stream is at the end of file, and false if it's not.

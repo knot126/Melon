@@ -32,6 +32,8 @@ typedef enum DgStreamOpenFlags : uint64_t {
 	DG_STREAM_ENDIAN_NATIVE = (1 << 6),
 } DgStreamOpenFlags;
 
+#define DG_STREAM_READ_WRITE (DG_STREAM_READ | DG_STREAM_WRITE)
+
 // Stream function pointer types
 typedef DgError (*DgStreamOpenFunction)(DgStream *context, const void *path, DgStreamOpenFlags flags);
 typedef DgError (*DgStreamCloseFunction)(DgStream *context);
@@ -73,6 +75,7 @@ DgError DgStreamWrite(DgStream *context, size_t size, const void *buffer);
 DgError DgStreamGetPosition(DgStream *context, size_t *position);
 DgError DgStreamSetPosition(DgStream *context, size_t position);
 DgError DgStreamSeek(DgStream *context, DgStreamSeekBase base, int64_t offset);
+bool DgStreamSkip(DgStream *context, int64_t offset);
 bool DgStreamEOF(DgStream *context);
 
 void DgStreamSetEndian(DgStream *context, bool endianness);
